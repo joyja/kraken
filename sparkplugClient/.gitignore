@@ -90,3 +90,8 @@ sw.*
 *.swp
 
 runtime/
+
+index.d.ts
+index.js
+index.js.map
+index.d.ts.map
