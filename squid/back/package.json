@@ -1,0 +1,22 @@
+{
+  "name": "squid-back",
+  "version": "0.0.0",
+  "description": "Edge Infrastructure Management for Kraken",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "author": "James A. Joy",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "graphql": "^16.7.1",
+    "graphql-yoga": "^4.0.2",
+    "sparkplug-client": "^3.2.3",
+    "vitest": "^0.32.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.1.3"
+  }
+}
