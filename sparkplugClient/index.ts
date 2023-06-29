@@ -76,6 +76,8 @@ interface SparkplugClient extends events.EventEmitter {
     on(event: 'ncmd', listener: (payload: UPayload) => void): this;
     /** emitted when a device command is received */
     on(event: 'dcmd', listener: (device: string, payload: UPayload) => void): this;
+    /** emitted when a primaryHost state changes */
+    on(event: 'state', listener: (primaryHost: string, payload: string) => void): this;
     /** emitted when a payload is received with a version unsupported by this client */
     on(event: 'message', listener: (topic: string, payload: UPayload) => void): this;
 

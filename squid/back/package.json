@@ -4,14 +4,19 @@
   "description": "Edge Infrastructure Management for Kraken",
   "main": "src/index.js",
   "scripts": {
-    "test": "vitest"
+    "dev": "SQUID_LOGLEVEL=DEBUG NODE_ENV=development ts-node-dev --exit-child --respawn src/index.ts",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
+    "build": "tsc"
   },
   "author": "James A. Joy",
   "license": "GPL-3.0",
   "dependencies": {
+    "date-fns": "^2.30.0",
     "graphql": "^16.7.1",
     "graphql-yoga": "^4.0.2",
-    "sparkplug-client": "^3.2.3",
+    "kraken-sparkplug-client": "^0.0.1",
     "vitest": "^0.32.2"
   },
   "devDependencies": {

@@ -1,0 +1,19 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+dependencies:
+  systeminformation:
+    specifier: ^5.18.4
+    version: 5.18.4
+
+packages:
+
+  /systeminformation@5.18.4:
+    resolution: {integrity: sha512-x1MHqHooJ2n9fmQRngH5TdSk/BcPAPLBBBmS7BSTkALRT56RlgiiNPP7HKoNu2SIFXSG4nPfi1gWh8ASmHPCrA==}
+    engines: {node: '>=8.0.0'}
+    os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
+    hasBin: true
+    dev: false
