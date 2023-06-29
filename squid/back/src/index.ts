@@ -4,6 +4,7 @@ import fs from "fs"
 import path from "path"
 import resolvers from "./resolvers"
 import { System } from './data/systeminformation'
+import { mqtt } from './mqtt/index'
 
 // available when handling requests, needs to be provided by the implementor
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -21,6 +22,8 @@ const PORT = 8000
 
 server.listen(PORT, async () => {
 	const system = new System()
-	system.getCurrentLoad()
+	system.initializeMetrics()
+	await mqtt.connect()
+	mqtt.startPublishing(1000)
   console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
 })

@@ -1,6 +1,9 @@
-import SparkplugClientLib from 'kraken-sparkplug-client'
+import { ISparkplugClientOptions, newClient } from '/home/ubuntu/kraken/sparkplugClient/index.js'
 import getUnixTime from 'date-fns/getUnixTime'
 import type { UPayload } from 'kraken-sparkplug-client'
+import { Log } from '../log/index'
+
+const log = new Log('MQTT')
 
 type Unpacked<T> = T extends (infer U)[] ? U : T;
 
@@ -28,7 +31,7 @@ const getDatatype = function (value:boolean | string | number) {
 }
 
 export class MQTT {
-  public client?:ReturnType<typeof SparkplugClientLib.newClient>
+  public client?:ReturnType<typeof newClient>
   public connecting:boolean
   public connected:boolean
   public primaryHosts:PrimaryHost[]
@@ -121,7 +124,7 @@ export class MQTT {
   }
   connect() {
     if (!this.client) {
-      this.client = SparkplugClientLib.newClient(this.config as SparkplugClientLib.ISparkplugClientOptions)
+      this.client = newClient(this.config as ISparkplugClientOptions)
       this.client.on('reconnect', () => {
         this.onReconnect()
       })
@@ -131,11 +134,11 @@ export class MQTT {
         this.onBirth()
       })
       this.client.on('dcmd', (deviceId, payload) => {
-        console.log(`Mqtt service received a dcmd for ${deviceId}.`)
+        log.info(`Mqtt service received a dcmd for ${deviceId}.`)
         try {
           this.onDcmd(payload)
         } catch (error) {
-          console.log(error)
+          log.error(log.getErrorMessage(error))
         }
       })
       this.client.on('ncmd', (payload) => {
@@ -145,7 +148,7 @@ export class MQTT {
           )
           if (rebirth) {
             if (rebirth.value) {
-              console.log(`Rebirth request detected. Reinitializing...`)
+              log.info(`Rebirth request detected. Reinitializing...`)
               this.disconnect()
               this.connect()
             }
@@ -154,9 +157,67 @@ export class MQTT {
       })
     }
   }
+  async disconnect() {
+    if (this.client) {
+      log.info(`Mqtt service is disconnecting.`)
+      this.stopPublishing()
+      const payload = {
+        timestamp: getUnixTime(new Date()),
+      }
+      await this.client.publishDeviceDeath(`${this.deviceId}`, payload)
+      this.client.stop()
+      this.client = undefined
+    }
+  }
+  async onBirth() {
+    const payload:UPayload = {
+      timestamp: getUnixTime(new Date()),
+      metrics: [
+        { 
+          name: 'Node Control/Rebirth',
+          timestamp: getUnixTime(new Date()),
+          type: "Boolean",
+          value: false
+        }
+      ],
+    }
+    await this.client!.publishNodeBirth(payload)
+    const metrics = this.metrics
+    await this.client!.publishDeviceBirth(`${this.deviceId}`, {
+      timestamp: getUnixTime(new Date()),
+      metrics,
+    })
+    this.primaryHosts.forEach((host) => {
+      if (host.status === `ONLINE` || host.status === `UNKOWN`) {
+        host.readyForData = true
+      }
+    })
+    this.client!.on('state', (primaryHostId, state) => {
+      if (primaryHostId) {
+        const primaryHost = this.primaryHosts
+          .filter((host) => host.name === primaryHostId)
+          .forEach((host) => {
+            log.info(`Received state: ${state} for primary host: ${primaryHostId}`)
+            if (host) {
+              host.status = `${state}`
+              if (`${state}` === `OFFLINE`) {
+                host.readyForData = false
+              }
+              if (`${state}` === `ONLINE`) {
+                host.readyForData = true
+              }
+            }
+          })
+      }
+    })
+    this.startPublishing()
+  }
   async onReconnect() {
     this.stopPublishing()
     this.startPublishing()
+  }
+  onDcmd(payload:UPayload) {
+    //TODO: add dcmd logic.
   }
 }
 
