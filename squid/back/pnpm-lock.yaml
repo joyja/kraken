@@ -17,6 +17,9 @@ dependencies:
   kraken-sparkplug-client:
     specifier: ^0.0.2
     version: 0.0.2
+  sparkplug-client:
+    specifier: ^3.2.3
+    version: 3.2.3
   vitest:
     specifier: ^0.32.2
     version: 0.32.2
@@ -1284,6 +1287,19 @@ packages:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /sparkplug-client@3.2.3:
+    resolution: {integrity: sha512-pQeMEnLe57jP0aNMX4XTnnLjyu/MToQHvBHZNoIyKW674e8xf1CrS0UyFKIhGHJJmzKovW/n9drY4QNmS+yKow==}
+    dependencies:
+      debug: 4.3.4
+      mqtt: 4.3.7
+      pako: 2.1.0
+      sparkplug-payload: 1.0.2
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: false
 
   /sparkplug-payload@1.0.2:
     resolution: {integrity: sha512-ezPDzx4EEABwjvdmCND70gUyy179m/EkE6KUK7A5A5xMUMxeZVkXIkqCAeHoWoQ6YErs1Z7ekibapPzw0B2/5w==}

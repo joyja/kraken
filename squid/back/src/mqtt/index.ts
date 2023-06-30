@@ -1,6 +1,6 @@
-import { ISparkplugClientOptions, newClient } from '/home/ubuntu/kraken/sparkplugClient/index.js'
+import { ISparkplugClientOptions, newClient } from '../../../../sparkplug-client/index'
 import getUnixTime from 'date-fns/getUnixTime'
-import type { UPayload } from 'kraken-sparkplug-client'
+import type { UPayload } from 'sparkplug-client'
 import { Log } from '../log/index'
 
 const log = new Log('MQTT')
@@ -90,6 +90,7 @@ export class MQTT {
         metrics,
       }
       await this.client!.publishDeviceData(this.deviceId!, record)
+      console.log(record)
     }
   }
   addMetric({ name, type, value }:NonNullable<Unpacked<UPayload['metrics']>>) {
@@ -102,7 +103,7 @@ export class MQTT {
   }
   updateMetric({ name, value }:{ name:string, value:NonNullable<Unpacked<UPayload['metrics']>>['value'] }) {
     const metric = this.metrics?.find((metric) => {
-      name === metric.name
+      return name === metric.name
     })
     if (metric) {
       metric!.value = value
@@ -141,7 +142,7 @@ export class MQTT {
           log.error(log.getErrorMessage(error))
         }
       })
-      this.client.on('ncmd', (payload) => {
+      this.client.on('ncmd', (payload:UPayload) => {
         if (payload.metrics) {
           const rebirth = payload.metrics.find(
             (metric) => metric.name === `Node Control/Rebirth`
@@ -149,8 +150,10 @@ export class MQTT {
           if (rebirth) {
             if (rebirth.value) {
               log.info(`Rebirth request detected. Reinitializing...`)
+              this.stopPublishing()
               this.disconnect()
               this.connect()
+              this.startPublishing()
             }
           }
         }

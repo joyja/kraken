@@ -85,8 +85,8 @@ interface SparkplugClient extends events.EventEmitter {
     emit(event: 'error', error: Error): boolean;
     emit(event: 'ncmd', payload: UPayload): boolean;
     emit(event: 'dcmd', device: string, payload: UPayload): boolean;
-    emit(event: 'message', topic: string, payload: UPayload): boolean;
-    emit(event: 'state', topic: string, payload: UPayload): boolean;
+    emit(event: 'message', topic: string, payload: Buffer): boolean;
+    emit(event: 'state', topic: string, payload: Buffer): boolean;
 }
 
 export { UPayload };
@@ -463,16 +463,15 @@ class SparkplugClient extends events.EventEmitter {
          * 'message' handler
          */
         this.client.on('message', (topic, message) => {
-            try {
-                let payload = this.maybeDecompressPayload(this.decodePayload(message)),
-                    timestamp = payload.timestamp,
-                    splitTopic,
-                    metrics;
-    
-                this.messageAlert("arrived", topic, payload);
-    
-                // Split the topic up into tokens
-                splitTopic = topic.split("/");
+            let payload:ReturnType<typeof this.maybeCompressPayload> | Buffer,
+                timestamp,
+                splitTopic,
+                metrics;
+
+            splitTopic = topic.split("/");
+            if (splitTopic[0] === this.version) {
+                payload = this.maybeDecompressPayload(this.decodePayload(message))
+                timestamp = payload.timestamp
                 if (splitTopic[0] === this.version
                     && splitTopic[1] === this.groupId
                     && splitTopic[2] === "NCMD"
@@ -485,14 +484,18 @@ class SparkplugClient extends events.EventEmitter {
                     && splitTopic[3] === this.edgeNode) {
                     // Emit the "command" event for the given deviceId
                     this.emit("dcmd", splitTopic[4], payload);
-                } else if (splitTopic[0] === 'STATE') {
+                }
+            } else {
+                payload = message
+                // Split the topic up into tokens
+                if (splitTopic[0] === 'STATE') {
                     this.emit("state", splitTopic[1], payload)
                 } else {
                     this.emit("message", topic, payload);
                 }
-            } catch(error) {
-                console.log(error)
             }
+
+            this.messageAlert("arrived", topic, payload)
         });
     }
 }

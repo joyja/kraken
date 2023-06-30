@@ -15,8 +15,8 @@ dependencies:
     specifier: ^2.0.4
     version: 2.0.4
   sparkplug-payload:
-    specifier: ^1.0.1
-    version: 1.0.1
+    specifier: ^1.0.2
+    version: 1.0.2
 
 devDependencies:
   '@types/debug':
@@ -328,9 +328,11 @@ packages:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
     dev: false
 
-  /sparkplug-payload@1.0.1:
-    resolution: {integrity: sha512-N4i++SFY7ECH7NB2bi1zmL9uPRKXF5cXQRxudUqZi9sribVZB7TZWvMIcTTakqqs1WkryYgpuV34CwEYm7I0Cg==}
+  /sparkplug-payload@1.0.2:
+    resolution: {integrity: sha512-ezPDzx4EEABwjvdmCND70gUyy179m/EkE6KUK7A5A5xMUMxeZVkXIkqCAeHoWoQ6YErs1Z7ekibapPzw0B2/5w==}
     dependencies:
+      '@types/long': 4.0.2
+      long: 4.0.0
       protobufjs: 6.11.3
     dev: false
 

@@ -17,6 +17,7 @@
     "graphql": "^16.7.1",
     "graphql-yoga": "^4.0.2",
     "kraken-sparkplug-client": "^0.0.2",
+    "sparkplug-client": "^3.2.3",
     "vitest": "^0.32.2"
   },
   "devDependencies": {
