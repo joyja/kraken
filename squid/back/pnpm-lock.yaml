@@ -15,8 +15,8 @@ dependencies:
     specifier: ^4.0.2
     version: 4.0.2(graphql@16.7.1)
   kraken-sparkplug-client:
-    specifier: ^0.0.2
-    version: 0.0.2
+    specifier: ^0.0.4
+    version: 0.0.4
   sparkplug-client:
     specifier: ^3.2.3
     version: 3.2.3
@@ -945,8 +945,8 @@ packages:
     resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
     dev: false
 
-  /kraken-sparkplug-client@0.0.2:
-    resolution: {integrity: sha512-OGwFbhQVatCSpZQQ188CYJzEUjsiCiqz0ixXAKkwZtNVW+tAdhc+TY0iUdwa8U1HWoDBDeI7IMXUmCLbbZGOtg==}
+  /kraken-sparkplug-client@0.0.4:
+    resolution: {integrity: sha512-R6Q/KHGk28R+0VnOCOoBEo3ZHKqXfHpX2B9738r35BjZ3xHl8OXXmiISXEqWV64KDxzz++7rx5FSBf8+e0MVaA==}
     dependencies:
       debug: 4.3.4
       mqtt: 4.3.7
