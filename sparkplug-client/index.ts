@@ -55,8 +55,18 @@ export type ISparkplugClientOptions = {
     publishDeath?: boolean;
     version?: string;
     keepalive?: number;
-    primaryHostId?: string;
     mqttOptions?: Omit<IClientOptions, 'clientId' | 'clean' | 'keepalive' | 'reschedulePings' | 'connectTimeout' | 'username' | 'password' | 'will'>;
+}
+
+export type ISparkplugHostOptions = {
+    serverUrl: string;
+    username: string;
+    password: string;
+    primaryHostId: string;
+    clientId: string;
+    version?: string;
+    keepalive?: number;
+    mqttOptions?: Omit<IClientOptions, 'clientId' | 'clean' | 'keepalive' | 'reschedulePings' | 'connectTimeout' | 'username' | 'password' | 'will' | 'primaryHostId'>;
 }
 
 export type PayloadOptions = {
@@ -89,6 +99,36 @@ interface SparkplugClient extends events.EventEmitter {
     emit(event: 'state', topic: string, payload: Buffer): boolean;
 }
 
+interface NodeData {
+    topic:string,
+    groupdId:string,
+    name:string,
+    payload:UPayload
+}
+
+interface SparkplugHost extends events.EventEmitter {
+    /** MQTT client event */
+    on(event: 'connect' | 'close' | 'reconnect' | 'offline', listener: () => void): this;
+    /** MQTT client event */
+    on(event: 'error', listener: (error: Error) => void): this;
+    /** emitted when birth messages are ready to be sent*/
+    on(event: 'birth', listener: () => void): this;
+    /** emitted when a node command is received */
+    on(event: 'ddata', listener: (nodeData:NodeData) => void): this;
+    on(event: 'nbirth', listener: (nodeData:NodeData) => void): this;
+    on(event: 'dbirth', listener: (nodeData:NodeData) => void): this;
+    on(event: 'ndeath', listener: (nodeData:NodeData) => void): this;
+    on(event: 'ddeath', listener: (nodeData:NodeData) => void): this;
+    on(event: 'message', listener: (topic: string, payload: UPayload) => void): this;
+
+    emit(event: 'connect' | 'close' | 'reconnect' | 'offline' | 'birth'): boolean;
+    emit(event: 'error', error: Error): boolean;
+    emit(event: 'ddata' | 'dbirth' | 'ddeath', topic:string, groupId:string, node:string, deviceId:string, payload:UPayload): boolean;
+    emit(event: 'nbirth' | 'ndeath', topic:string, groupId:string, node:string, payload:UPayload): boolean;
+    emit(event: 'message', topic: string, payload: Buffer): boolean;
+    emit(event: 'state', topic: string, payload: Buffer): boolean;
+}
+
 export { UPayload };
 
 /*
@@ -109,7 +149,6 @@ class SparkplugClient extends events.EventEmitter {
     private publishDeath: boolean;
     private version: string;
     private mqttOptions: IClientOptions;
-    private primaryHostId: string;
 
     // MQTT Client Variables
     private bdSeq = 0;
@@ -127,7 +166,6 @@ class SparkplugClient extends events.EventEmitter {
 
         // Client connection options
         this.serverUrl = getRequiredProperty(config, "serverUrl");
-        this.primaryHostId = getProperty(config, "primaryHostId", "");
         const username = getRequiredProperty(config, "username");
         const password = getRequiredProperty(config, "password");
         const clientId = getRequiredProperty(config, "clientId");
@@ -141,17 +179,12 @@ class SparkplugClient extends events.EventEmitter {
             connectTimeout: 30000,
             username,
             password,
-            will: (this.primaryHostId ? {
-                topic: `STATE/${this.primaryHostId}`,
-                payload: `OFFLINE`,
-                qos: 0,
-                retain: true,
-            }:{
+            will: {
                 topic: this.version + "/" + this.groupId + "/NDEATH/" + this.edgeNode,
                 payload: Buffer.from(this.encodePayload(this.getDeathPayload())),
                 qos: 0,
                 retain: false,
-            }),
+            },
         };
 
         this.init();
@@ -409,6 +442,7 @@ class SparkplugClient extends events.EventEmitter {
 
             // Emit the "birth" event to notify the application to send a births
             this.emit("birth");
+            
         });
 
         /*
@@ -487,6 +521,356 @@ class SparkplugClient extends events.EventEmitter {
                 }
             } else {
                 payload = message
+                this.emit("message", topic, payload);
+            }
+
+            this.messageAlert("arrived", topic, payload)
+        });
+    }
+}
+
+export function newClient(config: ISparkplugClientOptions): SparkplugClient {
+    return new SparkplugClient(config);
+}
+
+/*
+ * Sparkplug Host
+ */
+class SparkplugHost extends events.EventEmitter {
+
+    // Constants
+    private readonly type_int32: number = 7;
+    private readonly type_boolean: number = 11;
+    private readonly type_string: number = 12;
+    private readonly versionB: string = "spBv1.0";
+
+    // Config Variables
+    private serverUrl: string;
+    private version: string;
+    private primaryHostId: string;
+    private mqttOptions: IClientOptions;
+
+    // MQTT Client Variables
+    private bdSeq = 0;
+    private seq = 0;
+    private client: null | MqttClient = null;
+    private connecting = false;
+    private connected = false;
+
+    constructor(config: ISparkplugHostOptions) {
+        super();
+        this.version = getProperty(config, "version", this.versionB);
+
+        // Client connection options
+        this.serverUrl = getRequiredProperty(config, "serverUrl");
+        this.primaryHostId = getRequiredProperty(config, 'primaryHostId');
+        const username = getRequiredProperty(config, "username");
+        const password = getRequiredProperty(config, "password");
+        const keepalive = getProperty(config, "keepalive", 5);
+        const clientId = getRequiredProperty(config, "clientId");
+        this.mqttOptions = {
+            ...config.mqttOptions || {}, // allow additional options
+            clean: true,
+            clientId,
+            keepalive,
+            reschedulePings: false,
+            connectTimeout: 30000,
+            username,
+            password,
+            will: {
+                topic: `STATE/${this.primaryHostId}`,
+                payload: `OFFLINE`,
+                qos: 0,
+                retain: true,
+            },
+        };
+
+        this.init();
+    }
+
+    // Increments a sequence number
+    private incrementSeqNum(): number {
+        if (this.seq == 256) {
+            this.seq = 0;
+        }
+        return this.seq++;
+    }
+
+    private encodePayload(payload: UPayload): Uint8Array {
+        return sparkplugbpayload.encodePayload(payload);
+    };
+
+    private decodePayload(payload: Uint8Array | Reader): UPayload {
+        return sparkplugbpayload.decodePayload(payload);
+    }
+
+    private addSeqNumber(payload: UPayload): void {
+        payload.seq = this.incrementSeqNum();
+    }
+
+    // Get DEATH payload
+    private getDeathPayload(): any {
+        return {
+            "timestamp": new Date().getTime(),
+            "metrics": [{
+                "name": "bdSeq",
+                "value": this.bdSeq,
+                "type": "uint64"
+            }]
+        }
+    }
+
+    // Logs a message alert to the console
+    private messageAlert(alert: string, topic: string, payload: any): void {
+        logger.debug("Message " + alert);
+        logger.debug(" topic: " + topic);
+        logger.debug(" payload: " + JSON.stringify(payload));
+    }
+
+    private compressPayload(payload: Uint8Array, options?: PayloadOptions): UPayload {
+        let algorithm: NonNullable<PayloadOptions['algorithm']> | null = null,
+            compressedPayload,
+            resultPayload: UPayload = {
+                "uuid": compressed,
+                "metrics": []
+            };
+
+        logger.debug("Compressing payload " + JSON.stringify(options));
+
+        // See if any options have been set
+        if (options !== undefined && options !== null) {
+            // Check algorithm
+            if (options['algorithm']) {
+                algorithm = options['algorithm'];
+            }
+        }
+
+        if (algorithm === null || algorithm.toUpperCase() === "DEFLATE") {
+            logger.debug("Compressing with DEFLATE!");
+            resultPayload.body = pako.deflate(payload);
+        } else if (algorithm.toUpperCase() === "GZIP") {
+            logger.debug("Compressing with GZIP");
+            resultPayload.body = pako.gzip(payload);
+        } else {
+            throw new Error("Unknown or unsupported algorithm " + algorithm);
+        }
+
+        // Create and add the algorithm metric if is has been specified in the options
+        if (algorithm !== null) {
+            resultPayload.metrics = [{
+                "name": "algorithm",
+                "value": algorithm.toUpperCase(),
+                "type": "String"
+            }];
+        }
+
+        return resultPayload;
+    }
+
+    private decompressPayload(payload: UPayload): Uint8Array {
+        let metrics = payload.metrics || [],
+            algorithm: null | NonNullable<PayloadOptions['algorithm']> = null;
+        const body = payload.body || new Uint8Array();
+
+        logger.debug("Decompressing payload");
+
+        const algorithmMetric = metrics.find(m => m.name === 'algorithm');
+        if (algorithmMetric && typeof algorithmMetric.value === 'string') {
+            algorithm = algorithmMetric.value as NonNullable<PayloadOptions['algorithm']>;
+        }
+
+        if (algorithm === null || algorithm.toUpperCase() === "DEFLATE") {
+            logger.debug("Decompressing with DEFLATE!");
+            return pako.inflate(body);
+        } else if (algorithm.toUpperCase() === "GZIP") {
+            logger.debug("Decompressing with GZIP");
+            return pako.ungzip(body);
+        } else {
+            throw new Error("Unknown or unsupported algorithm " + algorithm);
+        }
+    }
+
+    private maybeCompressPayload(payload: UPayload, options?: PayloadOptions): UPayload {
+        if (options?.compress) {
+            // Compress the payload
+            return this.compressPayload(this.encodePayload(payload), options);
+        } else {
+            // Don't compress the payload
+            return payload;
+        }
+    }
+
+    private maybeDecompressPayload(payload: UPayload): UPayload {
+        if (payload.uuid !== undefined && payload.uuid === compressed) {
+            // Decompress the payload
+            return this.decodePayload(this.decompressPayload(payload));
+        } else {
+            // The payload is not compressed
+            return payload;
+        }
+    }
+
+    subscribeTopic(topic: string, options: mqtt.IClientSubscribeOptions = { "qos": 0 }, callback?: mqtt.ClientSubscribeCallback) {
+        logger.info("Subscribing to topic:", topic);
+        this.client!.subscribe(topic, options, callback);
+    }
+
+    unsubscribeTopic(topic: string, options?: any, callback?: mqtt.PacketCallback) {
+        logger.info("Unsubscribing topic:", topic);
+        this.client!.unsubscribe(topic, options, callback);
+    }
+
+    publishHostOnline() {
+        const topic = `STATE/${this.primaryHostId}`
+        const payload = 'ONLINE'
+        logger.info('Publishing Primary Host Online.')
+        this.client?.publish(topic, payload, { retain: true })
+        this.messageAlert('published', topic, payload)
+    }
+        publishHostOffline() {
+        const topic = `STATE/${this.primaryHostId}`
+        const payload = 'OFFLINE'
+        logger.info('Publish Primary Host Offline.')
+        this.client?.publish(topic, payload, { retain: true })
+        this.messageAlert('published', topic, payload)
+    }
+
+    stop() {
+        this.publishHostOffline()
+        this.client?.end()
+    }
+
+    // Configures and connects the client
+    private init() {
+
+        // Connect to the MQTT server
+        this.connecting = true;
+        logger.debug("Attempting to connect: " + this.serverUrl);
+        logger.debug("              options: " + JSON.stringify(this.mqttOptions));
+        this.client = mqtt.connect(this.serverUrl, this.mqttOptions);
+        logger.debug("Finished attempting to connect");
+
+        /*
+         * 'connect' handler
+         */
+        this.client.on('connect', () => {
+            logger.info("Client has connected");
+            this.connecting = false;
+            this.connected = true;
+            this.emit("connect");
+
+            // Subscribe to control/command messages for both the edge node and the attached devices
+            logger.info("Subscribing to control/command messages for both the edge node and the attached devices");
+            
+            // Subscribe to state messages
+            this.client!.subscribe(`${this.version}/#`, { qos: 1 })
+
+            // Emit the "birth" event to notify the application to send a births
+            this.emit("birth");
+        });
+
+        /*
+         * 'error' handler
+         */
+        this.client.on('error', (error) => {
+            if (this.connecting) {
+                this.emit("error", error);
+                this.client!.end();
+            }
+        });
+
+        /*
+         * 'close' handler
+         */
+        this.client.on('close', () => {
+            if (this.connected) {
+                this.connected = false;
+                this.emit("close");
+            }
+        });
+
+        /*
+         * 'reconnect' handler
+         */
+        this.client.on("reconnect", () => {
+            this.emit("reconnect");
+        });
+
+        /*
+         * 'reconnect' handler
+         */
+        this.client.on("offline", () => {
+            this.emit("offline");
+        });
+
+        /*
+         * 'packetsend' handler
+         */
+        this.client.on("packetsend", (packet) => {
+            logger.debug("packetsend: " + packet.cmd);
+        });
+
+        /*
+         * 'packetreceive' handler
+         */
+        this.client.on("packetreceive", (packet) => {
+            logger.debug("packetreceive: " + packet.cmd);
+        });
+
+        /*
+         * 'message' handler
+         */
+        this.client.on('message', (topic, message) => {
+            let payload:ReturnType<typeof this.maybeCompressPayload> | Buffer,
+                timestamp,
+                splitTopic,
+                metrics;
+
+            splitTopic = topic.split("/");
+            if (splitTopic[0] === this.version) {
+                payload = this.maybeDecompressPayload(this.decodePayload(message))
+                timestamp = payload.timestamp
+                if (splitTopic[0] === this.version && splitTopic[2] === 'DDATA') {
+                    this.emit('ddata',
+                        topic,
+                        splitTopic[1], //groupId
+                        splitTopic[3], //nodeId
+                        splitTopic[4], //deviceId
+                        payload,
+                    )
+                } else if (splitTopic[0] === this.version && splitTopic[2] === 'NBIRTH') {
+                    this.emit('nbirth',
+                        topic,
+                        splitTopic[1], //groupdId
+                        splitTopic[3], //nodeId
+                        payload,
+                    )
+                } else if (splitTopic[0] === this.version && splitTopic[2] === 'DBIRTH') {
+                    this.emit('dbirth',
+                        topic,
+                        splitTopic[1], //groupId
+                        splitTopic[3], //nodeId
+                        splitTopic[4], //deviceId
+                        payload,
+                    )
+                } else if (splitTopic[0] === this.version && splitTopic[2] === 'NDEATH') {
+                    this.emit('ndeath', 
+                        topic,
+                        splitTopic[1], //groupId
+                        splitTopic[3], //nodeId
+                        payload,
+                    )
+                } else if (splitTopic[0] === this.version && splitTopic[2] === 'DDEATH') {
+                    this.emit('ddeath',
+                        topic,
+                        splitTopic[1], //groupId
+                        splitTopic[3], //nodeId
+                        splitTopic[4], //deviceId
+                        payload,
+                    )
+                }
+            } else {
+                payload = message
                 // Split the topic up into tokens
                 if (splitTopic[0] === 'STATE') {
                     this.emit("state", splitTopic[1], payload)
@@ -500,6 +884,6 @@ class SparkplugClient extends events.EventEmitter {
     }
 }
 
-export function newClient(config: ISparkplugClientOptions): SparkplugClient {
-    return new SparkplugClient(config);
+export function newHost(config: ISparkplugHostOptions): SparkplugHost {
+    return new SparkplugHost(config);
 }

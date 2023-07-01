@@ -1,6 +1,6 @@
-import { ISparkplugClientOptions, newClient } from 'kraken-sparkplug-client'
+import { ISparkplugClientOptions, newClient } from '../../../../sparkplug-client/index'
 import getUnixTime from 'date-fns/getUnixTime'
-import type { UPayload } from 'kraken-sparkplug-client'
+import type { UPayload } from '../../../../sparkplug-client/index'
 import { Log } from '../log/index'
 
 const log = new Log('MQTT')
@@ -90,7 +90,6 @@ export class MQTT {
         metrics,
       }
       await this.client!.publishDeviceData(this.deviceId!, record)
-      console.log(record)
     }
   }
   addMetric({ name, type, value }:NonNullable<Unpacked<UPayload['metrics']>>) {
