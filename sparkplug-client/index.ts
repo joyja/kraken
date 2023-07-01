@@ -114,13 +114,9 @@ interface SparkplugHost extends events.EventEmitter {
     /** emitted when birth messages are ready to be sent*/
     on(event: 'birth', listener: () => void): this;
     /** emitted when a node command is received */
-    on(event: 'ddata', listener: (nodeData:NodeData) => void): this;
-    on(event: 'nbirth', listener: (nodeData:NodeData) => void): this;
-    on(event: 'dbirth', listener: (nodeData:NodeData) => void): this;
-    on(event: 'ndeath', listener: (nodeData:NodeData) => void): this;
-    on(event: 'ddeath', listener: (nodeData:NodeData) => void): this;
+    on(event: 'ddata' | 'dbirth' | 'ddeath', listener: (topic:string, groupId:string, node:string, deviceId:string, payload:UPayload) => void): this;
+    on(event: 'nbirth' | 'nbirth', listener: (topic:string, groupId:string, node:string, payload:UPayload) => void): this;
     on(event: 'message', listener: (topic: string, payload: UPayload) => void): this;
-
     emit(event: 'connect' | 'close' | 'reconnect' | 'offline' | 'birth'): boolean;
     emit(event: 'error', error: Error): boolean;
     emit(event: 'ddata' | 'dbirth' | 'ddeath', topic:string, groupId:string, node:string, deviceId:string, payload:UPayload): boolean;
