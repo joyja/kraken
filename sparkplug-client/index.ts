@@ -13,7 +13,7 @@ import * as mqtt from 'mqtt';
 import type { IClientOptions, MqttClient } from 'mqtt';
 import events from 'events';
 import * as sparkplug from 'sparkplug-payload';
-import type { UPayload } from 'sparkplug-payload/lib/sparkplugbpayload';
+import type { UPayload, UTemplate, UDataSet } from 'sparkplug-payload/lib/sparkplugbpayload';
 import type { Reader } from 'protobufjs';
 import pako from 'pako';
 import createDebug from 'debug';
@@ -115,7 +115,7 @@ interface SparkplugHost extends events.EventEmitter {
     on(event: 'birth', listener: () => void): this;
     /** emitted when a node command is received */
     on(event: 'ddata' | 'dbirth' | 'ddeath', listener: (topic:string, groupId:string, node:string, deviceId:string, payload:UPayload) => void): this;
-    on(event: 'nbirth' | 'nbirth', listener: (topic:string, groupId:string, node:string, payload:UPayload) => void): this;
+    on(event: 'nbirth' | 'ndeath', listener: (topic:string, groupId:string, node:string, payload:UPayload) => void): this;
     on(event: 'message', listener: (topic: string, payload: UPayload) => void): this;
     emit(event: 'connect' | 'close' | 'reconnect' | 'offline' | 'birth'): boolean;
     emit(event: 'error', error: Error): boolean;
@@ -125,7 +125,7 @@ interface SparkplugHost extends events.EventEmitter {
     emit(event: 'state', topic: string, payload: Buffer): boolean;
 }
 
-export { UPayload };
+export { UPayload, UTemplate, UDataSet };
 
 /*
  * Sparkplug Client
@@ -821,10 +821,13 @@ class SparkplugHost extends events.EventEmitter {
                 timestamp,
                 splitTopic,
                 metrics;
-
             splitTopic = topic.split("/");
             if (splitTopic[0] === this.version) {
-                payload = this.maybeDecompressPayload(this.decodePayload(message))
+                try {
+                    payload = this.maybeDecompressPayload(this.decodePayload(message))
+                } catch {
+                    payload = message as UPayload
+                }
                 timestamp = payload.timestamp
                 if (splitTopic[0] === this.version && splitTopic[2] === 'DDATA') {
                     this.emit('ddata',
