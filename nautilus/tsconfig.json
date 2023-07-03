@@ -9,7 +9,7 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "outDir":"dist"
+    "outDir":"bin"
   },
   "include": [
     "index.ts"

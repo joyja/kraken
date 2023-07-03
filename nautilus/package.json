@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development ts-node-dev --exit-child --respawn index.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "spb":"./bind/index.js" 
+    "nautilus-mqtt":"./bin/nautilus/index.js" 
   },
   "keywords": [],
   "author": "",

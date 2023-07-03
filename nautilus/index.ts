@@ -1,6 +1,7 @@
+#! /usr/bin/env node
 import { UPayload } from 'kraken-sparkplug-client'
 import { time } from 'systeminformation';
-import { newHost, UTemplate } from '../sparkplug-client/index'
+import { newHost, UTemplate } from 'kraken-sparkplug-client'
 import { Log } from './log'
 
 const log = new Log()
