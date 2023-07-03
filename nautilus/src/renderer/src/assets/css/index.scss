@@ -1,0 +1,114 @@
+@import './text.scss';
+@import './preflight.scss';
+@import './shadow.scss';
+@import './border-radius.scss';
+@import './colors.scss';
+// @import './form.scss';
+@import './animations.scss';
+
+* {
+	margin: 0px;
+	padding: 0px;
+	font-family: sans-serif;
+}
+
+a {
+	color: inherit;
+	text-decoration: inherit;
+}
+
+:root {
+	--break-sm: 640px;
+	--break-md: 768px;
+	--break-lg: 1024px;
+	--break-xl: 1280px;
+	--break-2xl: 1536px;
+	--spacing-unit: 0.325rem;
+}
+
+$spacingMults: (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+
+@each $mult in $spacingMults {
+	.m-#{$mult},
+	.mx-#{$mult},
+	.ml-#{$mult} {
+		margin-left: calc(#{$mult} * var(--spacing-unit));
+	}
+	.m-#{$mult},
+	.mx-#{$mult},
+	.mr-#{$mult} {
+		margin-right: calc(#{$mult} * var(--spacing-unit));
+	}
+	.m-#{$mult},
+	.my-#{$mult},
+	.mt-#{$mult} {
+		margin-top: calc(#{$mult} * var(--spacing-unit));
+	}
+	.m-#{$mult},
+	.my-#{$mult},
+	.mb-#{$mult} {
+		margin-bottom: calc(#{$mult} * var(--spacing-unit));
+	}
+
+	.p-#{$mult},
+	.px-#{$mult},
+	.pl-#{$mult} {
+		padding-left: calc(#{$mult} * var(--spacing-unit));
+	}
+	.p-#{$mult},
+	.px-#{$mult},
+	.pr-#{$mult} {
+		padding-right: calc(#{$mult} * var(--spacing-unit));
+	}
+	.p-#{$mult},
+	.py-#{$mult},
+	.pt-#{$mult} {
+		padding-top: calc(#{$mult} * var(--spacing-unit));
+	}
+	.p-#{$mult},
+	.px-#{$mult},
+	.pb-#{$mult} {
+		padding-bottom: calc(#{$mult} * var(--spacing-unit));
+	}
+	.space-x-#{$mult} > :not([hidden]) ~ :not([hidden]) {
+		margin-right: calc(#{$mult} * var(--spacing-unit) * 0);
+		margin-left: calc(#{$mult} * var(--spacing-unit) * 1);
+	}
+}
+
+.button--primary {
+	transition: background-color 0.2s ease-out;
+	color: white;
+	border: none;
+	background-color: var(--emerald-700);
+	border-radius: 0.2rem;
+	padding: calc(2 * var(--spacing-unit));
+	cursor: pointer;
+	text-align: center;
+	font-weight: 700;
+	font-size: var(--text-sm);
+	line-height: var(--text-sm-lh);
+}
+.button--primary:hover {
+	background-color: var(--emerald-800);
+}
+.button--primary:disabled {
+	color: var(--gray-300);
+	background-color: var(--gray-500);
+	cursor: not-allowed;
+}
+.button--block {
+	width: 100%;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}

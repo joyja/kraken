@@ -1,7 +1,81 @@
-#! /usr/bin/env node
+import { app, shell, BrowserWindow } from 'electron'
+import { join } from 'path'
+import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import icon from '../../resources/icon.png?asset'
+import events from 'events';
+
+function createWindow(): void {
+  // Create the browser window.
+  const mainWindow = new BrowserWindow({
+    width: 900,
+    height: 670,
+    show: false,
+    autoHideMenuBar: true,
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  })
+
+  sp.on('update',(groups:SparkplugGroup[]) => {
+    mainWindow.webContents.send('update-groups', groups)
+  })
+
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show()
+  })
+
+  mainWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url)
+    return { action: 'deny' }
+  })
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  } else {
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+  }
+}
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.whenReady().then(() => {
+  // Set app user model id for windows
+  electronApp.setAppUserModelId('com.electron')
+
+  // Default open or close DevTools by F12 in development
+  // and ignore CommandOrControl + R in production.
+  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+  app.on('browser-window-created', (_, window) => {
+    optimizer.watchWindowShortcuts(window)
+  })
+
+  createWindow()
+
+  app.on('activate', function () {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+})
+
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+
+// In this file you can include the rest of your app"s specific main process
+// code. You can also put them in separate files and require them here.
 import { UPayload } from 'kraken-sparkplug-client'
-import { time } from 'systeminformation';
-import { newHost, UTemplate } from 'kraken-sparkplug-client'
+import { newHost } from 'kraken-sparkplug-client'
 import { Log } from './log'
 
 const log = new Log()
@@ -121,10 +195,11 @@ class SparkplugGroup extends SparkplugBasic {
   }
 }
 
-class SparkplugData {
+class SparkplugData extends events.EventEmitter {
   client:ReturnType<typeof newHost>
   groups:SparkplugGroup[]
   constructor() {
+    super()
     this.groups = []
     this.client = newHost({
       serverUrl: 'ssl://mqtt.anywherescada.com',
@@ -133,8 +208,7 @@ class SparkplugData {
       clientId: 'pangolin-nautilus-dev1',
       primaryHostId: 'pangolin-nautilus-dev1'
     })
-    this.client.on('nbirth',(topic, groupId, nodeId, payload) => {
-      // console.log(JSON.stringify(payload,null,4))
+    this.client.on('nbirth',(_topic, groupId, nodeId, payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         // Clear matching unborn nodes first
@@ -156,8 +230,9 @@ class SparkplugData {
         node.updateMetrics(payload)
         log.info(`Node ${node.id} is born as part of new group ${group.id}.`)
       }
+      this.emit('update',this.groups)
     })
-    this.client.on('dbirth',(topic, groupId, nodeId, deviceId, payload) => {
+    this.client.on('dbirth',(_topic, groupId, nodeId, deviceId, payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         let node = group.getNode(nodeId)
@@ -193,8 +268,9 @@ class SparkplugData {
         device.updateMetrics(payload)
         log.info(`Device ${device.id} is born to unborn Node ${node.id} in new group ${group.id}.`)
       }
+      this.emit('update',this.groups)
     })
-    this.client.on('ddata',(topic, groupId, nodeId, deviceId, payload) => {
+    this.client.on('ddata',(_topic, groupId, nodeId, deviceId, payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         let node = group.getNode(nodeId)
@@ -230,17 +306,18 @@ class SparkplugData {
         device.updateMetrics(payload)
         log.info(`Received data for unborn device ${device.id} in unborn Node ${node.id} in new group ${group.id}.`)
       }
-      log.info(JSON.stringify(this.groups,null,4))
+      this.emit('update',this.groups)
     })
-    this.client.on('ndeath',(topic, groupId, nodeId, payload) => {
+    this.client.on('ndeath',(_topic, groupId, nodeId, _payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         group.dropNode(nodeId)
         group.dropUnbornNode(nodeId)
       }
       log.info(`Node ${nodeId} is dead on group ${groupId}`)
+      this.emit('update',this.groups)
     })
-    this.client.on('ddeath',(topic, groupId, nodeId, deviceId, payload) => {
+    this.client.on('ddeath',(_topic, groupId, nodeId, deviceId, _payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         let node = group.getNode(nodeId)
@@ -250,6 +327,7 @@ class SparkplugData {
         }
       }
       log.info(`Device ${deviceId} is dead on node ${nodeId} in group ${groupId}`)
+      this.emit('update',this.groups)
     })
   }
   getGroup(id:string) {
@@ -258,5 +336,4 @@ class SparkplugData {
 }
 
 const sp = new SparkplugData()
-
 

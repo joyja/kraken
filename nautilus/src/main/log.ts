@@ -30,15 +30,11 @@ function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
   }
 }
 
-function getErrorMessage(error: unknown) {
-  return toErrorWithMessage(error).message
-}
-
 export class Log {
   public level:LogLevel
   public context?:string
   constructor(context?:string) {
-    this.level = process.env.JOYCOMMERCE_LOGLEVEL ? process.env.JOYCOMMERCE_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.info : LogLevel.warn
+    this.level = process.env.NAUTILUS_LOGLEVEL ? process.env.NAUTILUS_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.info : LogLevel.warn
     this.context = context
   }
   debug(message:string) {
@@ -47,17 +43,17 @@ export class Log {
     }
   }
   info(message:string) {
-    if (this.level === LogLevel.info) {
+    if ([LogLevel.info, LogLevel.debug].includes(this.level)) {
       console.info(`${this.context ? `${this.context}: `:``}${message}`)
     } 
   }
   warn(message:string) {
-    if (this.level === LogLevel.warn) {
+    if ([LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
       console.warn(`${this.context ? `${this.context}: `:``}${message}`)
     }
   }
   error(message:string) {
-    if (this.level === LogLevel.error) {
+    if ([LogLevel.error, LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
       console.error(`${this.context ? `${this.context}: `:``}${message}`)
     }
   }
