@@ -1,6 +1,6 @@
 {
   "name": "kraken-sparkplug-client",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A client module for MQTT communication using the Sparkplug specification from Cirrus Link Solutions, forked and updated by JAR Automation",
   "main": "index.js",
   "scripts": {
