@@ -467,6 +467,9 @@ class SparkplugData extends events.EventEmitter {
     this.client!.on('error',(error) => {
       console.log(error.message)
     })
+    this.client!.on('ncmd',(payload) => {
+      console.log(payload)
+    })
     this.client!.on('message',(topic, payload) => {
       console.log(`received message on topic "${topic}" with payload "${JSON.stringify(payload,null,4)}"`)
     })
