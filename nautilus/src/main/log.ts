@@ -34,7 +34,8 @@ export class Log {
   public level:LogLevel
   public context?:string
   constructor(context?:string) {
-    this.level = process.env.NAUTILUS_LOGLEVEL ? process.env.NAUTILUS_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.info : LogLevel.warn
+    // this.level = process.env.NAUTILUS_LOGLEVEL ? process.env.NAUTILUS_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.info : LogLevel.warn
+    this.level = LogLevel.debug
     this.context = context
   }
   debug(message:string) {

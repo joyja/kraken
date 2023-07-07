@@ -723,7 +723,8 @@ class SparkplugHost extends events.EventEmitter {
         this.client?.publish(topic, payload, { retain: true })
         this.messageAlert('published', topic, payload)
     }
-        publishHostOffline() {
+    
+    publishHostOffline() {
         const topic = `STATE/${this.primaryHostId}`
         const payload = 'OFFLINE'
         logger.info('Publish Primary Host Offline.')
@@ -867,6 +868,8 @@ class SparkplugHost extends events.EventEmitter {
                         splitTopic[4], //deviceId
                         payload,
                     )
+                } else {
+                    this.emit("message", topic, message);
                 }
             } else {
                 payload = message

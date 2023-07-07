@@ -3,7 +3,12 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  handleGroups: (callback) => ipcRenderer.on('update-groups', callback)
+  handleGroups: (callback) => ipcRenderer.on('update-groups', callback),
+  requestRebirth: (groupId, nodeId) => ipcRenderer.send('requestRebirth', { groupId, nodeId }),
+  getConnections: () => ipcRenderer.invoke('getConnections'),
+  addConnection: (connection) => ipcRenderer.send('addConnection', connection),
+  selectConnection: (id) => ipcRenderer.send('selectConnection', id),
+  deleteConnection: (id) => ipcRenderer.send('deleteConnection', id)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
