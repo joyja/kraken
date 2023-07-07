@@ -114,6 +114,9 @@ interface SparkplugHost extends events.EventEmitter {
     /** emitted when birth messages are ready to be sent*/
     on(event: 'birth', listener: () => void): this;
     /** emitted when a node command is received */
+    on(event: 'ncmd', listener: (payload: UPayload) => void): this;
+    /** emitted when a device command is received */
+    on(event: 'dcmd', listener: (device: string, payload: UPayload) => void): this;
     on(event: 'ddata' | 'dbirth' | 'ddeath', listener: (topic:string, groupId:string, node:string, deviceId:string, payload:UPayload) => void): this;
     on(event: 'nbirth' | 'ndeath', listener: (topic:string, groupId:string, node:string, payload:UPayload) => void): this;
     on(event: 'message', listener: (topic: string, payload: UPayload) => void): this;
@@ -123,6 +126,8 @@ interface SparkplugHost extends events.EventEmitter {
     emit(event: 'nbirth' | 'ndeath', topic:string, groupId:string, node:string, payload:UPayload): boolean;
     emit(event: 'message', topic: string, payload: Buffer): boolean;
     emit(event: 'state', topic: string, payload: Buffer): boolean;
+    emit(event: 'ncmd', payload: UPayload): boolean;
+    emit(event: 'dcmd', device: string, payload: UPayload): boolean;
 }
 
 export { UPayload, UTemplate, UDataSet };
@@ -868,8 +873,12 @@ class SparkplugHost extends events.EventEmitter {
                         splitTopic[4], //deviceId
                         payload,
                     )
-                } else {
-                    this.emit("message", topic, message);
+                } else if (splitTopic[0] === this.version && splitTopic[2] === "NCMD") {
+                    // Emit the "command" event
+                    this.emit("ncmd", payload);
+                } else if (splitTopic[0] === this.version && splitTopic[2] === "DCMD") {
+                    // Emit the "command" event for the given deviceId
+                    this.emit("dcmd", splitTopic[4], payload);
                 }
             } else {
                 payload = message
