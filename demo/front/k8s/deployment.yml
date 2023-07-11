@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mantle-demo
+  name: mantle-demo
+  namespace: mantle-demo
+spec:
+  selector:
+    matchLabels:
+      app: mantle-demo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mantle-demo
+    spec:
+      containers:
+      - image: <IMAGE>
+        name: mantle-demo
+        imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: mantle-demo-creds
