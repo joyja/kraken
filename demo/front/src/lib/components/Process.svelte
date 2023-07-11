@@ -37,7 +37,6 @@
   $: pump1Auto = getBooleanMetric(edgeNodes,'Motor1/Auto', false)
   $: tankLevel = getAnalogMetric(edgeNodes,'Level', 0)
   $: getTankLiquidOffset(enableAnimations, tankLevel)
-  $: console.log(animated.tankLiquidOffset)
 
   function getMiddle(id:string) {
     const el:any = document.getElementById(id)
