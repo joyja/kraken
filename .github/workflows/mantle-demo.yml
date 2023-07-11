@@ -9,32 +9,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./demo/front
     steps:
     - name: Checkout master
       uses: actions/checkout@main
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
-      working-directory: demo/front
       with:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
     - name: Build container image
       run: docker build -t registry.digitalocean.com/jar-containers/mantle-demo:$(echo $GITHUB_SHA | head -c7) .
-      working-directory: demo/front
     - name: Log in to DigitalOcean Container Registry with short-lived credentials
       run: doctl registry login --expiry-seconds 1200
-      working-directory: demo/front
     - name: Push image to DigitalOcean Container Registry
       run: docker push registry.digitalocean.com/jar-containers/mantle-demo:$(echo $GITHUB_SHA | head -c7)
-      working-directory: demo/front
     - name: Update deployment file
       run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/jar-containers/mantle-demo:'${TAG}'|' $GITHUB_WORKSPACE/demo/front/k8s/deployment.yml
-      working-directory: demo/front
     - name: Save DigitalOcean kubeconfig with short-lived credentials
       run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 jar-k8s
-      working-directory: demo/front
     - name: Deploy to DigitalOcean Kubernetes
       run: kubectl apply -f $GITHUB_WORKSPACE/demo/front/k8s/deployment.yml
-      working-directory: demo/front
     - name: Verify deployment
       run: kubectl rollout status deployment/mantle-demo -n mantle-demo
-      working-directory: demo/front
