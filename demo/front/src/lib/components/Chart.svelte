@@ -91,6 +91,11 @@
               radius: 0,
             },
           },
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
         }
       }
     )
@@ -98,7 +103,6 @@
   })
 </script>
 
-<!-- <pre>{ JSON.stringify(tankLevelHistory,null,4) }</pre> -->
 <div class="chart__wrapper"><canvas id="history"></canvas></div>
 
 <style lang="scss">
@@ -109,7 +113,7 @@
     }
   }
   .chart__wrapper {
+    flex-grow: 1;
     position: relative; 
-    // height:30vh; 
   }
 </style>

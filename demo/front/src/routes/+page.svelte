@@ -97,6 +97,6 @@
   .chart {
     display: flex;
     justify-content: center;
-    flex-basis: 100px;
+    flex-basis: 250px;
   }
 </style>
