@@ -29,7 +29,6 @@
     connections = await window.api.getConnections()
   }
   async function selectConnection(id) {
-    console.log('thishappend')
     //@ts-ignore
     window.api.selectConnection(id)
   }
@@ -50,19 +49,27 @@
 <div class="connections"> 
   <h2>Connections</h2>
   <div class="connections__configurator">
-    <fieldset class="connections__list">
-      {#each connections as connection}
-        <div class="connections__connection">
-          <input type="radio" id={ `connection${connection.id}` } name={ `connection` } bind:group={ selectedConnection } value={ connection.id }/>
-          <label for={ `connection${connection.id}` }>{connection.serverUrl}</label>
-          <button class="button--icon" on:click={ ()=>{deleteConnection(connection.id)}}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-            </svg>
-          </button>
-        </div>
-      {/each}
-    </fieldset>
+    {#if connections && connections.length > 0}
+      <fieldset class="connections__list">
+        {#each connections as connection}
+          <div class="connections__connection">
+            <input type="radio" id={ `connection${connection.id}` } name={ `connection` } bind:group={ selectedConnection } value={ connection.id }/>
+            <label for={ `connection${connection.id}` }>{connection.serverUrl}</label>
+            <button class="button--icon" on:click={ ()=>{deleteConnection(connection.id)}}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+              </svg>
+            </button>
+          </div>
+        {/each}
+      </fieldset>
+    {:else}
+      <p style="display:flex; align-items: center">There are no configured connections. Click the button to add one!
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height: 20px; width: 20px; margin-left: var(--spacing-unit);">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+        </svg>
+      </p>
+    {/if}
     <button on:click={() => { showAddConnection = !showAddConnection }}>
       {#if !showAddConnection}
         <svg transition:slide xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -103,6 +110,7 @@
   border-radius: var(--rounded-md);
   padding: calc(var(--spacing-unit) * 3);
   &__add {
+    margin-top: calc(var(--spacing-unit)*3);
     display:flex;
     flex-direction: column;
     & > .field:first-child {

@@ -57,6 +57,7 @@ function createWindow(): void {
   })
 
   ipcMain.handle('getConnections', getConnections)
+  
   spdata.on('update',(groups:SparkplugGroup[]) => {
     mainWindow.webContents.send('update-groups', groups)
   })
@@ -84,6 +85,10 @@ function createWindow(): void {
 
   ipcMain.on('requestRebirth', (_event, { groupId, nodeId }) => {
     spdata.requestRebirth({ groupId, nodeId })
+  })
+
+  ipcMain.on('sendNodeCommand', (_event, { groupId, nodeId, metricId, value }) => {
+    spdata.sendNodeCommand({ groupId, nodeId, metricId, value })
   })
 
   mainWindow.on('ready-to-show', () => {
@@ -478,15 +483,37 @@ class SparkplugData extends events.EventEmitter {
     return this.groups.find((group) => id === group.id)
   }
   requestRebirth({ groupId, nodeId }:{ groupId:string, nodeId:string }) {
-    // this.client.
+    const payload:UPayload = {
+      timestamp: new Date().getTime(),
+      metrics: [{
+        name: "Node Control/Rebirth",
+        value: true,
+        type: "Boolean",
+        timestamp: new Date().getTime(),
+        properties: {}
+      }]
+    }
+    this.client?.publishNodeCommand(groupId, nodeId, payload)
+  }
+  sendNodeCommand({ groupId, nodeId, metricId, value }:{ groupId:string, nodeId:string, metricId:string, value:any }) {
+    const metric = this.getGroup(groupId)?.getNode(nodeId)?.getMetric(metricId)
+    if (metric) {
+      const payload:UPayload = {
+        timestamp: new Date().getTime(),
+        metrics: [{
+          ...metric,
+          value
+        }]
+      }
+      this.client?.publishNodeCommand(groupId, nodeId, payload)
+    }
   }
 }
 
-let spdata:SparkplugData
+let spdata:SparkplugData = new SparkplugData()
 async function startMqtt() {
   const connections = await getConnections()
   if (connections && connections.length > 0) {
-    spdata = new SparkplugData()
     spdata.initialize(connections[0])
   }
 }

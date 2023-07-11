@@ -39,7 +39,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-svelte3": "^4.0.0",
-    "kraken-sparkplug-client": "^0.0.9",
+    "kraken-sparkplug-client": "^0.0.10",
     "prettier": "^2.8.8",
     "sass": "^1.63.6",
     "svelte": "^3.59.1",
