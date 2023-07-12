@@ -9,7 +9,7 @@
 </script>
 
 <header>
-  <img src="https://res.cloudinary.com/jarautomation/image/upload/v1624165394/logos/mantle_light.png" alt="Mantle Logo"/>
+  <img src="https://res.cloudinary.com/jarautomation/image/upload/w_150,q_auto,f_auto/v1624165394/logos/mantle_light.png" alt="Mantle Logo"/>
 </header>
 
 <PageTransition pathname={data.pathname}>
