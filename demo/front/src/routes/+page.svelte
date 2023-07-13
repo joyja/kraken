@@ -47,6 +47,10 @@
 <div class="page">
   <div class="wrapper">
     <div class="process">
+      <a class="grafana-logo" target="_blank" href="https://grafana.demo.jarautomation.io/d/6QhDO2Knz/jar-automation-demo?orgId=2&refresh=5s">
+        <img alt="Grafana Logo" src="https://grafana.demo.jarautomation.io/public/img/grafana_icon.svg" />
+        <span>View in Grafana</span>
+      </a>
       <Process { edgeNodes } />
     </div>
     <div class="values">
@@ -60,6 +64,35 @@
 <!-- <pre>{ JSON.stringify(data,null,4) }</pre> -->
 
 <style lang="scss">
+  .grafana-logo {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 60px;
+    width: 60px;
+    & > img {
+      height: 100%;
+      width: 100%;
+    }
+    & > span {
+      font-size: var(--text-sm);
+      line-height: var(--text-xs-lh);
+      text-align: center;
+      transform: rotate(0deg);
+      left: 0;
+      right: 0;
+      bottom: calc(var(--spacing-unit)*-5);
+      margin: auto;
+      position: absolute;
+      text-transform: uppercase;
+      font-family: Oswald;
+    }
+    transition: all .3s ease-out;
+    transform: rotate(-5deg);
+  }
+  .grafana-logo:hover {
+    transform: scale(1.25) rotate(15deg);
+  }
   .page {
     display: flex;
     justify-content: center;
@@ -74,6 +107,7 @@
     }
   }
   .process {
+    position: relative;
     display: flex;
     justify-content: center;
     flex-grow: 1;
