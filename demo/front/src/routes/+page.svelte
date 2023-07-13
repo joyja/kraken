@@ -67,7 +67,7 @@
   .grafana-logo {
     position: absolute;
     right: 0;
-    top: 0;
+    top: calc(var(--spacing-unit)*-10);
     height: 60px;
     width: 60px;
     & > img {
