@@ -4,7 +4,9 @@ declare global {
 	namespace App {
 		// interface Error {}
 		// interface Locals {}
-		// interface PageData {}
+		interface PageData {
+			nodes: { devices:{ metrics: { name:string, value: number | string }[] }[] }[]
+		}
 		// interface Platform {}
 	}
 }

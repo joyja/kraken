@@ -1,4 +1,4 @@
-export async function getNodes() {
+export async function getNodes():Promise<EdgeNode[]> {
   return await fetch('https://mantle2.jarautomation.io/', {
     method: 'POST',
     headers: {

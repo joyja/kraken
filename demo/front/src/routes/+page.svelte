@@ -5,14 +5,12 @@
 	import Process from '$lib/components/Process.svelte';
 	import Gauge from '$lib/components/Gauge.svelte';
 	import Chart from '$lib/components/Chart.svelte';
-//test
-  interface EdgeNodes { nodes: { devices:{ metrics: { name:string, value: number | string }[] }[] }[] }
-
+  
   export let data:PageData
   $: edgeNodes = data
   let interval:ReturnType<typeof setInterval>
   
-  function getBooleanMetric(edgeNodes:EdgeNodes, name:string, defaultValue:boolean) {
+  function getBooleanMetric(edgeNodes:{ nodes:EdgeNode[] }, name:string, defaultValue:boolean) {
     const value = edgeNodes.nodes[0]?.devices[0]?.metrics.find(metric => metric.name === name)?.value
     if (value) {
       return `${value}` === 'true'
@@ -21,7 +19,7 @@
     }
   }
   
-  function getAnalogMetric(edgeNodes:EdgeNodes, name:string, defaultValue:number) {
+  function getAnalogMetric(edgeNodes:{ nodes:EdgeNode[] }, name:string, defaultValue:number) {
     const value = edgeNodes.nodes[0]?.devices[0]?.metrics.find(metric => metric.name === name)?.value
     if (value) {
       return parseFloat(`${value}`)
