@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/**'
       - 'squid/back/src/**'
+      - 'squid/back/scripts/**'
 jobs:
   build:
     runs-on: self-hosted
@@ -14,3 +15,6 @@ jobs:
     steps:
     - name: Checkout master
       uses: actions/checkout@main
+    - name: Run deploy script
+      run: ./scripts/deploy.sh
+      with: bash
