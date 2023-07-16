@@ -1,6 +1,6 @@
-import { ISparkplugClientOptions, newClient } from '../../../../sparkplug-client/index'
+import { ISparkplugClientOptions, newClient } from 'kraken-sparkplug-client'
 import getUnixTime from 'date-fns/getUnixTime'
-import type { UPayload } from '../../../../sparkplug-client/index'
+import type { UPayload } from 'kraken-sparkplug-client'
 import { Log } from '../log/index'
 
 const log = new Log('MQTT')
@@ -59,7 +59,7 @@ export class MQTT {
     const clientId = process.env.SQUID_MQTT_CLIENTID
     // TODO: Need to figure out how I'm going to populate primary hosts (event variable, config file, etc.)
     const primaryHosts:string[] = []
-    this.rate = 1000
+    this.rate = 2500
     this.config = {
       serverUrl, username, password, groupId, edgeNode, clientId,
       version : 'spBv1.0',
@@ -115,6 +115,9 @@ export class MQTT {
     if (rate) {
       this.rate = rate
     }
+    if (this.interval) {
+      clearInterval(this.interval)
+    }
     this.interval = setInterval(() => {
       this.publish()
     },this.rate)
@@ -141,7 +144,7 @@ export class MQTT {
           log.error(log.getErrorMessage(error))
         }
       })
-      this.client.on('ncmd', (payload:UPayload) => {
+      this.client.on('ncmd', async (payload:UPayload) => {
         if (payload.metrics) {
           const rebirth = payload.metrics.find(
             (metric) => metric.name === `Node Control/Rebirth`
@@ -150,7 +153,7 @@ export class MQTT {
             if (rebirth.value) {
               log.info(`Rebirth request detected. Reinitializing...`)
               this.stopPublishing()
-              this.disconnect()
+              await this.disconnect()
               this.connect()
               this.startPublishing()
             }
