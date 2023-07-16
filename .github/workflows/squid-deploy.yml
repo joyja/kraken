@@ -16,4 +16,4 @@ jobs:
     - name: Checkout master
       uses: actions/checkout@main
     - name: Run deploy script
-      run: $GITHUB_WORKSPACE/squid/back/scripts/deploy.sh
+      run: ./scripts/deploy.sh
