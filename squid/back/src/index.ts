@@ -22,7 +22,7 @@ const PORT = 8000
 
 server.listen(PORT, async () => {
 	const system = new System()
-	system.initializeMetrics()
+	await system.initializeMetrics()
 	system.startPolling()
 	await mqtt.connect()
   console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)

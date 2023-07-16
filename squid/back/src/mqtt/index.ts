@@ -108,7 +108,7 @@ export class MQTT {
       metric!.value = value
       metric!.timestamp = getUnixTime(new Date())
     } else {
-      throw Error(`metric with name ${name} is does not exist.`)
+      throw Error(`metric with name ${name} does not exist.`)
     }
   }
   startPublishing(rate?:number) {
