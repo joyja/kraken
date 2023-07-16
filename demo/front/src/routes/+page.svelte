@@ -5,7 +5,7 @@
 	import Process from '$lib/components/Process.svelte';
 	import Gauge from '$lib/components/Gauge.svelte';
 	import Chart from '$lib/components/Chart.svelte';
-
+//test
   interface EdgeNodes { nodes: { devices:{ metrics: { name:string, value: number | string }[] }[] }[] }
 
   export let data:PageData
