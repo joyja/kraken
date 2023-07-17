@@ -105,8 +105,10 @@ export class MQTT {
       return name === metric.name
     })
     if (metric) {
-      metric!.value = value
-      metric!.timestamp = getUnixTime(new Date())
+      if (metric.value !== value) {
+        metric!.value = value
+        metric!.timestamp = getUnixTime(new Date())
+      }
     } else {
       throw Error(`metric with name ${name} does not exist.`)
     }
@@ -182,7 +184,7 @@ export class MQTT {
           name: 'Node Control/Rebirth',
           timestamp: getUnixTime(new Date()),
           type: "Boolean",
-          value: false
+          value: false,
         }
       ],
     }
