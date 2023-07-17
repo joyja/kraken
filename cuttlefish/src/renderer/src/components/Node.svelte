@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { slide } from "svelte/transition"
   import Device from "./Device.svelte"
   import Metric from "./Metric.svelte"
 
   export let node
   export let group
+  let expanded = false
   $: metrics = {
     commands: node.metrics.filter((metric) => {
       return metric.id.includes('Node Control')
@@ -31,7 +33,7 @@
 
 <div class="node">
   <div class="node__header__bar">
-    <h3 class="node__header">
+    <h3 class="node__header" class:node__header--expanded={ expanded }>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>record-circle-outline</title><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" /></svg>
       {node.id}
     </h3>
@@ -41,50 +43,59 @@
       <button class="button--primary" on:click={ () => { requestRebirth(group.id, node.id) }}>Request Rebirth</button>
     </div>
     {/if}
+    <button on:click={ () => { expanded = !expanded } }>
+      <svg class:expanded={ expanded } xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+      </svg>
+    </button>
   </div>
-  <p class="node__section-title">Metrics</p>
-  <div class="node__metrics">
-    {#if metrics.data && metrics.data.length > 0}
-      {#each metrics.data as metric}
-        <Metric { metric }/>
+  {#if expanded }
+    <div transition:slide>
+      <p class="node__section-title">Metrics</p>
+      <div class="node__metrics">
+        {#if metrics.data && metrics.data.length > 0}
+          {#each metrics.data as metric}
+            <Metric { metric }/>
+          {/each}
+        {:else}
+          <p class="no-data">No metrics received yet.</p>
+        {/if}
+      </div>
+      <div class="node__meta">
+        <div class="node__meta__group">
+          <p class="node__meta__group__title">Info</p>
+          <div class="node__meta__group__data">
+            {#if metrics.info && metrics.info.length > 0}
+              {#each metrics.info as metric}
+                <Metric metric = { {...metric, id: metric.id.replace('Node Info/','')} }/>
+              {/each}
+            {:else}
+              <p class="no-data">No metrics received yet.</p>
+            {/if}
+          </div>
+        </div>
+        <div class="node__meta__group">
+          <p class="node__meta__group__title">Commands</p>
+          <div class="node__meta__group__data">
+            {#if metrics.commands && metrics.commands.length > 0}
+              {#each metrics.commands as metric}
+                <button class="button--primary" on:click={ ()=>{ sendNodeCommand(group.id, node.id, metric.id)} }>{metric.id.replace('Node Control/','')}</button>
+              {/each}
+            {:else}
+              <p class="no-data">No metrics received yet.</p>
+            {/if}
+          </div>
+        </div>
+      </div>
+      <p class="node__section-title">Devices</p>
+      {#each node.devices as device}
+        <Device { group } { node } { device }/>
       {/each}
-    {:else}
-      <p class="no-data">No metrics received yet.</p>
-    {/if}
-  </div>
-  <div class="node__meta">
-    <div class="node__meta__group">
-      <p class="node__meta__group__title">Info</p>
-      <div class="node__meta__group__data">
-        {#if metrics.info && metrics.info.length > 0}
-          {#each metrics.info as metric}
-            <Metric metric = { {...metric, id: metric.id.replace('Node Info/','')} }/>
-          {/each}
-        {:else}
-          <p class="no-data">No metrics received yet.</p>
-        {/if}
-      </div>
+      {#each node.unbornDevices as device}
+        <Device { group } { node } { device } unborn = { true } />
+      {/each}
     </div>
-    <div class="node__meta__group">
-      <p class="node__meta__group__title">Commands</p>
-      <div class="node__meta__group__data">
-        {#if metrics.commands && metrics.commands.length > 0}
-          {#each metrics.commands as metric}
-            <button class="button--primary" on:click={ ()=>{ sendNodeCommand(group.id, node.id, metric.id)} }>{metric.id.replace('Node Control/','')}</button>
-          {/each}
-        {:else}
-          <p class="no-data">No metrics received yet.</p>
-        {/if}
-      </div>
-    </div>
-  </div>
-  <p class="node__section-title">Devices</p>
-  {#each node.devices as device}
-    <Device { group } { node } { device }/>
-  {/each}
-  {#each node.unbornDevices as device}
-    <Device { group } { node } { device } unborn = { true } />
-  {/each}
+  {/if}
 </div>
 
 <style lang="scss">
@@ -142,6 +153,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-basis: 150px;
+      flex-shrink: 0;
       & > svg {
         height: 24px;
         width: 24px;
@@ -149,6 +162,20 @@
       }
       background-color: var(--gray-300);
       &__bar {
+        & > button {
+          color: var(--teal-600);
+          background-color: transparent;
+          border: none;
+          cursor: pointer;
+          & > svg {
+            height: 24px;
+            width: 24px;
+            transition: transform .3s ease-out;
+          }
+          & > .expanded {
+            transform: rotate(90deg);
+          }
+        }
         & > div {
           margin: var(--spacing-unit);
           & > button {
@@ -165,7 +192,13 @@
       padding-bottom: calc(var(--spacing-unit)*1);
       padding-left: calc(var(--spacing-unit));
       padding-right: calc(var(--spacing-unit)*3);
-      border-bottom-right-radius: var(--rounded-md);
+      border-bottom-right-radius: 0px;
+      margin-bottom: 0px;
+      transition: all .3s ease-out;
+      &--expanded {
+        margin-bottom: calc(var(--spacing-unit));
+        border-bottom-right-radius: var(--rounded-md);
+      }
     }
   }
   button {

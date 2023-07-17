@@ -2,6 +2,7 @@
   import { slide } from "svelte/transition"
   import Group from "./components/Group.svelte";
   import Setup from "./components/Setup.svelte"
+  import Legend from "./components/Legend.svelte"
   let groups
   //@ts-ignore
   window.api.handleGroups((_event, value) => {
@@ -11,6 +12,7 @@
 
 <div class="container">
   <div><Setup /></div>
+  <Legend />
   {#if groups }
     {#each groups as group}
       <div transition:slide|global><Group { group }/></div>
@@ -37,7 +39,7 @@
       margin-bottom: var(--spacing-unit);
     }
     & > div:last-child {
-      margin-bottom:0px;
+      margin-bottom:calc(var(--spacing-unit)*3);
     }
   }
 </style>

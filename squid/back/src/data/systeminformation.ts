@@ -4,7 +4,7 @@ import { mqtt } from '../mqtt'
 interface SystemMetric {
   name: string,
   getter: Function,
-  type: 'Float'
+  type: 'Float' | 'String'
 }
 
 export class System {
@@ -12,6 +12,30 @@ export class System {
   private metrics:SystemMetric[]
   constructor() {
     this.metrics = [{
+        name: 'systemInformation/os/platform',
+        getter: async () => si.osInfo().then(data => data.platform),
+        type: 'String'
+      },{
+        name: 'systemInformation/os/distro',
+        getter: async () => si.osInfo().then(data => data.distro),
+        type: 'String'
+      },{
+        name: 'systemInformation/os/release',
+        getter: async () => si.osInfo().then(data => data.release),
+        type: 'String'
+      },{
+        name: 'systemInformation/os/arch',
+        getter: async () => si.osInfo().then(data => data.arch),
+        type: 'String'
+      },{
+        name: 'systemInformation/os/hostname',
+        getter: async () => si.osInfo().then(data => data.hostname),
+        type: 'String'
+      },{
+        name: 'systemInformation/os/fqdn',
+        getter: async () => si.osInfo().then(data => data.fqdn),
+        type: 'String'
+      },{
         name: 'systemInformation/cpu/processors',
         getter: async () => si.cpu().then(data => data.processors),
         type: 'Float'
