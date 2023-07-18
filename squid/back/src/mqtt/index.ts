@@ -1,6 +1,6 @@
 import { ISparkplugClientOptions, newClient } from 'kraken-sparkplug-client'
 import getUnixTime from 'date-fns/getUnixTime'
-import type { UPayload, UMetric } from '../../../../sparkplug-client/index'
+import type { UPayload, UMetric } from 'kraken-sparkplug-client'
 import { Log } from '../log/index'
 
 const log = new Log('MQTT')
