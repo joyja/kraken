@@ -197,19 +197,23 @@ class SparkplugBasicMetrics extends SparkplugBasic{
   }
 }
 
-interface SparkplugMetric extends NonNullable<Unpacked<UPayload['metrics']>> {}
+interface SparkplugMetric extends NonNullable<Unpacked<UPayload['metrics']>> {
+  updateCount:number
+}
 interface SparkplugMetricInit extends NonNullable<Unpacked<UPayload['metrics']>> {
   id:string,
   timestamp?:Unpacked<UPayload>['timestamp']
 }
 
 class SparkplugMetric extends SparkplugBasicMetrics {
+  public updateCount = 0
   constructor(init:SparkplugMetricInit) {
     super(init)
     Object.assign(this, { ...init, timestamp:this.timestamp })
   }
   update(update:NonNullable<Unpacked<UPayload['metrics']>>) {
-    Object.assign(this, update)
+    Object.assign(this, { ...update, })
+    this.updateCount += 1
   }
 }
 

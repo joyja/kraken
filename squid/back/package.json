@@ -16,7 +16,7 @@
     "date-fns": "^2.30.0",
     "graphql": "^16.7.1",
     "graphql-yoga": "^4.0.2",
-    "kraken-sparkplug-client": "^0.0.4",
+    "kraken-sparkplug-client": "^0.0.11",
     "sparkplug-client": "^3.2.3",
     "vitest": "^0.32.2"
   },

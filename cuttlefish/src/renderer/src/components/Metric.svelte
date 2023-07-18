@@ -12,6 +12,7 @@
 </script>
 
 <div class="metric">
+  <div class="metric__update-count">{ metric.updateCount }</div>
   <span class="metric__header">{metric.id}</span>
   {#if Object.hasOwn(metric.value,'isDefinition')}
     <button>Template</button>
@@ -25,7 +26,22 @@
   .metric {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
+    &__update-count {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--gray-600);
+      // background-color: var(--gray-400);
+      border: solid 1px var(--gray-400);
+      border-radius: var(--rounded-full);
+      padding: 2px;
+      font-size: var(--text-xs);
+      line-height: var(--text-xs-lh);
+      flex-basis: 2rem;
+      flex-shrink: 0;
+    }
     &__header {
       flex-basis: 500px;
       font-size: var(--text-sm);
@@ -42,6 +58,12 @@
       flex-basis: 500px;
       flex-shrink: 1;
       flex-grow: 1;
+    }
+    & > * {
+      margin-left: var(--spacing-unit);
+    }
+    & > *:first-child {
+      margin-left: 0px;
     }
   }
 </style>

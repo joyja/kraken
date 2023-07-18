@@ -1,6 +1,6 @@
 import { ISparkplugClientOptions, newClient } from 'kraken-sparkplug-client'
 import getUnixTime from 'date-fns/getUnixTime'
-import type { UPayload } from 'kraken-sparkplug-client'
+import type { UPayload, UMetric } from '../../../../sparkplug-client/index'
 import { Log } from '../log/index'
 
 const log = new Log('MQTT')
@@ -12,6 +12,10 @@ interface PrimaryHost {
   readyForData: boolean
   status: string
   history: UPayload
+}
+
+interface Metric extends UMetric {
+  published?:boolean
 }
 
 const getDatatype = function (value:boolean | string | number) {
@@ -35,7 +39,7 @@ export class MQTT {
   public connecting:boolean
   public connected:boolean
   public primaryHosts:PrimaryHost[]
-  public metrics:UPayload['metrics']
+  public metrics:Metric[]
   private interval?:ReturnType<typeof setInterval>
   private deviceId?:string
   private rate:number
@@ -83,7 +87,7 @@ export class MQTT {
     this.connected = false;
   }
   async publish() {
-    const metrics = this.metrics
+    const metrics = this.metrics.filter(metric => !metric.published)
     if (metrics!.length > 0) {
       const record:UPayload = {
         timestamp: getUnixTime(new Date()),
@@ -91,13 +95,17 @@ export class MQTT {
       }
       await this.client!.publishDeviceData(this.deviceId!, record)
     }
+    this.metrics?.forEach((metric) => {
+      metric.published = true
+    })
   }
   addMetric({ name, type, value }:NonNullable<Unpacked<UPayload['metrics']>>) {
     this.metrics?.push({
       name,
       type,
       value,
-      timestamp: getUnixTime(new Date())
+      timestamp: getUnixTime(new Date()),
+      published: false
     })
   }
   updateMetric({ name, value }:{ name:string, value:NonNullable<Unpacked<UPayload['metrics']>>['value'] }) {
@@ -108,6 +116,7 @@ export class MQTT {
       if (metric.value !== value) {
         metric!.value = value
         metric!.timestamp = getUnixTime(new Date())
+        metric!.published = false
       }
     } else {
       throw Error(`metric with name ${name} does not exist.`)
