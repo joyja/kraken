@@ -5,6 +5,7 @@ import path from "path"
 import resolvers from "./resolvers"
 import { System } from './data/systeminformation'
 import { mqtt } from './mqtt/index'
+import { nebula } from './nebula/index'
 
 // available when handling requests, needs to be provided by the implementor
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -23,7 +24,9 @@ const PORT = 8000
 server.listen(PORT, async () => {
 	const system = new System()
 	await system.initializeMetrics()
-	system.startPolling()
+	system.startPolling(1000)
+	await nebula.initializeMetrics()
+	nebula.startPolling(1000)
 	await mqtt.connect()
   console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
 })

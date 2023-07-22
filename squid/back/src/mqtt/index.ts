@@ -34,6 +34,45 @@ const getDatatype = function (value:boolean | string | number) {
   }
 }
 
+export interface SystemMetric {
+  name: string,
+  getter: Function,
+  type: 'Float' | 'String'
+}
+
+export class MQTTData {
+  private interval?:ReturnType<typeof setInterval>
+  private metrics:SystemMetric[]
+  constructor(metrics:SystemMetric[]) {
+    this.metrics = metrics
+  }
+  async initializeMetrics() {
+    await Promise.all(this.metrics.map(async (metric) => {
+      mqtt.addMetric({
+        name: metric.name,
+        value: await metric.getter(),
+        type: metric.type
+      })
+    }))
+  }
+  async updateMetrics() {
+    await Promise.all(this.metrics.map(async (metric) => {
+      mqtt.updateMetric({
+        name: metric.name,
+        value: await metric.getter(),
+      })
+    }))
+  }
+  async startPolling(rate?:number) {
+    this.interval = setInterval(() => {
+      this.updateMetrics()
+    }, rate)
+  }
+  async stopPolling() {
+    clearInterval(this.interval)
+  }
+}
+
 export class MQTT {
   public client?:ReturnType<typeof newClient>
   public connecting:boolean

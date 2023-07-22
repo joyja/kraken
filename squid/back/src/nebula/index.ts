@@ -9,6 +9,7 @@ import { NebulaCaCertInput, NebulaConfig, NebulaConfigInput, NebulaHostCertInput
 import { getDefaultConfig } from './defaultConfigs'
 import { exec } from 'child_process'
 import { getSystemdConfig } from './service'
+import { mqtt, MQTTData, type SystemMetric } from '../mqtt'
 
 const log = new Log('nebula')
 
@@ -83,11 +84,17 @@ class NebulaCert {
   }
 }
 
-class Nebula {
+class Nebula extends MQTTData {
   private cert:NebulaCert
   private config:NebulaConfig | null
   public isLighthouse:boolean
   constructor() {
+    const metrics:SystemMetric[] = [{
+      name: 'nebula/status',
+      getter: async () => this.getState(),
+      type: 'String'
+    }]
+    super(metrics)
     this.isLighthouse = false
     const configPath = '/etc/squid/nebula/config.yml'
     if (fs.existsSync(configPath)) {

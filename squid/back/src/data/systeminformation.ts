@@ -1,17 +1,9 @@
 import si from 'systeminformation'
-import { mqtt } from '../mqtt'
+import { mqtt, MQTTData, type SystemMetric } from '../mqtt'
 
-interface SystemMetric {
-  name: string,
-  getter: Function,
-  type: 'Float' | 'String'
-}
-
-export class System {
-  private interval?:ReturnType<typeof setInterval>
-  private metrics:SystemMetric[]
+export class System extends MQTTData {
   constructor() {
-    this.metrics = [{
+    const metrics:SystemMetric[] = [{
         name: 'systemInformation/os/platform',
         getter: async () => si.osInfo().then(data => data.platform),
         type: 'String'
@@ -64,40 +56,6 @@ export class System {
         getter: async () => si.cpuTemperature().then(data => data.main),
         type: 'Float'
     }]
-  }
-  getCpu() {
-    si.cpu()
-      .then(data => console.log(data))
-      .catch(error => console.error(error));
-  }
-  getCurrentLoad() {
-    si.currentLoad()
-    .then(data => console.log(data))
-    .catch(error => console.error(error));
-  }
-  async initializeMetrics() {
-    await Promise.all(this.metrics.map(async (metric) => {
-      mqtt.addMetric({
-        name: metric.name,
-        value: await metric.getter(),
-        type: metric.type
-      })
-    }))
-  }
-  async updateMetrics() {
-    await Promise.all(this.metrics.map(async (metric) => {
-      mqtt.updateMetric({
-        name: metric.name,
-        value: await metric.getter(),
-      })
-    }))
-  }
-  async startPolling() {
-    this.interval = setInterval(() => {
-      this.updateMetrics()
-    })
-  }
-  async stopPolling() {
-    clearInterval(this.interval)
+    super(metrics)
   }
 }

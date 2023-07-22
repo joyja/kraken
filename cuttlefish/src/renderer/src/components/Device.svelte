@@ -1,8 +1,6 @@
 <script lang="ts">
   import Metric from "./Metric.svelte"
 
-  export let group
-  export let node
   export let device
   export let unborn = false
 
