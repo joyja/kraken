@@ -19,4 +19,4 @@ jobs:
     - name: Checkout master
       uses: actions/checkout@main
     - name: Run deploy script
-      run: ./scripts/deploy.sh
+      run: ls
