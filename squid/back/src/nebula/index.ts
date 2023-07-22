@@ -93,6 +93,10 @@ class Nebula extends MQTTData {
       name: 'nebula/status',
       getter: async () => this.getState(),
       type: 'String'
+    },{
+      name: 'nebula/isLightHouse',
+      getter: async () => this.isLighthouse,
+      type: 'Boolean'
     }]
     super(metrics)
     this.isLighthouse = false

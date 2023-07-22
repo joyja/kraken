@@ -37,7 +37,7 @@ const getDatatype = function (value:boolean | string | number) {
 export interface SystemMetric {
   name: string,
   getter: Function,
-  type: 'Float' | 'String'
+  type: 'Float' | 'String' | 'Boolean'
 }
 
 export class MQTTData {
