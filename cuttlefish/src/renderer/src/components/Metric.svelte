@@ -3,7 +3,7 @@
 
   export let metric
   function parseMetricValue(value) {
-    if (typeof value === 'object' && Object.hasOwn(value, 'high') && Object.hasOwn(value, 'low') && Object.hasOwn(value, 'unsigned')) {
+    if (value && typeof value === 'object' && Object.hasOwn(value, 'high') && Object.hasOwn(value, 'low') && Object.hasOwn(value, 'unsigned')) {
       return new Long(value.low, value.high, value.unsigned).toNumber()
     } else {
       return value
@@ -14,7 +14,7 @@
 <div class="metric">
   <div class="metric__update-count">{ metric.updateCount }</div>
   <span class="metric__header">{metric.id}</span>
-  {#if Object.hasOwn(metric.value,'isDefinition')}
+  {#if metric.value && Object.hasOwn(metric.value,'isDefinition')}
     <button>Template</button>
     <!-- <pre>{ JSON.stringify(metric.value,null,4)}</pre> -->
   {:else}
