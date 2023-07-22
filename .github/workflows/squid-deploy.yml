@@ -8,7 +8,10 @@ on:
       - 'squid/back/scripts/**'
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ${{ matrix.runner }}
+      strategy:
+        matrix:
+          runner: [squid1, camophore]
     defaults:
       run:
         working-directory: ./squid/back

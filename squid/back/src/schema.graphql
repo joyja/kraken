@@ -1,3 +1,23 @@
+input LighthouseInput {
+	nebulaIp:String!
+  publicEndpoint:String!
+}
+
+input InstallNebulaInput {
+	isLighhouse: Boolean!
+	lighthouse: LighthouseInput
+	version: String!
+}
+
+type Nebula {
+	state: String!
+}
+
 type Query {
 	info: String!
+	nebulaStatus: Nebula!
+}
+
+type Mutation {
+	installNebula(input: InstallNebulaInput!): String!
 }
