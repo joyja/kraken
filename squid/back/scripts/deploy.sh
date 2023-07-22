@@ -1,4 +1,4 @@
-env | grep PATH
+which pnpm
 # pnpm install
 # pnpm build
 # pnpm prune --prod
