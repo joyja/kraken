@@ -1,9 +1,9 @@
 import si from 'systeminformation'
-import { mqtt, MQTTData, type SystemMetric } from '../mqtt'
+import { mqtt, MQTTData, type MqttDataMetric } from '../mqtt'
 
 export class System extends MQTTData {
   constructor() {
-    const metrics:SystemMetric[] = [{
+    const metrics:MqttDataMetric[] = [{
         name: 'systemInformation/os/platform',
         getter: async () => si.osInfo().then(data => data.platform),
         type: 'String'

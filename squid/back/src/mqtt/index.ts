@@ -34,17 +34,30 @@ const getDatatype = function (value:boolean | string | number) {
   }
 }
 
-export interface SystemMetric {
+export type MqttDataMetricDatatype = 'Float' | 'String' | 'Boolean'
+
+export interface MqttDataMetric {
   name: string,
   getter: Function,
-  type: 'Float' | 'String' | 'Boolean'
+  type:MqttDataMetricDatatype
+}
+
+export interface MqttDataDeviceControl {
+  name: string,
+  action: Function,
+  args: {
+    name: string,
+    type: MqttDataMetricDatatype
+  }[]
 }
 
 export class MQTTData {
   private interval?:ReturnType<typeof setInterval>
-  private metrics:SystemMetric[]
-  constructor(metrics:SystemMetric[]) {
+  private metrics:MqttDataMetric[]
+  private deviceControl?:MqttDataDeviceControl[]
+  constructor(metrics:MqttDataMetric[], deviceControl?:MqttDataDeviceControl[]) {
     this.metrics = metrics
+    this.deviceControl = deviceControl
   }
   async initializeMetrics() {
     await Promise.all(this.metrics.map(async (metric) => {
@@ -54,6 +67,15 @@ export class MQTTData {
         type: metric.type
       })
     }))
+    if(this.deviceControl) {
+      await Promise.all(this.deviceControl?.map(async (control) => {
+        mqtt.addMetric({
+          name: `Device Control/${control.name}`,
+          value: control.args && control.args.length > 0 ? JSON.stringify(control.args) : false,
+          type: control.args && control.args.length > 0 ? 'String' : 'Boolean'
+        })
+      }))
+    }
   }
   async updateMetrics() {
     await Promise.all(this.metrics.map(async (metric) => {
@@ -193,6 +215,10 @@ export class MQTT {
         } catch (error) {
           log.error(log.getErrorMessage(error))
         }
+      })
+      this.client.on('dcmd', async (deviceId, payload) => {
+        console.log(deviceId)
+        console.log(payload)
       })
       this.client.on('ncmd', async (payload:UPayload) => {
         if (payload.metrics) {

@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { fade } from "svelte/transition"
   import Metric from "./Metric.svelte"
 
   export let device
   export let unborn = false
+  export let showDcmdModal = false
+  let currentCommand
 
   $: metrics = {
     commands: device.metrics.filter((metric) => {
@@ -11,6 +14,20 @@
     data: device.metrics.filter((metric) => {
       return !metric.id.includes('Device Control')
     })
+  }
+  function showModal(command:any) {
+    currentCommand = command
+    if (command.type === 'Boolean') {
+      sendDcmd()
+    } else {
+      showDcmdModal = true
+    }
+  }
+  function hideModal() {
+    showDcmdModal = false
+  }
+  function sendDcmd() {
+    console.log('sendDcmd')
   }
 </script>
 
@@ -24,7 +41,7 @@
   </div>
   <div class="device__commands">
     {#each metrics.commands as metric}
-      <button class="button--primary">{ metric.id.replace('Device Control/','') }</button>
+      <button class="button--primary" on:click={ () => { showModal(metric) } }>{ metric.id.replace('Device Control/','') }</button>
     {/each}
   </div>
   <div class="device__metrics">
@@ -35,8 +52,67 @@
     {/each}
   </div>
 </div>
+{#if showDcmdModal}
+<div transition:fade={{ duration:100 }} class="dcmd-modal">
+  <div>
+    <!-- <pre>{ JSON.stringify(currentCommand,null,2) }</pre> -->
+    <h4>{ currentCommand.id.replace('Device Control/','') }</h4>
+    {#each JSON.parse(currentCommand.value) as argument}
+      {#if argument.type === 'Boolean'}
+        <label class="toggle" for={ `dcmd-${argument.name}` }>
+          <div class="switch">
+            <input id={ `dcmd-${argument.name}` } name={ `dcmd-${argument.name}` } type="checkbox"/>
+            <span class="slider round"></span>
+          </div>
+          <span>{ argument.name }</span>
+        </label>
+      {:else }
+        <div class="field">
+          <label for={ `dcmd-${argument.name}` }>{ argument.name }</label>
+          <input id={ `dcmd-${argument.name}` } name={ `dcmd-${argument.name}` } type="text"/>
+        </div>
+      {/if}
+    {/each}
+    <button class="button--primary" on:click={ sendDcmd }>Run Command</button>
+    <button class="button--secondary" on:click={ hideModal }>Cancel</button>
+  </div>
+</div>
+{/if}
 
 <style lang="scss">
+  .dcmd-modal {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 10;
+    &.active {
+      pointer-events: all;
+      background-color: var(--gray-900);
+    }
+    & > div {
+      background-color: var(--white);
+      border-radius: var(--rounded-md);
+      padding: calc(var(--spacing-unit)*3);
+      display: flex;
+      flex-direction: column;
+      & > * {
+        margin-bottom: calc(var(--spacing-unit)*2);
+      }
+      & > *:last-child {
+        margin-bottom: 0px;
+      }
+      & > .field {
+        display:flex;
+        flex-direction: column;
+      }
+    }
+  }
   .device {
     background-color: var(--white);
     margin-left: calc(var(--spacing-unit)*3); 
@@ -86,18 +162,5 @@
         background-color: var(--gray-200);
       }
     }
-  }
-  button {
-    cursor: pointer;
-    border: none;
-    color: white;
-    border-radius: var(--rounded-md);
-    padding: calc(var(--spacing-unit) * 1);
-  }
-  .button--primary {
-    background-color: var(--teal-600);
-  }
-  .button--primary:hover {
-    background-color: var(--teal-700);
   }
 </style>

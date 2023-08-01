@@ -748,6 +748,17 @@ class SparkplugHost extends events.EventEmitter {
         this.messageAlert("published", topic, payload);
     }
 
+    // Publishes Node Data messages for the edge node
+    publishDeviceCommand(groupId:string, nodeId:string, deviceId:string, payload: UPayload, options?: PayloadOptions) {
+        let topic = this.version + "/" + groupId + "/DCMD/" + nodeId + "/" + deviceId;
+        // Add seq number
+        this.addSeqNumber(payload);
+        // Publish
+        logger.info("Publishing DCMD");
+        this.client!.publish(topic, Buffer.from(this.encodePayload(this.maybeCompressPayload(payload, options))));
+        this.messageAlert("published", topic, payload);
+    }
+
     stop() {
         this.publishHostOffline()
         this.client?.end()

@@ -9,7 +9,7 @@ import { NebulaCaCertInput, NebulaConfig, NebulaConfigInput, NebulaHostCertInput
 import { getDefaultConfig } from './defaultConfigs'
 import { exec } from 'child_process'
 import { getSystemdConfig } from './service'
-import { mqtt, MQTTData, type SystemMetric } from '../mqtt'
+import { mqtt, MQTTData, MqttDataDeviceControl, type MqttDataMetric } from '../mqtt'
 
 const log = new Log('nebula')
 
@@ -89,7 +89,7 @@ class Nebula extends MQTTData {
   private config:NebulaConfig | null
   public isLighthouse:boolean
   constructor() {
-    const metrics:SystemMetric[] = [{
+    const metrics:MqttDataMetric[] = [{
       name: 'nebula/status',
       getter: async () => this.getState(),
       type: 'String'
@@ -98,7 +98,18 @@ class Nebula extends MQTTData {
       getter: async () => this.isLighthouse,
       type: 'Boolean'
     }]
-    super(metrics)
+    const deviceControl:MqttDataDeviceControl[] = [{
+      name: 'nebula/install',
+      action: () => { console.log('Do the install') },
+      args: [{
+        name: 'argument1',
+        type: 'Boolean'
+      },{
+        name: 'argument2',
+        type: 'String'
+      }]
+    }]
+    super(metrics, deviceControl)
     this.isLighthouse = false
     const configPath = '/etc/squid/nebula/config.yml'
     if (fs.existsSync(configPath)) {
