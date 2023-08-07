@@ -89,10 +89,10 @@
       </div>
       <p class="node__section-title">Devices</p>
       {#each node.devices as device}
-        <Device { device }/>
+        <Device {group} {node} { device }/>
       {/each}
       {#each node.unbornDevices as device}
-        <Device { device } unborn = { true } />
+        <Device {group} {node} { device } unborn = { true } />
       {/each}
     </div>
   {/if}

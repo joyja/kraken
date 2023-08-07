@@ -21,8 +21,6 @@
 		"@sveltejs/kit": "^1.20.4",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
-		"chart.js": "^4.3.0",
-		"chartjs-adapter-date-fns": "^3.0.0",
 		"date-fns": "^2.30.0",
 		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
@@ -38,8 +36,13 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@carbon/charts-svelte": "^1.11.17",
+		"@carbon/styles": "^1.35.0",
 		"@fontsource/open-sans": "^5.0.5",
 		"@fontsource/oswald": "^5.0.5",
+		"d3": "^7.8.5",
+		"d3-cloud": "^1.2.5",
+		"d3-sankey": "^0.12.3",
 		"gsap": "^3.12.2",
 		"sass": "^1.63.6"
 	}

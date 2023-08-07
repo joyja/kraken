@@ -1,13 +1,18 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
-	import type { PageData } from './$types';
-	import { invalidateAll } from '$app/navigation';
-	import Process from '$lib/components/Process.svelte';
-	import Gauge from '$lib/components/Gauge.svelte';
-	import Chart from '$lib/components/Chart.svelte';
+  import '@carbon/styles/css/styles.css'
+	import '@carbon/charts-svelte/styles.css'
+	import { LineChart } from '@carbon/charts-svelte'
+	import { onDestroy, onMount } from 'svelte'
+	import type { PageData } from './$types'
+	import { invalidateAll } from '$app/navigation'
+	import Process from '$lib/components/Process.svelte'
+	import Gauge from '$lib/components/Gauge.svelte'
+  import fromUnixTime from 'date-fns/fromUnixTime'
+  import format from 'date-fns/format'
   
   export let data:PageData
   $: edgeNodes = data
+  $: history = [...getHistory(edgeNodes, 'inletFlow'), ...getHistory(edgeNodes, 'Level'), ...getHistory(edgeNodes, 'outletFlow')]
   let interval:ReturnType<typeof setInterval>
   
   function getBooleanMetric(edgeNodes:{ nodes:EdgeNode[] }, name:string, defaultValue:boolean) {
@@ -27,7 +32,19 @@
       return defaultValue
     }
   }
-  
+  function getHistory(data:EdgeNodes, name:string) {
+    return data.nodes[0]?.devices[0]?.metrics?.find(
+      (metric) => metric.name === name
+    )?.history?.sort((a, b) => {
+      return a.timestamp - b.timestamp
+    }).map((row) => {
+      return {
+        group: name,
+        value: parseFloat(row.value),
+        time: fromUnixTime(row.timestamp),
+      }
+    })
+  }
   $: inletFlow = getAnalogMetric(edgeNodes, 'inletFlow', 0)
   $: tankLevel = getAnalogMetric(edgeNodes, 'Level', 0)
   $: outletFlow = getAnalogMetric(edgeNodes, 'outletFlow', 0)
@@ -47,17 +64,52 @@
     <div class="process">
       <a class="grafana-logo" target="_blank" href="https://grafana.demo.jarautomation.io/d/6QhDO2Knz/jar-automation-demo?orgId=2&refresh=5s">
         <img alt="Grafana Logo" src="https://grafana.demo.jarautomation.io/public/img/grafana_icon.svg" />
-        <span>View in Grafana</span>
+        <span style="color:black;">View in Grafana</span>
       </a>
       <Process { edgeNodes } />
     </div>
     <div class="values">
-      <div><p>Inlet Flow</p><Gauge color="black" max={120} value={ inletFlow } width={ 15 } rotate={ 90 }/></div>
-      <div><p>Tank Level</p><Gauge color="black" max={100} value={ tankLevel } width={ 15 } rotate={ 90 }/></div>
-      <div><p>Outlet Flow</p><Gauge color="black" max={120} value={ outletFlow } width={ 15 } rotate={ 90 }/></div>
+      <div><p>Inlet Flow</p><Gauge color="var(--blue-900)" max={120} value={ inletFlow } width={ 15 } rotate={ 90 }/></div>
+      <div><p>Tank Level</p><Gauge color="var(--blue-600)" max={100} value={ tankLevel } width={ 15 } rotate={ 90 }/></div>
+      <div><p>Outlet Flow</p><Gauge color="var(--blue-300)" max={120} value={ outletFlow } width={ 15 } rotate={ 90 }/></div>
     </div>
-    <div class="chart"><Chart { edgeNodes }/></div>
+    <!-- <pre>{ JSON.stringify(history,null,2)}</pre> -->
+    <LineChart
+        data={history}
+        options={{
+          title: "NOX",
+          axes: {
+            bottom: {
+              ticks: {
+                formatter: (tick, i) => format(tick,'MM/dd/yy HH:mm'),
+                number: 8,
+              },
+              mapsTo: "time",
+              scaleType: "time"
+            },
+            left: {
+              mapsTo: "value",
+              title: "Flow/Level",
+              scaleType: "linear"
+            }
+          },
+          points: {
+            enabled: true,
+            filled: true,
+            radius: 3
+          },
+          color: {
+            scale: {
+              "inletFlow": "var(--blue-900)",
+              "Level": "var(--blue-600)",
+              "outletFlow": "var(--blue-300)"
+            }
+          },
+          height: "300px",
+          theme: "white"
+        }} />
   </div>
+  <!-- <div class="chart"><Chart { edgeNodes }/></div> -->
 </div>
 <!-- <pre>{ JSON.stringify(data,null,4) }</pre> -->
 

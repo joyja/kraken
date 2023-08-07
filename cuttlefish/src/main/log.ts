@@ -34,7 +34,7 @@ export class Log {
   public level:LogLevel
   public context?:string
   constructor(context?:string) {
-    this.level = process.env.CUTTLEFISH_LOGLEVEL ? process.env.CUTTLEFISH_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.info : LogLevel.warn
+    this.level = process.env.CUTTLEFISH_LOGLEVEL ? process.env.CUTTLEFISH_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.warn : LogLevel.warn
     this.context = context
   }
   debug(message:string) {

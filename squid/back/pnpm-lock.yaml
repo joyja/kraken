@@ -21,8 +21,8 @@ dependencies:
     specifier: ^4.1.0
     version: 4.1.0
   kraken-sparkplug-client:
-    specifier: ^0.0.11
-    version: 0.0.11
+    specifier: ^0.0.12
+    version: 0.0.12
   octokit:
     specifier: ^3.0.0
     version: 3.0.0
@@ -1370,8 +1370,8 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /kraken-sparkplug-client@0.0.11:
-    resolution: {integrity: sha512-QwqKcG0YjkmhwozsH/+kUx3Vvn+2WYgXc/U1TWTZ3Mqaf7+rBAwtRSuhW0rRI5JMWx8i3Od0mCjuck2xsv/6WQ==}
+  /kraken-sparkplug-client@0.0.12:
+    resolution: {integrity: sha512-IhvUSBEAJsN3ZwFdh3Q9tbx5cPpHbqFwSg6nki7GcsXXKq+OGv2kkWOI3wHW/HOSRgIhlKYeLfYN4YrXWQWxbA==}
     dependencies:
       debug: 4.3.4
       mqtt: 4.3.7

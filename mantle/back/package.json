@@ -1,0 +1,23 @@
+{
+  "name": "back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "MANTLE_LOGLEVEL=DEBUG NODE_ENV=development ts-node-dev --exit-child --respawn src/index.ts",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "graphql": "^16.7.1",
+    "graphql-yoga": "^4.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  }
+}

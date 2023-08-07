@@ -16,6 +16,7 @@ interface PrimaryHost {
 
 interface Metric extends UMetric {
   published?:boolean
+  action?:Function
 }
 
 const getDatatype = function (value:boolean | string | number) {
@@ -72,7 +73,8 @@ export class MQTTData {
         mqtt.addMetric({
           name: `Device Control/${control.name}`,
           value: control.args && control.args.length > 0 ? JSON.stringify(control.args) : false,
-          type: control.args && control.args.length > 0 ? 'String' : 'Boolean'
+          type: control.args && control.args.length > 0 ? 'String' : 'Boolean',
+          action: control.action
         })
       }))
     }
@@ -160,13 +162,14 @@ export class MQTT {
       metric.published = true
     })
   }
-  addMetric({ name, type, value }:NonNullable<Unpacked<UPayload['metrics']>>) {
+  addMetric({ name, type, value, action }:Metric) {
     this.metrics?.push({
       name,
       type,
       value,
       timestamp: getUnixTime(new Date()),
-      published: false
+      published: false,
+      action
     })
   }
   updateMetric({ name, value }:{ name:string, value:NonNullable<Unpacked<UPayload['metrics']>>['value'] }) {
@@ -211,14 +214,25 @@ export class MQTT {
       this.client.on('dcmd', (deviceId, payload) => {
         log.info(`Mqtt service received a dcmd for ${deviceId}.`)
         try {
-          this.onDcmd(payload)
+          if (this.deviceId === deviceId) {
+            if (payload.metrics) {
+              payload.metrics.forEach((payloadMetric) => {
+                const deviceCommand = this.metrics.find((metric) => {
+                  return metric.name === payloadMetric.name
+                })
+                if (deviceCommand?.action) {
+                  if (deviceCommand.type === 'Boolean') {
+                    deviceCommand.action()
+                  } else {
+                    deviceCommand.action(JSON.parse(payloadMetric.value as string))
+                  }
+                }
+              })
+            }
+          }
         } catch (error) {
           log.error(log.getErrorMessage(error))
         }
-      })
-      this.client.on('dcmd', async (deviceId, payload) => {
-        console.log(deviceId)
-        console.log(payload)
       })
       this.client.on('ncmd', async (payload:UPayload) => {
         if (payload.metrics) {
@@ -296,9 +310,6 @@ export class MQTT {
   async onReconnect() {
     this.stopPublishing()
     this.startPublishing()
-  }
-  onDcmd(payload:UPayload) {
-    //TODO: add dcmd logic.
   }
 }
 

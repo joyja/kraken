@@ -91,6 +91,10 @@ function createWindow(): void {
     spdata.sendNodeCommand({ groupId, nodeId, metricId, value })
   })
 
+  ipcMain.on('sendDeviceCommand', (_event, { groupId, nodeId, deviceId, metricId, value }) => {
+    spdata.sendDeviceCommand({ groupId, nodeId, deviceId, metricId, value })
+  })
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
@@ -510,6 +514,21 @@ class SparkplugData extends events.EventEmitter {
         }]
       }
       this.client?.publishNodeCommand(groupId, nodeId, payload)
+    }
+  }
+  sendDeviceCommand({ groupId, nodeId, deviceId, metricId, value }:{ groupId:string, nodeId:string, deviceId:string, metricId:string, value:any }) {
+    // console.log(`group ${groupId}`, `node ${nodeId}`, `device ${deviceId}`, `metric ${metricId}`)
+    const metric = this.getGroup(groupId)?.getNode(nodeId)?.getDevice(deviceId)?.getMetric(metricId)
+    console.log(value)
+    if (metric) {
+      const payload:UPayload = {
+        timestamp: new Date().getTime(),
+        metrics: [{
+          ...metric,
+          value: JSON.stringify(value)
+        }]
+      }
+      this.client?.publishDeviceCommand(groupId, nodeId, deviceId, payload)
     }
   }
 }
