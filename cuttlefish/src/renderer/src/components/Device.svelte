@@ -1,7 +1,10 @@
 <script lang="ts">
   import { fade } from "svelte/transition"
   import Metric from "./Metric.svelte"
+  import { onMount } from "svelte"
 
+  export let group
+  export let node
   export let device
   export let unborn = false
   export let showDcmdModal = false
@@ -18,17 +21,46 @@
   function showModal(command:any) {
     currentCommand = command
     if (command.type === 'Boolean') {
-      sendDcmd()
+      sendDcmd(true)
     } else {
       showDcmdModal = true
-    }
+    } 
   }
   function hideModal() {
     showDcmdModal = false
   }
-  function sendDcmd() {
-    console.log('sendDcmd')
+  function sendDcmd(value:any) {
+    console.log(group)
+    //@ts-ignore
+    window.api.sendDeviceCommand(group.id, node.id, device.id, currentCommand.id, value)
   }
+  function handleSubmit(e) {
+    const formData = new FormData(e.target)
+    const params = {}
+    //set boolean values to false as default
+    JSON.parse(currentCommand.value).forEach((param) => {
+      if( param.type === 'Boolean' ) {
+        params[param.name] = false
+      }
+    })
+    //set values to form data
+    for (var [key, value] of formData.entries()) { 
+      JSON.parse(currentCommand.value).forEach((param) => {
+        const name = key.replace('dcmd-','')
+        if (param.name === name) {
+          if (param.type === `Boolean`) {
+            params[name] = value === 'on'
+          } else {
+            params[name] = value
+          }
+        }
+      })
+    }
+    sendDcmd(params)
+  }
+  onMount(() => {
+    console.log(device)
+  })
 </script>
 
 <div class="device">
@@ -54,8 +86,7 @@
 </div>
 {#if showDcmdModal}
 <div transition:fade={{ duration:100 }} class="dcmd-modal">
-  <div>
-    <!-- <pre>{ JSON.stringify(currentCommand,null,2) }</pre> -->
+  <form id="dcmd-form" on:submit|preventDefault={ handleSubmit }>
     <h4>{ currentCommand.id.replace('Device Control/','') }</h4>
     {#each JSON.parse(currentCommand.value) as argument}
       {#if argument.type === 'Boolean'}
@@ -73,9 +104,9 @@
         </div>
       {/if}
     {/each}
-    <button class="button--primary" on:click={ sendDcmd }>Run Command</button>
+    <button class="button--primary" type="submit">Run Command</button>
     <button class="button--secondary" on:click={ hideModal }>Cancel</button>
-  </div>
+  </form>
 </div>
 {/if}
 
@@ -91,11 +122,7 @@
     height: 100%;
     background-color: rgba(0,0,0,0.5);
     z-index: 10;
-    &.active {
-      pointer-events: all;
-      background-color: var(--gray-900);
-    }
-    & > div {
+    & > form {
       background-color: var(--white);
       border-radius: var(--rounded-md);
       padding: calc(var(--spacing-unit)*3);

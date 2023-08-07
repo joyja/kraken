@@ -100,7 +100,7 @@ class Nebula extends MQTTData {
     }]
     const deviceControl:MqttDataDeviceControl[] = [{
       name: 'nebula/install',
-      action: () => { console.log('Do the install') },
+      action: (args:any) => { console.log(args) },
       args: [{
         name: 'argument1',
         type: 'Boolean'
