@@ -38,7 +38,7 @@ export class Log {
   public level:LogLevel
   public context:string
   constructor(context:string) {
-    this.level = process.env.JOYCOMMERCE_LOGLEVEL ? process.env.JOYCOMMERCE_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.info : LogLevel.warn
+    this.level = process.env.MANTLE_LOGLEVEL ? process.env.MANTLE_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.info : LogLevel.warn
     this.context = context
   }
   debug(message:string) {

@@ -1,0 +1,41 @@
+scalar Date
+
+type SparkplugMetricHistory {
+  value: String!
+  timestamp: Date!
+}
+
+type SparkplugMetric {
+  id: String!
+  updateCount: Int!
+  updatedOn: Date!
+  type: String!
+  value: String
+  history: [SparkplugMetricHistory!]!
+}
+
+type SparkplugDevice {
+  id: String!
+  updatedOn: Date!
+  metrics: [SparkplugMetric!]!
+}
+
+type SparkplugNode {
+  id: String!
+  updatedOn: Date!
+  devices: [SparkplugDevice!]!
+  unbornDevices: [SparkplugDevice!]!
+}
+
+type SparkplugGroup {
+  id: String!
+  updatedOn: Date!
+  nodes: [SparkplugNode!]!
+  unbornNodes: [SparkplugNode!]!
+}
+
+"""Read only queries"""
+type Query {
+  info: String!
+  groups: [SparkplugGroup!]!
+}
