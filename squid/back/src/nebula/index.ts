@@ -51,15 +51,15 @@ class NebulaCert {
   generateHostCertificate({ isOwn, name, nebulaIp, groups }:NebulaHostCertInput) {
     return new Promise<void>((resolve, reject) => {
       const certName = isOwn ? 'host' : name
-      exec(`nebula-cert sign -name ${name} -ip ${nebulaIp} -groups ${groups.join(',')} -out-crt /etc/squid/nebula/${certName}.crt -out-key /etc/squid/nebula/${certName}.key -out-qr /etc/squid/nebula/${certName}.png`, (err, stdout, stderr) => {
+      exec(`nebula-cert sign -ca-crt /etc/squid/nebula/ca.crt -ca-key /etc/squid/nebula/ca.key -name ${name} -ip ${nebulaIp} -groups ${groups.join(',')} -out-crt /etc/squid/nebula/${certName}.crt -out-key /etc/squid/nebula/${certName}.key -out-qr /etc/squid/nebula/${certName}.png`, (err, stdout, stderr) => {
         if (err 
           || !fs.existsSync(`/etc/squid/nebula/${certName}.crt`) 
           || !fs.existsSync(`/etc/squid/nebula/${certName}.key`) 
           || !fs.existsSync(`/etc/squid/nebula/${certName}.png`)
         ) {
-          reject(`Error generating ca certificate. Error: ${ err ? JSON.stringify(err,null,2) : 'Missing some ca files.'}`)
+          reject(`Error generating host certificate. Error: ${ err ? JSON.stringify(err,null,2) : 'Missing some host files.'}`)
         } else {
-          log.info(`Successfully generated ca certificate.`)
+          log.info(`Successfully generated host certificate.`)
           resolve()
         }
       })
@@ -76,8 +76,11 @@ class NebulaCert {
       return 'installed and certified'
     }
   }
-  get hasCaCertificate() {
+  get hasLighthouseCaCertificate() {
     return fs.existsSync('/etc/squid/nebula/ca.crt') && fs.existsSync('/etc/squid/nebula/ca.key') && fs.existsSync('/etc/squid/nebula/ca.png')
+  }
+  get hasCaCertificate() {
+    return fs.existsSync('/etc/squid/nebula/ca.crt')
   }
   get hasHostCertificate() {
     return fs.existsSync(`/etc/squid/nebula/host.crt`) && fs.existsSync(`/etc/squid/nebula/host.key`) && fs.existsSync(`/etc/squid/nebula/host.png`)
@@ -100,12 +103,19 @@ class Nebula extends MQTTData {
     }]
     const deviceControl:MqttDataDeviceControl[] = [{
       name: 'nebula/install',
-      action: (args:any) => { console.log(args) },
+      action: (args:any) => { this.install(args) },
       args: [{
-        name: 'argument1',
+        name: 'isLighthouse',
         type: 'Boolean'
       },{
-        name: 'argument2',
+        name: 'lighthouseNebulaIp',
+        type: 'String'
+      },{
+        name: 'lighthousePublicEndpoint',
+        type: 'String'
+      }
+      ,{
+        name: 'version',
         type: 'String'
       }]
     }]
@@ -127,8 +137,12 @@ class Nebula extends MQTTData {
       return data
     })
   }
-  async install({ isLighthouse, lighthouse, version }:NebulaInstallInput) {
+  async install({ isLighthouse, lighthouseNebulaIp, lighthousePublicEndpoint, version }:NebulaInstallInput) {
     //Fetch the release information from the github api
+    const lighthouse = {
+      nebulaIp: lighthouseNebulaIp,
+      publicEndpoint: lighthousePublicEndpoint
+    }
     if (!this.isInstalled) {
       const downloadUrl = await this.fetchReleases()
       .then((releases) => {
@@ -161,6 +175,7 @@ class Nebula extends MQTTData {
       if (isLighthouse) {
         await this.generateCaCertificate({ name: 'Squid' })
         this.isLighthouse = true
+        await this.installService()
       }
     } else {
       throw Error('Nebula is already installed.')
@@ -170,6 +185,7 @@ class Nebula extends MQTTData {
     if (!this.isConfigured) {
       this.config = getDefaultConfig({ isLighthouse, lighthouse })
       const configYaml = yaml.dump(this.config)
+      fs.mkdirSync('/etc/squid/nebula', { recursive: true })
       fs.writeFileSync('/etc/squid/nebula/config.yml', configYaml)
       if (fs.existsSync('/etc/squid/nebula/config.yml')) {
         log.info('Nebula was successfully configured.')

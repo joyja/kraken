@@ -8,7 +8,7 @@ const api = {
   sendNodeCommand: (groupId, nodeId, metricId, value) => ipcRenderer.send('sendNodeCommand', { groupId, nodeId, metricId, value }),
   sendDeviceCommand: (groupId, nodeId, deviceId, metricId, value) => ipcRenderer.send('sendDeviceCommand', { groupId, nodeId, deviceId, metricId, value }),
   getConnections: () => ipcRenderer.invoke('getConnections'),
-  addConnection: (connection) => ipcRenderer.send('adIddConnection', connection),
+  addConnection: (connection) => ipcRenderer.send('addConnection', connection),
   selectConnection: (id) => ipcRenderer.send('selectConnection', id),
   deleteConnection: (id) => ipcRenderer.send('deleteConnection', id)
 }

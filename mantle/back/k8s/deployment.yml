@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mantle
+  name: mantle
+  namespace: kraken-demo
+spec:
+  selector:
+    matchLabels:
+      app: mantle
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mantle
+    spec:
+      containers:
+      - image: <IMAGE>
+        name: mantle
+        imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: mantle-creds

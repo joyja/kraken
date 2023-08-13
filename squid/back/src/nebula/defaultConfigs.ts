@@ -1,8 +1,8 @@
 import type { NebulaConfig, NebulaConfigInput } from './types.d.ts'
 
 export function getDefaultConfig({ isLighthouse, lighthouse }:NebulaConfigInput):NebulaConfig {
-  if (isLighthouse || !lighthouse || !lighthouse?.nebulaIp || !lighthouse?.publicEndpoint) {
-    throw Error(`Lighthouse config is required when isLighthouse is true. Got: ${JSON.stringify({ isLighthouse, lighthouse }), null, 2}.`)
+  if (!lighthouse || !lighthouse?.nebulaIp || !lighthouse?.publicEndpoint) {
+    throw Error(`Lighthouse config is required. Got: ${JSON.stringify({ isLighthouse, lighthouse }), null, 2}.`)
   }
   return {
     "pki": {

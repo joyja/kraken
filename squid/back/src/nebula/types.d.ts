@@ -87,7 +87,10 @@ export interface NebulaConfigInput {
   }
 }
 
-export interface NebulaInstallInput extends NebulaConfigInput{
+export interface NebulaInstallInput {
+  isLighthouse:boolean
+  lighthouseNebulaIp:string
+  lighthousePublicEndpoint:string
   version:string
 }
 
