@@ -7,7 +7,7 @@ import { System } from './data/systeminformation'
 import { mqtt } from './mqtt/index'
 import { nebula } from './nebula/index'
 
-// available when handling requests, needs to be provided by the implementor
+// available when handling requests, needs to be provided by the implementor ()
 // eslint-disable-next-line @typescript-eslint/ban-types
 type ServerContext = {}
 
