@@ -8,7 +8,7 @@ on:
       - 'mantle/back/scripts/**'
 jobs:
   build:
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matix.runner }}
     strategy:
       matrix:
         runner: [squid1, camophore]
