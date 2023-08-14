@@ -5,11 +5,12 @@ import tar from 'tar-fs'
 import gunzip from 'gunzip-maybe'
 import stream from 'stream'
 import { Log } from '../log'
-import { NebulaCaCertInput, NebulaConfig, NebulaConfigInput, NebulaHostCertInput, NebulaInstallInput } from './types'
+import { NebulaCaCertInput, NebulaConfig, NebulaConfigInput, NebulaHostCertInput, NebulaInstallInput, NebulaReceiveCertInput, NebulaSendCertInput } from './types'
 import { getDefaultConfig } from './defaultConfigs'
 import { exec } from 'child_process'
 import { getSystemdConfig } from './service'
 import { mqtt, MQTTData, MqttDataDeviceControl, type MqttDataMetric } from '../mqtt'
+import { UPayload } from 'kraken-sparkplug-client'
 
 const log = new Log('nebula')
 
@@ -51,7 +52,7 @@ class NebulaCert {
   generateHostCertificate({ isOwn, name, nebulaIp, groups }:NebulaHostCertInput) {
     return new Promise<void>((resolve, reject) => {
       const certName = isOwn ? 'host' : name
-      exec(`nebula-cert sign -ca-crt /etc/squid/nebula/ca.crt -ca-key /etc/squid/nebula/ca.key -name ${name} -ip ${nebulaIp} -groups ${groups.join(',')} -out-crt /etc/squid/nebula/${certName}.crt -out-key /etc/squid/nebula/${certName}.key -out-qr /etc/squid/nebula/${certName}.png`, (err, stdout, stderr) => {
+      exec(`nebula-cert sign -ca-crt /etc/squid/nebula/ca.crt -ca-key /etc/squid/nebula/ca.key -name ${name} -ip ${nebulaIp} ${groups ? `-groups ${groups.join(',')}` : '' } -out-crt /etc/squid/nebula/${certName}.crt -out-key /etc/squid/nebula/${certName}.key -out-qr /etc/squid/nebula/${certName}.png`, (err, stdout, stderr) => {
         if (err 
           || !fs.existsSync(`/etc/squid/nebula/${certName}.crt`) 
           || !fs.existsSync(`/etc/squid/nebula/${certName}.key`) 
@@ -59,10 +60,51 @@ class NebulaCert {
         ) {
           reject(`Error generating host certificate. Error: ${ err ? JSON.stringify(err,null,2) : 'Missing some host files.'}`)
         } else {
-          log.info(`Successfully generated host certificate.`)
+          log.info(`Successfully generated host certificate, ${certName}.crt.`)
           resolve()
         }
       })
+    })
+  }
+  sendCert({ groupId, nodeId, deviceId, name, nebulaIp, groups }:NebulaSendCertInput) {
+    return new Promise<void>(async (resolve, reject) => {
+      await this.generateHostCertificate({ isOwn: false, name, nebulaIp, groups })
+      const payload:UPayload = {
+        metrics: [{
+          name: 'nebula/applyCertificate',
+          type: 'String',
+          value: JSON.stringify({
+            ca: fs.readFileSync('/etc/squid/nebula/ca.crt').toString(),
+            host: fs.readFileSync(`/etc/squid/nebula/${name}.crt`).toString(),
+            key: fs.readFileSync(`/etc/squid/nebula/${name}.key`).toString(),
+          })
+        }]
+      }
+      await mqtt.sendDeviceCommand({ groupId, nodeId, deviceId, payload })
+    })
+  }
+  requestCert({ groupId, nodeId, deviceId, name, nebulaIp, groups }:NebulaSendCertInput) {
+    return new Promise<void>(async (resolve, reject) => {
+      const payload:UPayload = {
+        metrics: [{
+          name: 'nebula/requestCertificate',
+          type: 'String',
+          value: JSON.stringify({
+            name,
+            nebulaIp,
+            groups
+          })
+        }]
+      }
+      await mqtt.sendDeviceCommand({ groupId, nodeId, deviceId, payload })
+    })
+  }
+  receiveCert({ ca, cert, key }:NebulaReceiveCertInput) {
+    return new Promise<void>((resolve, reject) => {
+      fs.writeFileSync('/etc/squid/nebula/ca.crt', ca)
+      fs.writeFileSync(`/etc/squid/nebula/cert.crt`, cert)
+      fs.writeFileSync(`/etc/squid/nebula/host.key`, key)
+      resolve()
     })
   }
   state() {
@@ -113,9 +155,39 @@ class Nebula extends MQTTData {
       },{
         name: 'lighthousePublicEndpoint',
         type: 'String'
-      }
-      ,{
+      },{
+        name: 'lighthouseGroupId',
+        type: 'String'
+      },{
+        name: 'lighthouseNodeId',
+        type: 'String'
+      },{
+        name: 'lighthouseDeviceId',
+        type: 'String'
+      },{
+        name: 'name',
+        type: 'String'
+      },{
+        name: 'nebulaIp',
+        type: 'String'
+      },{
+        name: 'groups',
+        type: 'String'
+      },{
         name: 'version',
+        type: 'String'
+      }]
+    },{
+      name: 'nebula/setCertificate',
+      action: (args:any) => { this.receiveCert(args) },
+      args: [{
+        name: 'ca',
+        type: 'String'
+      },{
+        name: 'cert',
+        type: 'String'
+      },{
+        name: 'key',
         type: 'String'
       }]
     }]
@@ -137,11 +209,22 @@ class Nebula extends MQTTData {
       return data
     })
   }
-  async install({ isLighthouse, lighthouseNebulaIp, lighthousePublicEndpoint, version }:NebulaInstallInput) {
+  async install({ 
+    isLighthouse, 
+    lighthouseNebulaIp, 
+    lighthousePublicEndpoint, 
+    lighthouseGroupId, 
+    lighthouseNodeId, 
+    lighthouseDeviceId, 
+    name, 
+    nebulaIp, 
+    groups, 
+    version 
+  }:NebulaInstallInput) {
     //Fetch the release information from the github api
     const lighthouse = {
       nebulaIp: lighthouseNebulaIp,
-      publicEndpoint: lighthousePublicEndpoint
+      publicEndpoint: lighthousePublicEndpoint,
     }
     if (!this.isInstalled) {
       const downloadUrl = await this.fetchReleases()
@@ -176,6 +259,19 @@ class Nebula extends MQTTData {
         await this.generateCaCertificate({ name: 'Squid' })
         this.isLighthouse = true
         await this.installService()
+      } else {
+        if (lighthouseGroupId && lighthouseNodeId && lighthouseDeviceId && nebulaIp) {
+          await this.cert.requestCert({ 
+            groupId: lighthouseGroupId, 
+            nodeId: lighthouseNodeId, 
+            deviceId: lighthouseDeviceId, 
+            nebulaIp, 
+            groups, 
+            name, 
+          })
+        } else {
+          throw Error(`Need lighthoue group, node, and device ids to request a certificate. Got: ${JSON.stringify({ lighthouseGroupId, lighthouseNodeId, lighthouseDeviceId, nebulaIp, groups, name },null,2)}`)        
+        }
       }
     } else {
       throw Error('Nebula is already installed.')
@@ -214,6 +310,13 @@ class Nebula extends MQTTData {
   }
   generateCaCertificate(args:NebulaCaCertInput) {
     return this.cert.generateCaCertificate(args)
+  }
+  sendCert(args:NebulaSendCertInput) {
+    return this.cert.sendCert(args)
+  }
+  async receiveCert(args:NebulaReceiveCertInput) {
+    await this.cert.receiveCert(args)
+    await this.installService()
   }
   getIsServiceRunning() {
     return runCommand('systemctl is-active --quiet squid-nebula').then(() => {

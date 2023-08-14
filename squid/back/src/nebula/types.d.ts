@@ -89,8 +89,14 @@ export interface NebulaConfigInput {
 
 export interface NebulaInstallInput {
   isLighthouse:boolean
+  lighthouseGroupId?:string
+  lighthouseNodeId?:string
+  lighthouseDeviceId?:string
   lighthouseNebulaIp:string
   lighthousePublicEndpoint:string
+  name:string
+  nebulaIp?:string
+  groups?:string[]
   version:string
 }
 
@@ -102,5 +108,20 @@ export interface NebulaHostCertInput {
   isOwn:boolean // if true, will generate a host cert for the machine squid is running on
   name:string
   nebulaIp:string
-  groups:string[]
+  groups?:string[]
+}
+
+export interface NebulaSendCertInput {
+  groupId:string
+  nodeId:string
+  deviceId:string
+  name:string
+  nebulaIp:string
+  groups?:string[]
+}
+
+export interface NebulaReceiveCertInput {
+  ca:string,
+  cert:string,
+  key:string
 }

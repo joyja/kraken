@@ -18,7 +18,7 @@
     "graphql-yoga": "^4.0.2",
     "gunzip-maybe": "^1.4.2",
     "js-yaml": "^4.1.0",
-    "kraken-sparkplug-client": "^0.0.12",
+    "kraken-sparkplug-client": "^0.0.13",
     "octokit": "^3.0.0",
     "sparkplug-client": "^3.2.3",
     "tar-fs": "^3.0.4",

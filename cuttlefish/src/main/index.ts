@@ -517,7 +517,6 @@ class SparkplugData extends events.EventEmitter {
     }
   }
   sendDeviceCommand({ groupId, nodeId, deviceId, metricId, value }:{ groupId:string, nodeId:string, deviceId:string, metricId:string, value:any }) {
-    // console.log(`group ${groupId}`, `node ${nodeId}`, `device ${deviceId}`, `metric ${metricId}`)
     const metric = this.getGroup(groupId)?.getNode(nodeId)?.getDevice(deviceId)?.getMetric(metricId)
     console.log(value)
     if (metric) {
