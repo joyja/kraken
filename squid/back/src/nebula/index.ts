@@ -131,7 +131,6 @@ class NebulaCert {
 
 class Nebula extends MQTTData {
   private cert:NebulaCert
-  private config:NebulaConfig | null
   public isLighthouse:boolean
   constructor() {
     const metrics:MqttDataMetric[] = [{
@@ -193,12 +192,6 @@ class Nebula extends MQTTData {
     }]
     super(metrics, deviceControl)
     this.isLighthouse = false
-    const configPath = '/etc/squid/nebula/config.yml'
-    if (fs.existsSync(configPath)) {
-      this.config = (yaml.load(fs.readFileSync(configPath,'utf-8')) as NebulaConfig)
-    } else {
-      this.config = null
-    }
     this.cert = new NebulaCert()
   }
   fetchReleases() {
@@ -342,10 +335,18 @@ class Nebula extends MQTTData {
     }
   }
   get isConfigured() {
-    return !!this.config
+    return fs.existsSync('/etc/squid/nebula/config.yml')
   }
   get isInstalled() {
     return fs.existsSync('/usr/local/bin/nebula') && fs.existsSync('/usr/local/bin/nebula-cert')
+  }
+  get config() {
+    const configPath = '/etc/squid/nebula/config.yml'
+    if (fs.existsSync(configPath)) {
+      return (yaml.load(fs.readFileSync(configPath,'utf-8')) as NebulaConfig)
+    } else {
+      return null
+    }
   }
 }
 
