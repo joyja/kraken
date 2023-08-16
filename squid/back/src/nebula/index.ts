@@ -234,6 +234,11 @@ class Nebula extends MQTTData {
       nebulaIp: lighthouseNebulaIp,
       publicEndpoint: lighthousePublicEndpoint,
     }
+    const isRunning = await this.getIsServiceRunning()
+    if (allowReinstall && isRunning) {
+      await runCommand('sudo systemctl stop squid-nebula.service')
+      await runCommand('sudo systemctl disable squid-nebula.service')
+    }
     if (!this.isInstalled || allowReinstall) {
       const downloadUrl = await this.fetchReleases()
       .then((releases) => {
