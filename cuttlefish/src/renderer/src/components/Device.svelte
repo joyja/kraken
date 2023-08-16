@@ -88,22 +88,24 @@
 <div transition:fade={{ duration:100 }} class="dcmd-modal">
   <form id="dcmd-form" on:submit|preventDefault={ handleSubmit }>
     <h4>{ currentCommand.id.replace('Device Control/','') }</h4>
-    {#each JSON.parse(currentCommand.value) as argument}
-      {#if argument.type === 'Boolean'}
-        <label class="toggle" for={ `dcmd-${argument.name}` }>
-          <div class="switch">
-            <input id={ `dcmd-${argument.name}` } name={ `dcmd-${argument.name}` } type="checkbox"/>
-            <span class="slider round"></span>
+    <div class="dcmd-form__inputs">
+      {#each JSON.parse(currentCommand.value) as argument}
+        {#if argument.type === 'Boolean'}
+          <label class="toggle" for={ `dcmd-${argument.name}` }>
+            <div class="switch">
+              <input id={ `dcmd-${argument.name}` } name={ `dcmd-${argument.name}` } type="checkbox"/>
+              <span class="slider round"></span>
+            </div>
+            <span>{ argument.name }</span>
+          </label>
+        {:else }
+          <div class="field">
+            <label for={ `dcmd-${argument.name}` }>{ argument.name }</label>
+            <input id={ `dcmd-${argument.name}` } name={ `dcmd-${argument.name}` } type="text"/>
           </div>
-          <span>{ argument.name }</span>
-        </label>
-      {:else }
-        <div class="field">
-          <label for={ `dcmd-${argument.name}` }>{ argument.name }</label>
-          <input id={ `dcmd-${argument.name}` } name={ `dcmd-${argument.name}` } type="text"/>
-        </div>
-      {/if}
-    {/each}
+        {/if}
+      {/each}
+    </div>
     <button class="button--primary" type="submit">Run Command</button>
     <button class="button--secondary" on:click={ hideModal }>Cancel</button>
   </form>
@@ -125,18 +127,38 @@
     & > form {
       background-color: var(--white);
       border-radius: var(--rounded-md);
-      padding: calc(var(--spacing-unit)*3);
+      padding-top: calc(var(--spacing-unit)*3);
+      padding-bottom: calc(var(--spacing-unit)*3);
       display: flex;
       flex-direction: column;
+      flex-basis: 400px;
       & > * {
         margin-bottom: calc(var(--spacing-unit)*2);
+        padding-right: calc(var(--spacing-unit)*3);
+        padding-left: calc(var(--spacing-unit)*3);
       }
       & > *:last-child {
         margin-bottom: 0px;
       }
-      & > .field {
-        display:flex;
+      & > .dcmd-form__inputs {
+        display: flex;
         flex-direction: column;
+        max-height:300px;
+        overflow: auto;
+        & > .field {
+          display:flex;
+          flex-direction: column;
+        }
+        & > * {
+          margin-bottom: calc(var(--spacing-unit)*2);
+        }
+        & > *:last-child {
+          margin-bottom: 0px;
+        }
+      }
+      & > button {
+        margin-left: calc(var(--spacing-unit)*3);
+        margin-right: calc(var(--spacing-unit)*3);
       }
     }
   }

@@ -295,9 +295,9 @@ class Nebula extends MQTTData {
   async installService() {
     const config = getSystemdConfig()
     fs.writeFileSync('/etc/systemd/system/squid-nebula.service', config)
-    await runCommand('systemctl daemon-reload')
-    await runCommand('systemctl enable squid-nebula')
-    await runCommand('systemctl start squid-nebula')
+    await runCommand('sudo systemctl daemon-reload')
+    await runCommand('sudo systemctl enable squid-nebula')
+    await runCommand('sudo systemctl start squid-nebula')
     const isRunning = await this.getIsServiceRunning()
     if (isRunning) {
       log.info('Nebula service was successfully installed.')
