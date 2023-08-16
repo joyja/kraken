@@ -250,6 +250,7 @@ class Nebula extends MQTTData {
       this.configure({ isLighthouse, lighthouse })
       if (isLighthouse) {
         await this.generateCaCertificate({ name: 'Squid' })
+        await this.generateHostCertificate({ isOwn: true, name, nebulaIp:lighthouseNebulaIp, groups })
         this.isLighthouse = true
         await this.installService()
       } else {
