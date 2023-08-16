@@ -4,8 +4,7 @@ on:
       - main
     paths:
       - '.github/workflows/**'
-      - 'mantle/back/src/**'
-      - 'mantle/back/scripts/**'
+      - 'squid/back/**'
 jobs:
   build:
     runs-on: ${{ matrix.runner }}
