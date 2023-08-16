@@ -223,7 +223,6 @@ class Nebula extends MQTTData {
       nebulaIp: lighthouseNebulaIp,
       publicEndpoint: lighthousePublicEndpoint,
     }
-    console.log(allowReinstall)
     if (!this.isInstalled || allowReinstall) {
       const downloadUrl = await this.fetchReleases()
       .then((releases) => {
@@ -252,7 +251,7 @@ class Nebula extends MQTTData {
       } else {
         throw Error('Nebula was not successfully installed')
       }
-      this.configure({ isLighthouse, lighthouse })
+      this.configure({ isLighthouse, lighthouse, allowReinstall })
       if (isLighthouse) {
         if (nebulaIp) {
           await this.generateCaCertificate({ name: 'Squid' })
@@ -296,16 +295,21 @@ class Nebula extends MQTTData {
     }
   }
   async installService(allowReinstall?:boolean) {
-    const config = getSystemdConfig()
-    fs.writeFileSync('/etc/systemd/system/squid-nebula.service', config)
-    await runCommand('sudo systemctl daemon-reload')
-    await runCommand('sudo systemctl enable squid-nebula.service')
-    await runCommand('sudo systemctl start squid-nebula.service')
-    const isRunning = await this.getIsServiceRunning()
-    if (isRunning) {
-      log.info('Nebula service was successfully installed.')
+    let isRunning = await this.getIsServiceRunning()
+    if (!isRunning || allowReinstall) {
+      const config = getSystemdConfig()
+      fs.writeFileSync('/etc/systemd/system/squid-nebula.service', config)
+      await runCommand('sudo systemctl daemon-reload')
+      await runCommand('sudo systemctl enable squid-nebula.service')
+      await runCommand('sudo systemctl start squid-nebula.service')
+      isRunning = await this.getIsServiceRunning()
+      if (isRunning) {
+        log.info('Nebula service was successfully installed.')
+      } else {
+        throw Error('Nebula service was not successfully installed.')
+      }
     } else {
-      throw Error('Nebula service was not successfully installed.')
+      throw Error('Nebula service is already installed.')
     }
   }
   generateHostCertificate(args:NebulaHostCertInput) {
