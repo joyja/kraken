@@ -272,8 +272,8 @@ class Nebula extends MQTTData {
   }
   configure({ isLighthouse, lighthouse }:NebulaConfigInput) {
     if (!this.isConfigured) {
-      this.config = getDefaultConfig({ isLighthouse, lighthouse })
-      const configYaml = yaml.dump(this.config)
+      const config = getDefaultConfig({ isLighthouse, lighthouse })
+      const configYaml = yaml.dump(config)
       fs.mkdirSync('/etc/squid/nebula', { recursive: true })
       fs.writeFileSync('/etc/squid/nebula/config.yml', configYaml)
       if (fs.existsSync('/etc/squid/nebula/config.yml')) {
