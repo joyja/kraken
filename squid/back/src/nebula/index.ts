@@ -5,7 +5,7 @@ import tar from 'tar-fs'
 import gunzip from 'gunzip-maybe'
 import stream from 'stream'
 import { Log } from '../log'
-import { NebulaCaCertInput, NebulaConfig, NebulaConfigInput, NebulaHostCertInput, NebulaInstallInput, NebulaReceiveCertInput, NebulaSendCertInput } from './types'
+import { NebulaCaCertInput, NebulaConfig, NebulaConfigInput, NebulaHostCertInput, NebulaInstallInput, NebulaReceiveCertInput, NebulaRequestReceiveCertInput, NebulaRequestSendCertInput, NebulaSendCertInput } from './types'
 import { getDefaultConfig } from './defaultConfigs'
 import { exec } from 'child_process'
 import { getSystemdConfig } from './service'
@@ -77,12 +77,32 @@ class NebulaCert {
       })
     })
   }
-  sendCert({ groupId, nodeId, deviceId, name, nebulaIp, groups }:NebulaSendCertInput) {
+  requestSendCert({ groupId, nodeId, deviceId, requesterGroupId, requesterNodeId, requesterDeviceId, name, nebulaIp, groups, allowReinstall }:NebulaRequestSendCertInput) {
+    return new Promise<void>(async (resolve, reject) => {
+      const payload:UPayload = {
+        metrics: [{
+          name: 'nebula/sendCertificate',
+          type: 'String',
+          value: JSON.stringify({
+            requesterGroupId, 
+            requesterNodeId, 
+            requesterDeviceId, 
+            name,
+            nebulaIp,
+            groups,
+            allowReinstall,
+          })
+        }]
+      }
+      await mqtt.sendDeviceCommand({ groupId, nodeId, deviceId, payload })
+    })
+  }
+  sendCert({  requesterGroupId, requesterNodeId, requesterDeviceId, name, nebulaIp, groups }:NebulaSendCertInput) {
     return new Promise<void>(async (resolve, reject) => {
       await this.generateHostCertificate({ isOwn: false, name, nebulaIp, groups })
       const payload:UPayload = {
         metrics: [{
-          name: 'nebula/applyCertificate',
+          name: 'nebula/receiveCertificate',
           type: 'String',
           value: JSON.stringify({
             ca: fs.readFileSync('/etc/squid/nebula/ca.crt').toString(),
@@ -91,23 +111,7 @@ class NebulaCert {
           })
         }]
       }
-      await mqtt.sendDeviceCommand({ groupId, nodeId, deviceId, payload })
-    })
-  }
-  requestCert({ groupId, nodeId, deviceId, name, nebulaIp, groups }:NebulaSendCertInput) {
-    return new Promise<void>(async (resolve, reject) => {
-      const payload:UPayload = {
-        metrics: [{
-          name: 'nebula/requestCertificate',
-          type: 'String',
-          value: JSON.stringify({
-            name,
-            nebulaIp,
-            groups
-          })
-        }]
-      }
-      await mqtt.sendDeviceCommand({ groupId, nodeId, deviceId, payload })
+      await mqtt.sendDeviceCommand({ groupId: requesterGroupId, nodeId: requesterNodeId, deviceId: requesterDeviceId, payload })
     })
   }
   receiveCert({ ca, cert, key }:NebulaReceiveCertInput) {
@@ -191,7 +195,29 @@ class Nebula extends MQTTData {
         type: 'String'
       }]
     },{
-      name: 'nebula/setCertificate',
+      name: 'nebula/sendCertificate',
+      action: (args:any) => { this.sendCert(args) },
+      args: [{
+        name: 'groupId',
+        type: 'String'
+      },{
+        name: 'nodeId',
+        type: 'String'
+      },{
+        name: 'name',
+        type: 'String'
+      },{
+        name: 'nebulaIp',
+        type: 'String'
+      },{
+        name: 'groups',
+        type: 'String'
+      },{
+        name: 'allowReinstall',
+        type: 'Boolean'
+      }]
+    },{
+      name: 'nebula/receiveCertificate',
       action: (args:any) => { this.receiveCert(args) },
       args: [{
         name: 'ca',
@@ -202,6 +228,9 @@ class Nebula extends MQTTData {
       },{
         name: 'key',
         type: 'String'
+      },{
+        name: 'allowReinstall',
+        type: 'Boolean'
       }]
     }]
     super(metrics, deviceControl)
@@ -279,14 +308,19 @@ class Nebula extends MQTTData {
         }
       } else {
         if (lighthouseGroupId && lighthouseNodeId && lighthouseDeviceId && nebulaIp) {
-          await this.cert.requestCert({ 
+          await this.cert.requestSendCert({ 
             groupId: lighthouseGroupId, 
             nodeId: lighthouseNodeId, 
             deviceId: lighthouseDeviceId, 
+            requesterGroupId: mqtt.groupId!,
+            requesterNodeId: mqtt.nodeId!,
+            requesterDeviceId: mqtt.deviceId!,
             nebulaIp, 
             groups, 
-            name, 
+            name,
+            allowReinstall,
           })
+          this.isLighthouse = false
         } else {
           throw Error(`Need lighthouse group, node, and device ids to request a certificate. Got: ${JSON.stringify({ lighthouseGroupId, lighthouseNodeId, lighthouseDeviceId, nebulaIp, groups, name },null,2)}`)        
         }
@@ -343,7 +377,7 @@ class Nebula extends MQTTData {
   }
   async receiveCert(args:NebulaReceiveCertInput) {
     await this.cert.receiveCert(args)
-    await this.installService()
+    await this.installService(args.allowReinstall)
   }
   getIsServiceRunning() {
     return runCommand('systemctl is-active --quiet squid-nebula.service').then(() => {

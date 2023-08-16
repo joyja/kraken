@@ -103,8 +103,10 @@ export class MQTT {
   public connected:boolean
   public primaryHosts:PrimaryHost[]
   public metrics:Metric[]
+  public groupId?:string
+  public nodeId?:string
+  public deviceId?:string
   private interval?:ReturnType<typeof setInterval>
-  private deviceId?:string
   private rate:number
   private config:{
     serverUrl?:string,
@@ -121,7 +123,9 @@ export class MQTT {
     const username = process.env.SQUID_MQTT_USERNAME
     const password = process.env.SQUID_MQTT_PASSWORD
     const groupId = process.env.SQUID_MQTT_GROUPID
+    this.groupId = groupId
     const edgeNode = process.env.SQUID_MQTT_EDGENODE
+    this.nodeId = edgeNode
     this.deviceId = process.env.SQUID_MQTT_DEVICEID
     const clientId = process.env.SQUID_MQTT_CLIENTID
     // TODO: Need to figure out how I'm going to populate primary hosts (event variable, config file, etc.)

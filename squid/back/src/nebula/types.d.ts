@@ -104,7 +104,7 @@ export interface NebulaInstallInput {
 
 export interface NebulaCaCertInput {
   name:string
-  allowOverwrite:boolean
+  allowOverwrite?:boolean
 }
 
 export interface NebulaHostCertInput {
@@ -112,20 +112,35 @@ export interface NebulaHostCertInput {
   name:string
   nebulaIp:string
   groups?:string[]
-  allowOverwrite:boolean
+  allowOverwrite?:boolean
 }
 
 export interface NebulaSendCertInput {
   groupId:string
   nodeId:string
   deviceId:string
+  requesterGroupId:string 
+  requesterNodeId:string
+  requesterDeviceId:string
   name:string
   nebulaIp:string
   groups?:string[]
+}
+
+export interface NebulaRequestSendCertInput extends NebulaSendCertInput {
+  groupId:string
+  nodeId:string
+  deviceId:string
 }
 
 export interface NebulaReceiveCertInput {
   ca:string,
   cert:string,
   key:string
+}
+
+export interface NebulaRequestReceiveCertInput extends NebulaReceiveCertInput {
+  groupId:string
+  nodeId:string
+  deviceId:string
 }
