@@ -249,10 +249,14 @@ class Nebula extends MQTTData {
       }
       this.configure({ isLighthouse, lighthouse })
       if (isLighthouse) {
-        await this.generateCaCertificate({ name: 'Squid' })
-        await this.generateHostCertificate({ isOwn: true, name, nebulaIp:lighthouseNebulaIp, groups })
-        this.isLighthouse = true
-        await this.installService()
+        if (nebulaIp) {
+          await this.generateCaCertificate({ name: 'Squid' })
+          await this.generateHostCertificate({ isOwn: true, name, nebulaIp, groups })
+          this.isLighthouse = true
+          await this.installService()
+        } else {
+          throw Error('Need nebula ip to install lighthouse.')
+        }
       } else {
         if (lighthouseGroupId && lighthouseNodeId && lighthouseDeviceId && nebulaIp) {
           await this.cert.requestCert({ 
@@ -264,7 +268,7 @@ class Nebula extends MQTTData {
             name, 
           })
         } else {
-          throw Error(`Need lighthoue group, node, and device ids to request a certificate. Got: ${JSON.stringify({ lighthouseGroupId, lighthouseNodeId, lighthouseDeviceId, nebulaIp, groups, name },null,2)}`)        
+          throw Error(`Need lighthouse group, node, and device ids to request a certificate. Got: ${JSON.stringify({ lighthouseGroupId, lighthouseNodeId, lighthouseDeviceId, nebulaIp, groups, name },null,2)}`)        
         }
       }
     } else {
