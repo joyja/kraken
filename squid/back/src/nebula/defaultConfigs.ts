@@ -10,13 +10,13 @@ export function getDefaultConfig({ isLighthouse, lighthouse }:NebulaConfigInput)
       "cert": "/etc/squid/nebula/host.crt",
       "key": "/etc/squid/nebula/host.key"
     },
-    "static_host_map": isLighthouse ? {
+    "static_host_map": !isLighthouse ? {
       [lighthouse!.nebulaIp]: [lighthouse!.publicEndpoint]
     } : {},
     "lighthouse": {
       "am_lighthouse": isLighthouse,
       "interval": 60,
-      "hosts": isLighthouse ? [
+      "hosts": !isLighthouse ? [
         lighthouse?.nebulaIp
       ] : []
     },

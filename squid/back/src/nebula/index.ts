@@ -149,6 +149,9 @@ class Nebula extends MQTTData {
         name: 'isLighthouse',
         type: 'Boolean'
       },{
+        name: 'allowReinstall',
+        type: 'Boolean'
+      },{
         name: 'lighthouseNebulaIp',
         type: 'String'
       },{
