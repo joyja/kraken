@@ -81,6 +81,7 @@ export interface NebulaConfig {
 
 export interface NebulaConfigInput {
   isLighthouse:boolean
+  allowReinstall?:boolean
   lighthouse?: {
     nebulaIp:string
     publicEndpoint:string
@@ -89,6 +90,7 @@ export interface NebulaConfigInput {
 
 export interface NebulaInstallInput {
   isLighthouse:boolean
+  allowReinstall:boolean
   lighthouseGroupId?:string
   lighthouseNodeId?:string
   lighthouseDeviceId?:string
@@ -102,6 +104,7 @@ export interface NebulaInstallInput {
 
 export interface NebulaCaCertInput {
   name:string
+  allowOverwrite:boolean
 }
 
 export interface NebulaHostCertInput {
@@ -109,6 +112,7 @@ export interface NebulaHostCertInput {
   name:string
   nebulaIp:string
   groups?:string[]
+  allowOverwrite:boolean
 }
 
 export interface NebulaSendCertInput {

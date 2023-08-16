@@ -33,7 +33,12 @@ class NebulaCert {
   constructor() {
     this.isInstalled = fs.existsSync('/usr/local/bin/nebula-cert')
   }
-  generateCaCertificate({ name }:NebulaCaCertInput) {
+  generateCaCertificate({ name, allowOverwrite }:NebulaCaCertInput) {
+    if (allowOverwrite) {
+      fs.rmSync('/etc/squid/nebula/ca.crt')
+      fs.rmSync('/etc/squid/nebula/ca.key')
+      fs.rmSync('/etc/squid/nebula/ca.png')
+    }
     return new Promise<void>((resolve, reject) => {
       exec(`nebula-cert ca -name ${name} -out-crt /etc/squid/nebula/ca.crt -out-key /etc/squid/nebula/ca.key -out-qr /etc/squid/nebula/ca.png`, (err, stdout, stderr) => {
         if (err 
@@ -49,7 +54,13 @@ class NebulaCert {
       })
     })
   }
-  generateHostCertificate({ isOwn, name, nebulaIp, groups }:NebulaHostCertInput) {
+  generateHostCertificate({ isOwn, name, nebulaIp, groups, allowOverwrite }:NebulaHostCertInput) {
+    if (allowOverwrite) {
+      const certName = isOwn ? 'host' : name
+      fs.rmSync(`/etc/squid/nebula/${certName}.crt`)
+      fs.rmSync(`/etc/squid/nebula/${certName}.key`)
+      fs.rmSync(`/etc/squid/nebula/${certName}.png`)
+    }
     return new Promise<void>((resolve, reject) => {
       const certName = isOwn ? 'host' : name
       exec(`nebula-cert sign -ca-crt /etc/squid/nebula/ca.crt -ca-key /etc/squid/nebula/ca.key -name ${name} -ip ${nebulaIp} ${groups ? `-groups ${groups.join(',')}` : '' } -out-crt /etc/squid/nebula/${certName}.crt -out-key /etc/squid/nebula/${certName}.key -out-qr /etc/squid/nebula/${certName}.png`, (err, stdout, stderr) => {
@@ -254,8 +265,8 @@ class Nebula extends MQTTData {
       this.configure({ isLighthouse, lighthouse, allowReinstall })
       if (isLighthouse) {
         if (nebulaIp) {
-          await this.generateCaCertificate({ name: 'Squid' })
-          await this.generateHostCertificate({ isOwn: true, name, nebulaIp, groups })
+          await this.generateCaCertificate({ name: 'Squid', allowOverwrite: allowReinstall })
+          await this.generateHostCertificate({ isOwn: true, name, nebulaIp, groups, allowOverwrite: allowReinstall })
           this.isLighthouse = true
           await this.installService(allowReinstall)
         } else {
@@ -296,6 +307,10 @@ class Nebula extends MQTTData {
   }
   async installService(allowReinstall?:boolean) {
     let isRunning = await this.getIsServiceRunning()
+    if (allowReinstall && isRunning) {
+      await runCommand('sudo systemctl stop squid-nebula.service')
+      await runCommand('sudo systemctl disable squid-nebula.service')
+    }
     if (!isRunning || allowReinstall) {
       const config = getSystemdConfig()
       fs.writeFileSync('/etc/systemd/system/squid-nebula.service', config)
