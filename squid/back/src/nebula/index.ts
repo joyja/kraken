@@ -211,7 +211,8 @@ class Nebula extends MQTTData {
     lighthousePublicEndpoint, 
     lighthouseGroupId, 
     lighthouseNodeId, 
-    lighthouseDeviceId, 
+    lighthouseDeviceId,
+    allowReinstall,
     name, 
     nebulaIp, 
     groups, 
@@ -222,7 +223,8 @@ class Nebula extends MQTTData {
       nebulaIp: lighthouseNebulaIp,
       publicEndpoint: lighthousePublicEndpoint,
     }
-    if (!this.isInstalled) {
+    console.log(allowReinstall)
+    if (!this.isInstalled || allowReinstall) {
       const downloadUrl = await this.fetchReleases()
       .then((releases) => {
         return releases.find((release) => {
@@ -256,7 +258,7 @@ class Nebula extends MQTTData {
           await this.generateCaCertificate({ name: 'Squid' })
           await this.generateHostCertificate({ isOwn: true, name, nebulaIp, groups })
           this.isLighthouse = true
-          await this.installService()
+          await this.installService(allowReinstall)
         } else {
           throw Error('Need nebula ip to install lighthouse.')
         }
@@ -278,8 +280,8 @@ class Nebula extends MQTTData {
       throw Error('Nebula is already installed.')
     }
   }
-  configure({ isLighthouse, lighthouse }:NebulaConfigInput) {
-    if (!this.isConfigured) {
+  configure({ isLighthouse, lighthouse, allowReinstall }:NebulaConfigInput) {
+    if (!this.isConfigured || allowReinstall) {
       const config = getDefaultConfig({ isLighthouse, lighthouse })
       const configYaml = yaml.dump(config)
       fs.mkdirSync('/etc/squid/nebula', { recursive: true })
@@ -293,7 +295,7 @@ class Nebula extends MQTTData {
       throw Error('Nebula is already configured.')
     }
   }
-  async installService() {
+  async installService(allowReinstall?:boolean) {
     const config = getSystemdConfig()
     fs.writeFileSync('/etc/systemd/system/squid-nebula.service', config)
     await runCommand('sudo systemctl daemon-reload')
