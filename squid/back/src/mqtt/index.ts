@@ -231,6 +231,7 @@ export class MQTT {
                 const deviceCommand = this.metrics.find((metric) => {
                   return metric.name === payloadMetric.name
                 })
+                log.debug(`${deviceCommand ? 'Found' : 'Did not find'} device command for ${payloadMetric.name}`)
                 if (deviceCommand?.action) {
                   if (deviceCommand.type === 'Boolean') {
                     deviceCommand.action()
