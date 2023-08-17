@@ -125,6 +125,7 @@ export interface NebulaSendCertInput {
   name:string
   nebulaIp:string
   groups?:string[]
+  allowReinstall:boolean
 }
 
 export interface NebulaRequestSendCertInput extends NebulaSendCertInput {
@@ -136,7 +137,8 @@ export interface NebulaRequestSendCertInput extends NebulaSendCertInput {
 export interface NebulaReceiveCertInput {
   ca:string,
   cert:string,
-  key:string
+  key:string,
+  allowReinstall:boolean
 }
 
 export interface NebulaRequestReceiveCertInput extends NebulaReceiveCertInput {
