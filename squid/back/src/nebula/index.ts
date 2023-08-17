@@ -109,7 +109,7 @@ class NebulaCert {
           type: 'String',
           value: JSON.stringify({
             ca: fs.readFileSync('/etc/squid/nebula/ca.crt').toString(),
-            host: fs.readFileSync(`/etc/squid/nebula/${name}.crt`).toString(),
+            cert: fs.readFileSync(`/etc/squid/nebula/${name}.crt`).toString(),
             key: fs.readFileSync(`/etc/squid/nebula/${name}.key`).toString(),
           })
         }]
@@ -123,7 +123,7 @@ class NebulaCert {
     log.debug(`ca: ${ca}, cert: ${cert}, key: ${key}`)
     return new Promise<void>((resolve, reject) => {
       fs.writeFileSync('/etc/squid/nebula/ca.crt', ca)
-      fs.writeFileSync(`/etc/squid/nebula/cert.crt`, cert)
+      fs.writeFileSync(`/etc/squid/nebula/host.crt`, cert)
       fs.writeFileSync(`/etc/squid/nebula/host.key`, key)
       resolve()
     })
