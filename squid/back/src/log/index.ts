@@ -30,35 +30,31 @@ function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
   }
 }
 
-function getErrorMessage(error: unknown) {
-  return toErrorWithMessage(error).message
-}
-
 export class Log {
   public level:LogLevel
-  public context:string
-  constructor(context:string) {
-    this.level = process.env.JOYCOMMERCE_LOGLEVEL ? process.env.JOYCOMMERCE_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.info : LogLevel.warn
+  public context?:string
+  constructor(context?:string) {
+    this.level = process.env.SQUID_LOGLEVEL ? process.env.SQUID_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.warn : LogLevel.warn
     this.context = context
   }
   debug(message:string) {
     if (this.level === LogLevel.debug) {
-      console.debug(`${this.context}: ${message}`)
+      console.debug(`${this.context ? `${this.context}: `:``}${message}`)
     }
   }
   info(message:string) {
-    if (this.level === LogLevel.info) {
-      console.info(`${this.context}: ${message}`)
+    if ([LogLevel.info, LogLevel.debug].includes(this.level)) {
+      console.info(`${this.context ? `${this.context}: `:``}${message}`)
     } 
   }
   warn(message:string) {
-    if (this.level === LogLevel.warn) {
-      console.warn(`${this.context}: ${message}`)
+    if ([LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
+      console.warn(`${this.context ? `${this.context}: `:``}${message}`)
     }
   }
   error(message:string) {
-    if (this.level === LogLevel.error) {
-      console.error(`${this.context}: ${message}`)
+    if ([LogLevel.error, LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
+      console.error(`${this.context ? `${this.context}: `:``}${message}`)
     }
   }
   getErrorMessage(error: unknown) {
