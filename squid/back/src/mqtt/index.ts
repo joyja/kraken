@@ -222,7 +222,8 @@ export class MQTT {
         this.onBirth()
       })
       this.client.on('dcmd', (deviceId, payload) => {
-        log.info(`Mqtt service received a dcmd for ${deviceId}.`)
+        log.info(`Mqtt service received a dcmd for ${deviceId}. My device id is ${this.deviceId}, so ${this.deviceId === deviceId? 'This is for me.' : 'This is not for me.'}`)
+        log.debug(`dcmd payload: ${JSON.stringify(payload,null,2)}`)
         try {
           if (this.deviceId === deviceId) {
             if (payload.metrics) {
