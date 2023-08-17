@@ -78,6 +78,7 @@ class NebulaCert {
     })
   }
   requestSendCert({ groupId, nodeId, deviceId, requesterGroupId, requesterNodeId, requesterDeviceId, name, nebulaIp, groups, allowReinstall }:NebulaRequestSendCertInput) {
+    log.info(`Requesting certificate for ${name} from ${groupId}/${nodeId}/${deviceId}.`)
     return new Promise<void>(async (resolve, reject) => {
       const payload:UPayload = {
         metrics: [{
@@ -94,10 +95,12 @@ class NebulaCert {
           })
         }]
       }
+      log.debug(`Sending payload: ${JSON.stringify(payload,null,2)}`)
       await mqtt.sendDeviceCommand({ groupId, nodeId, deviceId, payload })
     })
   }
   sendCert({  requesterGroupId, requesterNodeId, requesterDeviceId, name, nebulaIp, groups }:NebulaSendCertInput) {
+    log.info(`Sending certificate for ${name} to ${requesterGroupId}/${requesterNodeId}/${requesterDeviceId}.`)
     return new Promise<void>(async (resolve, reject) => {
       await this.generateHostCertificate({ isOwn: false, name, nebulaIp, groups })
       const payload:UPayload = {
@@ -111,10 +114,13 @@ class NebulaCert {
           })
         }]
       }
+      log.debug(`Sending payload: ${JSON.stringify(payload,null,2)}`)
       await mqtt.sendDeviceCommand({ groupId: requesterGroupId, nodeId: requesterNodeId, deviceId: requesterDeviceId, payload })
     })
   }
   receiveCert({ ca, cert, key }:NebulaReceiveCertInput) {
+    log.info(`Receiving certificate.`)
+    log.debug(`ca: ${ca}, cert: ${cert}, key: ${key}`)
     return new Promise<void>((resolve, reject) => {
       fs.writeFileSync('/etc/squid/nebula/ca.crt', ca)
       fs.writeFileSync(`/etc/squid/nebula/cert.crt`, cert)
