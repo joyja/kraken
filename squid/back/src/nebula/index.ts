@@ -82,7 +82,7 @@ class NebulaCert {
     return new Promise<void>(async (resolve, reject) => {
       const payload:UPayload = {
         metrics: [{
-          name: 'nebula/sendCertificate',
+          name: 'Device Control/nebula/sendCertificate',
           type: 'String',
           value: JSON.stringify({
             requesterGroupId, 
@@ -105,7 +105,7 @@ class NebulaCert {
       await this.generateHostCertificate({ isOwn: false, name, nebulaIp, groups })
       const payload:UPayload = {
         metrics: [{
-          name: 'nebula/receiveCertificate',
+          name: 'Device Control/nebula/receiveCertificate',
           type: 'String',
           value: JSON.stringify({
             ca: fs.readFileSync('/etc/squid/nebula/ca.crt').toString(),
