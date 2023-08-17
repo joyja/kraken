@@ -107,7 +107,7 @@
       {/each}
     </div>
     <button class="button--primary" type="submit">Run Command</button>
-    <button class="button--secondary" on:click={ hideModal }>Cancel</button>
+    <button class="button--secondary" on:click|preventDefault={ hideModal }>Cancel</button>
   </form>
 </div>
 {/if}

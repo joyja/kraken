@@ -152,7 +152,6 @@ class NebulaCert {
 
 class Nebula extends MQTTData {
   private cert:NebulaCert
-  public isLighthouse:boolean
   constructor() {
     const metrics:MqttDataMetric[] = [{
       name: 'nebula/status',
@@ -240,7 +239,6 @@ class Nebula extends MQTTData {
       }]
     }]
     super(metrics, deviceControl)
-    this.isLighthouse = false
     this.cert = new NebulaCert()
   }
   fetchReleases() {
@@ -307,7 +305,6 @@ class Nebula extends MQTTData {
         if (nebulaIp) {
           await this.generateCaCertificate({ name: 'Squid', allowOverwrite: allowReinstall })
           await this.generateHostCertificate({ isOwn: true, name, nebulaIp, groups, allowOverwrite: allowReinstall })
-          this.isLighthouse = true
           await this.installService(allowReinstall)
         } else {
           throw Error('Need nebula ip to install lighthouse.')
@@ -326,7 +323,6 @@ class Nebula extends MQTTData {
             name,
             allowReinstall,
           })
-          this.isLighthouse = false
         } else {
           throw Error(`Need lighthouse group, node, and device ids to request a certificate. Got: ${JSON.stringify({ lighthouseGroupId, lighthouseNodeId, lighthouseDeviceId, nebulaIp, groups, name },null,2)}`)        
         }
@@ -421,6 +417,9 @@ class Nebula extends MQTTData {
     } else {
       return null
     }
+  }
+  get isLighthouse() {
+    return !!this.config?.lighthouse?.am_lighthouse
   }
 }
 
