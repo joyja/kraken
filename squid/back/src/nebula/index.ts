@@ -140,13 +140,13 @@ class NebulaCert {
     }
   }
   get hasLighthouseCaCertificate() {
-    return fs.existsSync('/etc/squid/nebula/ca.crt') && fs.existsSync('/etc/squid/nebula/ca.key') && fs.existsSync('/etc/squid/nebula/ca.png')
+    return fs.existsSync('/etc/squid/nebula/ca.crt') && fs.existsSync('/etc/squid/nebula/ca.key')
   }
   get hasCaCertificate() {
     return fs.existsSync('/etc/squid/nebula/ca.crt')
   }
   get hasHostCertificate() {
-    return fs.existsSync(`/etc/squid/nebula/host.crt`) && fs.existsSync(`/etc/squid/nebula/host.key`) && fs.existsSync(`/etc/squid/nebula/host.png`)
+    return fs.existsSync(`/etc/squid/nebula/host.crt`) && fs.existsSync(`/etc/squid/nebula/host.key`)
   }
 }
 
