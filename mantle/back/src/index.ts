@@ -5,6 +5,7 @@ import path from "path"
 import * as resolvers from "./resolvers"
 import { spdata } from "./mqtt"
 
+// test
 // available when handling requests, needs to be provided by the implementor
 // eslint-disable-next-line @typescript-eslint/ban-types
 type ServerContext = {}
