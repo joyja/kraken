@@ -1,9 +1,6 @@
-import { pool } from './database'
 import { type Pool } from 'pg'
-import fromUnixTime from 'date-fns/fromUnixTime'
 import { SparkplugMetric } from './mqtt'
 import { Log } from './log'
-import { time } from 'systeminformation'
 
 const log = new Log('history')
 

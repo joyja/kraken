@@ -18,13 +18,13 @@ const yoga = createYoga<ServerContext>({
 })
 
 const server = createServer(yoga)
-const PORT = 8000
+const PORT = 4000
 
 server.listen(PORT, async () => {
 	spdata.initialize({
-		serverUrl: 'ssl://mqtt.anywherescada.com:8883',
-		username: 'joyja',
-		password: 'pLLJtj1txGZ4JdrrF2OS',
+		serverUrl: `${process.env.MANTLE_MQTTENCRYPT ? 'ssl' : 'tcp'}://${process.env.MANTLE_MQTTHOST}:${process.env.MANTLE_MQTTTPORT}`,
+		username: process.env.MANTLE_MQTTUSERNAME!,
+		password: process.env.MANTLE_MQTTPASSWORD!,
 	})
 	spdata.startAutoRebirth(10000)
   console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
