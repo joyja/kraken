@@ -4,7 +4,7 @@ on:
       - main
     paths:
       - '.github/workflows/**'
-      - 'mantle/back/src/**'
+      - 'mantle/back/**'
 jobs:
   build:
     runs-on: ubuntu-latest
