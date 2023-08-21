@@ -25,7 +25,6 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 COPY ecosystem.config.cjs ./
 COPY --from=build /app/build ./build/
-COPY --from=build /app/.svelte-kit ./.svelte-kit/
 COPY --from=build /app/node_modules ./node_modules
 
 # Expose the listening port of your app

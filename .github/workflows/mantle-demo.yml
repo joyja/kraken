@@ -3,7 +3,7 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/**'
+      - '.github/workflows/mantle-demo.yml'
       - 'demo/front/src/**'
       - 'demo/front/static/**'
 jobs:
