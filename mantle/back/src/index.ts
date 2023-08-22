@@ -22,7 +22,7 @@ const PORT = 4000
 
 server.listen(PORT, async () => {
 	spdata.initialize({
-		serverUrl: `${process.env.MANTLE_MQTTENCRYPT ? 'ssl' : 'tcp'}://${process.env.MANTLE_MQTTHOST}:${process.env.MANTLE_MQTTTPORT}`,
+		serverUrl: `${process.env.MANTLE_MQTTENCRYPT === "1" ? 'ssl' : 'tcp'}://${process.env.MANTLE_MQTTHOST}:${process.env.MANTLE_MQTTTPORT}`,
 		username: process.env.MANTLE_MQTTUSERNAME!,
 		password: process.env.MANTLE_MQTTPASSWORD!,
 	})
