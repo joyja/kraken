@@ -36,7 +36,7 @@ export class History {
     let value = metric.value
     if (valueColumn && value) {
       let sql = `INSERT INTO "${this.tableName}" ("group_id", "node_id", "device_id", "metric_id", "${valueColumn}", timestamp) VALUES ($1, $2, $3, $4, $5, $6)`
-      let params = [metric.groupId, metric.nodeId, metric.deviceId, metric.id, value, metric.timestamp]
+      let params = [metric.groupId, metric.nodeId, metric.deviceId, metric.id, value, metric.updatedOn]
       this.pool.query(sql, params)
     } else {
       log.info(`Received metric with invalid value (${ JSON.stringify(value,null,2)}) or value type (${ metric.type }), not logging.`)

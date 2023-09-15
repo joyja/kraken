@@ -84,6 +84,11 @@ export class SparkplugMetric extends SparkplugBasicMetrics {
   update(update:NonNullable<Unpacked<UPayload['metrics']>>) {
     Object.assign(this, { ...update, })
     this.updateCount += 1
+    if (update.timestamp && typeof update.timestamp !== 'number') {
+      this.updatedOn = new Date(update.timestamp.toNumber() * 1000)
+    } else {
+      this.updatedOn = update.timestamp ? new Date(update.timestamp * 1000) : new Date()
+    }
   }
 }
 
