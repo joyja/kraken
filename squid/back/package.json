@@ -21,6 +21,7 @@
     "kraken-sparkplug-client": "^0.0.13",
     "octokit": "^3.0.0",
     "sparkplug-client": "^3.2.3",
+    "systeminformation": "^5.21.4",
     "tar-fs": "^3.0.4",
     "vitest": "^0.32.2"
   },

@@ -6,7 +6,7 @@ import events from 'events'
 import { UTemplate } from 'kraken-sparkplug-client'
 import path from 'path'
 import fs from 'fs'
-import { v4 as uuidv4} from 'uuid'
+import { nanoid } from 'nanoid'
 
 const USER_DATA_PATH = path.join(app.getPath("userData"), 'user_data.json')
 
@@ -309,8 +309,8 @@ class SparkplugData extends events.EventEmitter {
       serverUrl,
       username,
       password,
-      clientId: `cuttlefish-${uuidv4()}`,
-      primaryHostId: `cuttlefish-${uuidv4()}`,
+      clientId: `cuttlefish-${nanoid(7)}`,
+      primaryHostId: `cuttlefish-${nanoid(7)}`,
     })
     this.createEvents()
     this.emit('update',this.groups)
