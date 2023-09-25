@@ -25,6 +25,7 @@ type SparkplugNode {
   updatedOn: Date!
   devices: [SparkplugDevice!]!
   unbornDevices: [SparkplugDevice!]!
+  metrics: [SparkplugMetric!]!
 }
 
 type SparkplugGroup {
