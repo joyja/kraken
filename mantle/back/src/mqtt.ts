@@ -187,7 +187,7 @@ class SparkplugData extends events.EventEmitter {
       username,
       password,
       clientId: process.env.MANTLE_CLIENT_ID || `mantle-${uuidv4()}`,
-      primaryHostId: process.env.MANTLE_PRIMARYHOST_ID || `mantle-${uuidv4()}`,
+      primaryHostId: process.env.MANTLE_MQTTPRIMARYHOSTID || `mantle-${uuidv4()}`,
     })
     this.history = await History.initializeHistory(pool)
     this.createEvents()
