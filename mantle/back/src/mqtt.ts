@@ -192,6 +192,7 @@ class SparkplugData extends events.EventEmitter {
     this.history = await History.initializeHistory(pool)
     this.createEvents()
     this.emit('update',this.groups)
+    this.client.publishHostOnline()
   }
   createEvents() {
     this.client!.on('nbirth',(topic, groupId, nodeId, payload) => {
@@ -351,6 +352,7 @@ class SparkplugData extends events.EventEmitter {
     })
     this.client!.on('connect',() => {
       console.log('connecting')
+      this.client!.publishHostOnline()
     })
     this.client!.on('reconnect',() => {
       console.log('reconnecting')
@@ -363,6 +365,10 @@ class SparkplugData extends events.EventEmitter {
     })
     this.client!.on('message',(topic, payload) => {
       console.log(`received message on topic "${topic}" with payload "${JSON.stringify(payload,null,4)}"`)
+    })
+    this.client!.on('offline',() => {
+      console.log('offline')
+      this.client!.publishHostOffline()
     })
   }
   getGroup(id:string) {

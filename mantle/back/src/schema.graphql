@@ -40,3 +40,9 @@ type Query {
   info: String!
   groups: [SparkplugGroup!]!
 }
+
+"""Read and write queries"""
+type Mutation {
+  publishNodeCommand(nodeId: String!, command: String!): Boolean!
+  publishDeviceCommand(nodeId: String!, deviceId: String!, command: String!): Boolean!
+}
