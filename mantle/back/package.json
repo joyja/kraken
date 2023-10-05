@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "MANTLE_LOGLEVEL=DEBUG NODE_ENV=development ts-node-dev --exit-child --respawn src/index.ts",
-    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen": "graphql-codegen",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "build": "tsc"
@@ -24,6 +24,9 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/typescript": "^4.0.1",
+    "@graphql-codegen/typescript-resolvers": "^4.0.1",
     "@types/pg": "^8.10.2",
     "@types/uuid": "^9.0.2",
     "typescript": "^5.1.6"

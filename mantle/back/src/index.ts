@@ -27,5 +27,5 @@ server.listen(PORT, async () => {
 		password: process.env.MANTLE_MQTTPASSWORD!,
 	})
 	spdata.startAutoRebirth(10000)
-  console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
+	console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
 })

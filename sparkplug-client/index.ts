@@ -601,7 +601,7 @@ class SparkplugHost extends events.EventEmitter {
             username,
             password,
             will: {
-                topic: `STATE/${this.primaryHostId}`,
+                topic: `STprimaryHostIdATE/${this.primaryHostId}`,
                 payload: `OFFLINE`,
                 qos: 0,
                 retain: true,

@@ -35,14 +35,96 @@ type SparkplugGroup {
   unbornNodes: [SparkplugNode!]!
 }
 
-"""Read only queries"""
+enum AlarmConditionMode {
+  NOT_EQUAL
+  EQUAL
+  BELOW_SETPOINT
+  ABOVE_SETPOINT
+  BETWEEN_SETPOINTS
+  OUTSIDE_SETPOINTS
+}
+
+type AlarmCondition {
+  mode: AlarmConditionMode!
+  setpoint: Float
+  inclusive: Boolean
+  setpointLow: Float
+  inclusiveLow: Boolean
+  setpointHigh: Float
+  inclusiveHigh: Boolean
+}
+
+input AlarmConditionInput {
+  mode: AlarmConditionMode!
+  setpoint: Float
+  inclusive: Boolean
+  setpointLow: Float
+  inclusiveLow: Boolean
+  setpointHigh: Float
+  inclusiveHigh: Boolean
+}
+
+type Alarm {
+  id: String!
+  name: String!
+  enabled: Boolean!
+  priority: String!
+  condition: AlarmCondition!
+  groupId: String!
+  nodeId: String!
+  deviceId: String!
+  metricId: String!
+  acknowledged: Boolean!
+  active: Boolean!
+}
+
+input CreateAlarm {
+  name: String!
+  enabled: Boolean!
+  priority: String!
+  condition: AlarmConditionInput!
+  groupId: String!
+  nodeId: String!
+  deviceId: String!
+  metricId: String!
+}
+
+input UpdateAlarm {
+  id: String!
+  name: String
+  enabled: Boolean
+  priority: String
+  condition: AlarmConditionInput
+  groupId: String
+  nodeId: String
+  deviceId: String
+  metricId: String
+}
+
+input DeleteAlarm {
+  id: String!
+}
+
+"""
+Read only queries
+"""
 type Query {
   info: String!
   groups: [SparkplugGroup!]!
+  alarms: [Alarm!]!
 }
 
-"""Read and write queries"""
+"""
+Read and write queries
+"""
 type Mutation {
   publishNodeCommand(nodeId: String!, command: String!): Boolean!
-  publishDeviceCommand(nodeId: String!, deviceId: String!, command: String!): Boolean!
+  publishDeviceCommand(
+    nodeId: String!
+    deviceId: String!
+    command: String!
+  ): Boolean!
+  createAlarm(input: CreateAlarm!): Alarm!
+  updateAlarm(input: UpdateAlarm!): Alarm!
+  deleteAlarm(input: DeleteAlarm!): Alarm!
 }
