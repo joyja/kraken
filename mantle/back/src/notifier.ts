@@ -2,11 +2,9 @@ import { Roster, RosterEntry, User } from "@prisma/client";
 import { alarmHandler } from "./alarm"
 import { prisma } from "./prisma";
 import { rosterHandler } from "./roster"
-import twilio from 'twilio';
 
 const accountSid: string | undefined = process.env.MANTLE_TWILIO_ACCOUNT_SID;
 const authToken: string | undefined = process.env.MANTLE_TWILIO_AUTH_TOKEN;
-const client = twilio(accountSid, authToken);
 
 export async function voiceCall({message, to, rosterId}:{message:string, to:string, rosterId:string}) {
   const seagullUrl = process.env.MANTLE_SEAGULL_URL
@@ -30,15 +28,15 @@ export async function voiceCall({message, to, rosterId}:{message:string, to:stri
   }
 }
 
-export function sendSMS({message, to, from}:{message:string, to:string, from:string}) {
-  return client.messages
-    .create({
-      body: message,
-      to,
-      from,
-    })
-    .then(message => console.log(message.sid));
-}
+// export function sendSMS({message, to, from}:{message:string, to:string, from:string}) {
+//   return client.messages
+//     .create({
+//       body: message,
+//       to,
+//       from,
+//     })
+//     .then(message => console.log(message.sid));
+// }
 
 class Notifier {
   public rosterId: string
