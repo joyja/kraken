@@ -30,6 +30,7 @@ export type Alarm = {
   name: Scalars['String']['output'];
   nodeId: Scalars['String']['output'];
   priority: Scalars['String']['output'];
+  roster?: Maybe<Roster>;
 };
 
 export type AlarmCondition = {
@@ -73,18 +74,78 @@ export type CreateAlarm = {
   priority: Scalars['String']['input'];
 };
 
+export type CreateRoster = {
+  enabled: Scalars['Boolean']['input'];
+  name: Scalars['String']['input'];
+  retries: Scalars['Int']['input'];
+  timeBetweenRetries: Scalars['Int']['input'];
+};
+
+export type CreateRosterEntry = {
+  email: Scalars['Boolean']['input'];
+  phone: Scalars['Boolean']['input'];
+  rosterId: Scalars['String']['input'];
+  sms: Scalars['Boolean']['input'];
+  userId: Scalars['String']['input'];
+};
+
+export type CreateUser = {
+  email: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  phone: Scalars['String']['input'];
+};
+
 export type DeleteAlarm = {
+  id: Scalars['String']['input'];
+};
+
+export type DeleteRoster = {
+  id: Scalars['String']['input'];
+};
+
+export type DeleteRosterEntry = {
+  id: Scalars['String']['input'];
+};
+
+export type DeleteUser = {
+  id: Scalars['String']['input'];
+};
+
+export type MoveDownRosterEntry = {
+  id: Scalars['String']['input'];
+};
+
+export type MoveUpRosterEntry = {
   id: Scalars['String']['input'];
 };
 
 /** Read and write queries */
 export type Mutation = {
   __typename?: 'Mutation';
+  acknowledgeAlarm: Alarm;
   createAlarm: Alarm;
+  createRoster: Roster;
+  createRosterEntry: RosterEntry;
+  createUser: User;
   deleteAlarm: Alarm;
+  deleteRoster: Roster;
+  deleteRosterEntry: RosterEntry;
+  deleteUser: User;
+  moveDownRosterEntry: RosterEntry;
+  moveUpRosterEntry: RosterEntry;
   publishDeviceCommand: Scalars['Boolean']['output'];
   publishNodeCommand: Scalars['Boolean']['output'];
   updateAlarm: Alarm;
+  updateRoster: Roster;
+  updateRosterEntry: RosterEntry;
+  updateUser: User;
+};
+
+
+/** Read and write queries */
+export type MutationAcknowledgeAlarmArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -95,8 +156,56 @@ export type MutationCreateAlarmArgs = {
 
 
 /** Read and write queries */
+export type MutationCreateRosterArgs = {
+  input: CreateRoster;
+};
+
+
+/** Read and write queries */
+export type MutationCreateRosterEntryArgs = {
+  input: CreateRosterEntry;
+};
+
+
+/** Read and write queries */
+export type MutationCreateUserArgs = {
+  input: CreateUser;
+};
+
+
+/** Read and write queries */
 export type MutationDeleteAlarmArgs = {
   input: DeleteAlarm;
+};
+
+
+/** Read and write queries */
+export type MutationDeleteRosterArgs = {
+  input: DeleteRoster;
+};
+
+
+/** Read and write queries */
+export type MutationDeleteRosterEntryArgs = {
+  input: DeleteRosterEntry;
+};
+
+
+/** Read and write queries */
+export type MutationDeleteUserArgs = {
+  input: DeleteUser;
+};
+
+
+/** Read and write queries */
+export type MutationMoveDownRosterEntryArgs = {
+  input: MoveDownRosterEntry;
+};
+
+
+/** Read and write queries */
+export type MutationMoveUpRosterEntryArgs = {
+  input: MoveUpRosterEntry;
 };
 
 
@@ -120,12 +229,57 @@ export type MutationUpdateAlarmArgs = {
   input: UpdateAlarm;
 };
 
+
+/** Read and write queries */
+export type MutationUpdateRosterArgs = {
+  input: UpdateRoster;
+};
+
+
+/** Read and write queries */
+export type MutationUpdateRosterEntryArgs = {
+  input: UpdateRosterEntry;
+};
+
+
+/** Read and write queries */
+export type MutationUpdateUserArgs = {
+  input: UpdateUser;
+};
+
 /** Read only queries */
 export type Query = {
   __typename?: 'Query';
   alarms: Array<Alarm>;
   groups: Array<SparkplugGroup>;
   info: Scalars['String']['output'];
+  rosters: Array<Roster>;
+  users: Array<User>;
+};
+
+export type Roster = {
+  __typename?: 'Roster';
+  alarms: Array<Alarm>;
+  enabled?: Maybe<Scalars['Boolean']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  retired?: Maybe<Scalars['Boolean']['output']>;
+  retries?: Maybe<Scalars['Int']['output']>;
+  timeBetweenRetries?: Maybe<Scalars['Int']['output']>;
+  users: Array<RosterEntry>;
+};
+
+export type RosterEntry = {
+  __typename?: 'RosterEntry';
+  email?: Maybe<Scalars['Boolean']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  order?: Maybe<Scalars['Int']['output']>;
+  phone?: Maybe<Scalars['Boolean']['output']>;
+  roster?: Maybe<Roster>;
+  rosterId?: Maybe<Scalars['String']['output']>;
+  sms?: Maybe<Scalars['Boolean']['output']>;
+  user?: Maybe<User>;
+  userId?: Maybe<Scalars['String']['output']>;
 };
 
 export type SparkplugDevice = {
@@ -178,6 +332,38 @@ export type UpdateAlarm = {
   name?: InputMaybe<Scalars['String']['input']>;
   nodeId?: InputMaybe<Scalars['String']['input']>;
   priority?: InputMaybe<Scalars['String']['input']>;
+  rosterId?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateRoster = {
+  enabled: Scalars['Boolean']['input'];
+  id: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  retries: Scalars['Int']['input'];
+  timeBetweenRetries: Scalars['Int']['input'];
+};
+
+export type UpdateRosterEntry = {
+  email: Scalars['Boolean']['input'];
+  id: Scalars['String']['input'];
+  phone: Scalars['Boolean']['input'];
+  sms: Scalars['Boolean']['input'];
+};
+
+export type UpdateUser = {
+  email?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  phone?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type User = {
+  __typename?: 'User';
+  RosterEntry?: Maybe<Array<RosterEntry>>;
+  email?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  phone?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -257,12 +443,22 @@ export type ResolversTypes = {
   AlarmConditionMode: AlarmConditionMode;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CreateAlarm: CreateAlarm;
+  CreateRoster: CreateRoster;
+  CreateRosterEntry: CreateRosterEntry;
+  CreateUser: CreateUser;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
   DeleteAlarm: DeleteAlarm;
+  DeleteRoster: DeleteRoster;
+  DeleteRosterEntry: DeleteRosterEntry;
+  DeleteUser: DeleteUser;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  MoveDownRosterEntry: MoveDownRosterEntry;
+  MoveUpRosterEntry: MoveUpRosterEntry;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
+  Roster: ResolverTypeWrapper<Roster>;
+  RosterEntry: ResolverTypeWrapper<RosterEntry>;
   SparkplugDevice: ResolverTypeWrapper<SparkplugDevice>;
   SparkplugGroup: ResolverTypeWrapper<SparkplugGroup>;
   SparkplugMetric: ResolverTypeWrapper<SparkplugMetric>;
@@ -270,6 +466,10 @@ export type ResolversTypes = {
   SparkplugNode: ResolverTypeWrapper<SparkplugNode>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   UpdateAlarm: UpdateAlarm;
+  UpdateRoster: UpdateRoster;
+  UpdateRosterEntry: UpdateRosterEntry;
+  UpdateUser: UpdateUser;
+  User: ResolverTypeWrapper<User>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -279,12 +479,22 @@ export type ResolversParentTypes = {
   AlarmConditionInput: AlarmConditionInput;
   Boolean: Scalars['Boolean']['output'];
   CreateAlarm: CreateAlarm;
+  CreateRoster: CreateRoster;
+  CreateRosterEntry: CreateRosterEntry;
+  CreateUser: CreateUser;
   Date: Scalars['Date']['output'];
   DeleteAlarm: DeleteAlarm;
+  DeleteRoster: DeleteRoster;
+  DeleteRosterEntry: DeleteRosterEntry;
+  DeleteUser: DeleteUser;
   Float: Scalars['Float']['output'];
   Int: Scalars['Int']['output'];
+  MoveDownRosterEntry: MoveDownRosterEntry;
+  MoveUpRosterEntry: MoveUpRosterEntry;
   Mutation: {};
   Query: {};
+  Roster: Roster;
+  RosterEntry: RosterEntry;
   SparkplugDevice: SparkplugDevice;
   SparkplugGroup: SparkplugGroup;
   SparkplugMetric: SparkplugMetric;
@@ -292,6 +502,10 @@ export type ResolversParentTypes = {
   SparkplugNode: SparkplugNode;
   String: Scalars['String']['output'];
   UpdateAlarm: UpdateAlarm;
+  UpdateRoster: UpdateRoster;
+  UpdateRosterEntry: UpdateRosterEntry;
+  UpdateUser: UpdateUser;
+  User: User;
 };
 
 export type AlarmResolvers<ContextType = any, ParentType extends ResolversParentTypes['Alarm'] = ResolversParentTypes['Alarm']> = {
@@ -306,6 +520,7 @@ export type AlarmResolvers<ContextType = any, ParentType extends ResolversParent
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   nodeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   priority?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  roster?: Resolver<Maybe<ResolversTypes['Roster']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -325,17 +540,56 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 }
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  acknowledgeAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationAcknowledgeAlarmArgs, 'id'>>;
   createAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationCreateAlarmArgs, 'input'>>;
+  createRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationCreateRosterArgs, 'input'>>;
+  createRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationCreateRosterEntryArgs, 'input'>>;
+  createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
   deleteAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationDeleteAlarmArgs, 'input'>>;
+  deleteRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationDeleteRosterArgs, 'input'>>;
+  deleteRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationDeleteRosterEntryArgs, 'input'>>;
+  deleteUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'input'>>;
+  moveDownRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationMoveDownRosterEntryArgs, 'input'>>;
+  moveUpRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationMoveUpRosterEntryArgs, 'input'>>;
   publishDeviceCommand?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationPublishDeviceCommandArgs, 'command' | 'deviceId' | 'nodeId'>>;
   publishNodeCommand?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationPublishNodeCommandArgs, 'command' | 'nodeId'>>;
   updateAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationUpdateAlarmArgs, 'input'>>;
+  updateRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationUpdateRosterArgs, 'input'>>;
+  updateRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationUpdateRosterEntryArgs, 'input'>>;
+  updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   alarms?: Resolver<Array<ResolversTypes['Alarm']>, ParentType, ContextType>;
   groups?: Resolver<Array<ResolversTypes['SparkplugGroup']>, ParentType, ContextType>;
   info?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  rosters?: Resolver<Array<ResolversTypes['Roster']>, ParentType, ContextType>;
+  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+};
+
+export type RosterResolvers<ContextType = any, ParentType extends ResolversParentTypes['Roster'] = ResolversParentTypes['Roster']> = {
+  alarms?: Resolver<Array<ResolversTypes['Alarm']>, ParentType, ContextType>;
+  enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  retired?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  retries?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  timeBetweenRetries?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  users?: Resolver<Array<ResolversTypes['RosterEntry']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type RosterEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['RosterEntry'] = ResolversParentTypes['RosterEntry']> = {
+  email?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  roster?: Resolver<Maybe<ResolversTypes['Roster']>, ParentType, ContextType>;
+  rosterId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sms?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  userId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type SparkplugDeviceResolvers<ContextType = any, ParentType extends ResolversParentTypes['SparkplugDevice'] = ResolversParentTypes['SparkplugDevice']> = {
@@ -378,16 +632,28 @@ export type SparkplugNodeResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  RosterEntry?: Resolver<Maybe<Array<ResolversTypes['RosterEntry']>>, ParentType, ContextType>;
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   Alarm?: AlarmResolvers<ContextType>;
   AlarmCondition?: AlarmConditionResolvers<ContextType>;
   Date?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Roster?: RosterResolvers<ContextType>;
+  RosterEntry?: RosterEntryResolvers<ContextType>;
   SparkplugDevice?: SparkplugDeviceResolvers<ContextType>;
   SparkplugGroup?: SparkplugGroupResolvers<ContextType>;
   SparkplugMetric?: SparkplugMetricResolvers<ContextType>;
   SparkplugMetricHistory?: SparkplugMetricHistoryResolvers<ContextType>;
   SparkplugNode?: SparkplugNodeResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
 };
 

@@ -76,6 +76,7 @@ type Alarm {
   metricId: String!
   acknowledged: Boolean!
   active: Boolean!
+  roster: Roster
 }
 
 input CreateAlarm {
@@ -99,10 +100,106 @@ input UpdateAlarm {
   nodeId: String
   deviceId: String
   metricId: String
+  rosterId: String
 }
 
 input DeleteAlarm {
   id: String!
+}
+
+type User {
+  id: String
+  name: String
+  email: String
+  phone: String
+  RosterEntry: [RosterEntry!]
+}
+
+input UpdateUser {
+  id: String!
+  name: String
+  email: String
+  phone: String
+}
+
+input CreateUser {
+  id: String
+  name: String!
+  email: String!
+  phone: String!
+}
+
+input DeleteUser {
+  id: String!
+}
+
+input UpdateRoster {
+  id: String!
+  name: String!
+  enabled: Boolean!
+  retries: Int!
+  timeBetweenRetries: Int!
+}
+
+input CreateRoster {
+  name: String!
+  enabled: Boolean!
+  retries: Int!
+  timeBetweenRetries: Int!
+}
+
+input DeleteRoster {
+  id: String!
+}
+
+type Roster {
+  id: String
+  name: String
+  enabled: Boolean
+  users: [RosterEntry!]!
+  retries: Int
+  timeBetweenRetries: Int
+  retired: Boolean
+  alarms: [Alarm!]!
+}
+
+input UpdateRosterEntry {
+  id: String!
+  sms: Boolean!
+  email: Boolean!
+  phone: Boolean!
+}
+
+input MoveUpRosterEntry {
+  id: String!
+}
+
+input MoveDownRosterEntry {
+  id: String!
+}
+
+input CreateRosterEntry {
+  rosterId: String!
+  userId: String!
+  sms: Boolean!
+  email: Boolean!
+  phone: Boolean!
+}
+
+input DeleteRosterEntry {
+  id: String!
+}
+
+type RosterEntry {
+  id: String
+  roster: Roster
+  rosterId: String
+  user: User
+  userId: String
+  sms: Boolean
+  email: Boolean
+  phone: Boolean
+  order: Int
 }
 
 """
@@ -112,6 +209,8 @@ type Query {
   info: String!
   groups: [SparkplugGroup!]!
   alarms: [Alarm!]!
+  users: [User!]!
+  rosters: [Roster!]!
 }
 
 """
@@ -127,4 +226,17 @@ type Mutation {
   createAlarm(input: CreateAlarm!): Alarm!
   updateAlarm(input: UpdateAlarm!): Alarm!
   deleteAlarm(input: DeleteAlarm!): Alarm!
+  acknowledgeAlarm(id: String!): Alarm!
+  createUser(input: CreateUser!): User!
+  updateUser(input: UpdateUser!): User!
+  deleteUser(input: DeleteUser!): User!
+  createRoster(input: CreateRoster!): Roster!
+  updateRoster(input: UpdateRoster!): Roster!
+  deleteRoster(input: DeleteRoster!): Roster!
+  createRosterEntry(input: CreateRosterEntry!): RosterEntry!
+  updateRosterEntry(input: UpdateRosterEntry!): RosterEntry!
+  deleteRosterEntry(input: DeleteRosterEntry!): RosterEntry!
+  moveUpRosterEntry(input: MoveUpRosterEntry!): RosterEntry!
+  moveDownRosterEntry(input: MoveDownRosterEntry!): RosterEntry!
+  acknowledgeRoster(id: String!): Roster!
 }

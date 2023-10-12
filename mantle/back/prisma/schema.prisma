@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model History {
+  groupId     String
+  nodeId      String
+  deviceId    String   @default("")
+  metricId    String
+  intValue    Int?
+  floatValue  Float?
+  stringValue String?
+  boolValue   Boolean?
+  timestamp   DateTime @default(now())
+
+  @@unique([groupId, nodeId, deviceId, metricId, timestamp])
+}
+
+enum AlarmPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlarmConditionMode {
+  EQUAL
+  NOT_EQUAL
+  GREATER_THAN
+  LESS_THAN
+  GREATER_THAN_OR_EQUAL
+  LESS_THAN_OR_EQUAL
+}
+
+model Alarm {
+  id           String         @id @default(uuid())
+  name         String
+  enabled      Boolean
+  priority     String
+  condition    Json
+  groupId      String
+  nodeId       String
+  deviceId     String
+  metricId     String
+  acknowledged Boolean        @default(true)
+  active       Boolean        @default(false)
+  roster       Roster?        @relation(fields: [rosterId], references: [id])
+  rosterId     String?
+  history      AlarmHistory[]
+}
+
+model AlarmHistory {
+  alarm        Alarm    @relation(fields: [alarmId], references: [id])
+  alarmId      String
+  timestamp    DateTime @default(now())
+  acknowledged Boolean
+  active       Boolean
+
+  @@unique([alarmId, timestamp, acknowledged, active])
+}
+
+model Roster {
+  id                 String        @id @default(uuid())
+  name               String
+  enabled            Boolean
+  users              RosterEntry[]
+  retries            Int
+  timeBetweenRetries Int
+  retired            Boolean       @default(false)
+  alarms             Alarm[]
+}
+
+model RosterEntry {
+  id       String  @id @default(uuid())
+  roster   Roster  @relation(fields: [rosterId], references: [id])
+  rosterId String
+  user     User    @relation(fields: [userId], references: [id])
+  userId   String
+  sms      Boolean
+  email    Boolean
+  phone    Boolean
+  order    Int
+}
+
+model User {
+  id          String        @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  RosterEntry RosterEntry[]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

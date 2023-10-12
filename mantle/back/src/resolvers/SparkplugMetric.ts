@@ -9,7 +9,7 @@ export async function history(parent:SparkplugMetric) {
   return history?.map((row:any) => {
     return {
       timestamp: row.timestamp,
-      value: `${row.int_value || row.float_value || row.string_value || row.bool_value}`
+      value: `${row.intValue || row.floatValue || row.stringValue || row.boolValue}`
     }
   })
 }

@@ -1,162 +1,112 @@
-import type { Pool } from 'pg'
-import { SparkplugMetric } from './mqtt'
+import { prisma } from './prisma'
+import { 
+  AlarmCondition,
+  AlarmConditionMode,
+  CreateAlarm as ResolverCreateAlarm, 
+  UpdateAlarm as ResolverUpdateAlarm, 
+  Alarm as ResolverAlarm, 
+  Scalars,
+} from './resolvers/types'
+import { Alarm as PrismaAlarm } from '@prisma/client'
 import { Log } from './log'
-import { pool } from './database'
-import { AlarmCondition, CreateAlarm, UpdateAlarm } from './resolvers/types'
+import { SparkplugMetric } from './mqtt'
 
 const log = new Log('Alarm')
 
-interface AlarmConstructorOptions {
-  alarms: Alarms
-  id:string
-  name:string
-  enabled:boolean
-  priority:string
-  condition:AlarmCondition
-  groupId:string
-  nodeId:string
-  deviceId:string
-  metricId:string
-  acknowledged:boolean
-  active:boolean
-}
+function parseAlarmCondition(data: any): AlarmCondition | null {
+  if (!data) {
+    return null;
+  }
 
-class Alarms {
-  private pool:Pool
-  public history?:AlarmHistory
-  public alarms: Alarm[] = []
-  private tableName = process.env.MANTLE_ALARM_TABLENAME || 'alarm'
-  static async initializeAlarm(pool:Pool) {
-    const alarm = new Alarms(pool)
-    await alarm.createTableIfNotExists()
-    alarm.history = await AlarmHistory.initializeAlarmHistory(pool)
-    await alarm.getAlarms()
-    return alarm
-  }
-  constructor(pool:Pool) {
-    this.pool = pool
-  }
-  private async createTableIfNotExists() {
-    let sql = `CREATE TABLE IF NOT EXISTS "${this.tableName}" (
-      "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      "name" TEXT,
-      "enabled" BOOLEAN,
-      "priority" TEXT,
-      "condition" JSON,
-      "group_id" TEXT,
-      "node_id" TEXT,
-      "device_id" TEXT,
-      "metric_id" TEXT,
-      "active" BOOLEAN,
-      "acknowledged" BOOLEAN,
-      "retired" BOOLEAN,
-    )`
-    await this.pool.query(sql)
-  }
-  private async getAlarms() {
-    this.alarms = []
-    const sql = `SELECT * FROM ${this.tableName} WHERE retired=`
-    const { rows } = await this.pool.query(sql)
-    for (const row of rows) {
-      const alarm = new Alarm({
-        alarms: this,
-        id: row.id,
-        name: row.name,
-        enabled: row.enabled,
-        priority: row.priority,
-        condition: row.condition,
-        groupId: row.group_id,
-        nodeId: row.node_id,
-        deviceId: row.device_id,
-        metricId: row.metric_id,
-        acknowledged: row.acknowledged,
-        active: row.active
-      })
-      this.alarms.push(alarm)
+  const isBooleanOutput = (value: any): value is Scalars['Boolean']['output'] => 
+    typeof value === 'boolean';
+
+  const isFloatOutput = (value: any): value is Scalars['Float']['output'] => 
+    typeof value === 'number';
+
+  const isValidMode = (value: any): value is AlarmConditionMode => 
+    Object.values(AlarmConditionMode).includes(value as AlarmConditionMode);
+
+  if (isValidMode(data.mode)) {
+    const parsed: AlarmCondition = {
+      __typename: data.__typename === 'AlarmCondition' ? data.__typename : undefined,
+      mode: data.mode
+    };
+
+    if (data.inclusive !== undefined && isBooleanOutput(data.inclusive)) {
+      parsed.inclusive = data.inclusive;
     }
+
+    if (data.inclusiveHigh !== undefined && isBooleanOutput(data.inclusiveHigh)) {
+      parsed.inclusiveHigh = data.inclusiveHigh;
+    }
+
+    if (data.inclusiveLow !== undefined && isBooleanOutput(data.inclusiveLow)) {
+      parsed.inclusiveLow = data.inclusiveLow;
+    }
+
+    if (data.setpoint !== undefined && isFloatOutput(data.setpoint)) {
+      parsed.setpoint = data.setpoint;
+    }
+
+    if (data.setpointHigh !== undefined && isFloatOutput(data.setpointHigh)) {
+      parsed.setpointHigh = data.setpointHigh;
+    }
+
+    if (data.setpointLow !== undefined && isFloatOutput(data.setpointLow)) {
+      parsed.setpointLow = data.setpointLow;
+    }
+
+    return parsed;
   }
-  public async updateAlarm(alarm:Alarm) {
-    const sql = `UPDATE ${this.tableName} SET name=$1,enabled=$2,priority=$3,condition=$4,group_id=$5,node_id=$6,device_id=$7,metric_id=$8 WHERE id=$9`
-    const values = [alarm.name, alarm.enabled, alarm.priority, alarm.condition, alarm.groupId, alarm.nodeId, alarm.deviceId, alarm.metricId, alarm.id]
-    await this.pool.query(sql, values)
-    await this.getAlarms()
-  }
-  public async createAlarm(input:CreateAlarm) {
-    const sql = `INSERT INTO ${this.tableName} (name,enabled,priority,condition,group_id,node_id,device_id,metric_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`
-    const values = [input.name, input.enabled, input.priority, input.condition, input.groupId, input.nodeId, input.deviceId, input.metricId]
-    const rows = await this.pool.query(sql, values)
-    await this.getAlarms()
-    return this.getAlarm(rows.rows[0].id)
-  }
-  public async deleteAlarm(alarm:Alarm) {
-    const sql = `UPDATE ${this.tableName} SET retired=1 WHERE id=$1`
-    const values = [alarm.id]
-    await this.pool.query(sql, values)
-    await this.getAlarms()
-    return alarm
-  }
-  getAlarm(id:string) {
-    return this.alarms.find(alarm => alarm.id === id)
+
+  return null;
+}
+
+function prismaToResolver(prismaAlarm:PrismaAlarm):ResolverAlarm {
+  const condition = parseAlarmCondition(prismaAlarm.condition)
+  if (condition) {
+    return {
+      ...prismaAlarm,
+      condition 
+    }
+  } else {
+    throw Error(`Failed to parse condition for alarm ${ prismaAlarm.id }`)
   }
 }
 
-class Alarm {
-  public alarms:Alarms
-  public id:string
-  public name:string
-  public enabled:boolean
-  public priority:string
-  public condition:AlarmCondition
-  public groupId:string
-  public nodeId:string
-  public deviceId:string
-  public metricId:string
-  public acknowledged:boolean
-  public active:boolean
-  constructor({ alarms, id, name, enabled, priority, condition, groupId, nodeId, deviceId, metricId, acknowledged, active}:AlarmConstructorOptions) {
-    this.alarms = alarms
-    this.id = id
-    this.name = name
-    this.enabled = enabled
-    this.priority = priority
-    this.condition = condition
-    this.groupId = groupId
-    this.nodeId = nodeId
-    this.deviceId = deviceId
-    this.metricId = metricId
-    this.acknowledged = acknowledged
-    this.active = active
-  }
-  evaluate(metric:SparkplugMetric) {
-    const value = metric.value
-    if (this.condition.mode === 'EQUAL') {
-      return value === this.condition.setpoint
-    } else if (this.condition.mode === 'NOT_EQUAL') {
-      return value !== this.condition.setpoint
-    } else if (this.condition.mode === 'ABOVE_SETPOINT') {
+function evaluate(alarm:PrismaAlarm, metric:SparkplugMetric) {
+  const condition = parseAlarmCondition(alarm.condition)
+  const value = metric.value
+  if (condition) {
+    if (condition.mode === 'EQUAL') {
+      return value === condition.setpoint
+    } else if (condition.mode === 'NOT_EQUAL') {
+      return value !== condition.setpoint
+    } else if (condition.mode === 'ABOVE_SETPOINT') {
       if (typeof value === 'number') {
-        return this.condition.inclusive ? value >= this.condition.setpoint! : value > this.condition.setpoint!
+        return condition.inclusive ? value >= condition.setpoint! : value > condition.setpoint!
       } else {
         throw Error('Cannot evaluate Above Setpoint condition on non-numeric value')
       }
-    } else if (this.condition.mode === 'BELOW_SETPOINT') {
+    } else if (condition.mode === 'BELOW_SETPOINT') {
       if (typeof value === 'number') {
-        return this.condition.inclusive ? value <= this.condition.setpoint! : value < this.condition.setpoint!
+        return condition.inclusive ? value <= condition.setpoint! : value < condition.setpoint!
       } else {
         throw Error('Cannot evaluate Below Setpoint condition on non-numeric value')
       }
-    } else if (this.condition.mode === 'BETWEEN_SETPOINTS') {
+    } else if (condition.mode === 'BETWEEN_SETPOINTS') {
       if (typeof value === 'number') {
-        const low = this.condition.inclusiveLow ? value <= this.condition.setpointLow! : value < this.condition.setpointLow!
-        const high = this.condition.inclusiveHigh ? value >= this.condition.setpointHigh! : value > this.condition.setpointHigh!
+        const low = condition.inclusiveLow ? value <= condition.setpointLow! : value < condition.setpointLow!
+        const high = condition.inclusiveHigh ? value >= condition.setpointHigh! : value > condition.setpointHigh!
         return !low && !high
       } else {
         throw Error('Cannot evaluate Between Setpoints condition on non-numeric value')
       }
-    } else if (this.condition.mode === 'OUTSIDE_SETPOINTS') {
+    } else if (condition.mode === 'OUTSIDE_SETPOINTS') {
       if (typeof value === 'number') {
-        const low = this.condition.inclusiveLow ? value <= this.condition.setpointLow! : value < this.condition.setpointLow!
-        const high = this.condition.inclusiveHigh ? value >= this.condition.setpointHigh! : value > this.condition.setpointHigh!
+        const low = condition.inclusiveLow ? value <= condition.setpointLow! : value < condition.setpointLow!
+        const high = condition.inclusiveHigh ? value >= condition.setpointHigh! : value > condition.setpointHigh!
         return low || high
       } else {
         throw Error('Cannot evaluate Outside Setpoints condition on non-numeric value')
@@ -165,81 +115,91 @@ class Alarm {
       throw Error('Unknown condition mode')
     }
   }
-  async evaluateAndLog(metric:SparkplugMetric) {
-    const result = this.evaluate(metric)
-    if (result !== this.active) {
-      await this.alarms.history!.log(this, result)
+}
+
+async function historize(alarm:PrismaAlarm, active:boolean) {
+  return await prisma.alarmHistory.create({
+    data: {
+      alarmId: alarm.id,
+      timestamp: new Date(),
+      active,
+      acknowledged: alarm.acknowledged
     }
-    this.active = result
-    return result
+  })
+}
+
+class AlarmHandler {
+  create({ input }:{ input: ResolverCreateAlarm }): Promise<ResolverAlarm> {
+    return prisma.alarm.create({ data: input }).then(prismaToResolver)
   }
-  async acknowledgeAndLog() {
-    if (!this.acknowledged) {
-      this.acknowledged = true
-      await this.alarms.updateAlarm(this)
-      await this.alarms.history!.log(this, this.active)
+  update({ input }:{ input: ResolverUpdateAlarm }): Promise<ResolverAlarm> {
+    const { id, ...updateFields }:{ id: string; [key: string]: any } = input
+    const data:{[key:string]:any} = {}
+    // Filter out null values
+    Object.keys(updateFields).forEach((key:string) => {
+      if (updateFields[key]) data[key] = updateFields[key]
+    })
+    return prisma.alarm.update({ where: { id }, data }).then(prismaToResolver)
+  }
+  delete(id:string): Promise<ResolverAlarm> {
+    return prisma.alarm.delete({ where: { id } }).then(prismaToResolver)
+  }
+  getAll(): Promise<ResolverAlarm[]> {
+    return prisma.alarm.findMany().then(alarms => alarms.map(prismaToResolver))
+  }
+  getActive(): Promise<ResolverAlarm[]> {
+    return prisma.alarm.findMany({ where: { active: true }, include: { roster:true } }).then(alarms => alarms.map(prismaToResolver))
+  }
+  getUnack(): Promise<ResolverAlarm[]> {
+    return prisma.alarm.findMany({ where: { acknowledged: false }, include: { roster:true } }).then(alarms => alarms.map(prismaToResolver))
+  }
+  getOne(id:string): Promise<ResolverAlarm | void> {
+    return prisma.alarm.findUnique({ where: { id } })
+      .then((alarm) => {
+        if (alarm) {
+          prismaToResolver(alarm)
+        } else {
+          throw Error(`Alarm with id ${ id } not found`)
+        }
+      })
+  }
+  async acknowledge(id:string): Promise<ResolverAlarm> {
+    const alarm = await prisma.alarm.findUnique({ where: { id } })
+    if (alarm) {
+      if ( !alarm.acknowledged) {
+        const updated = await prisma.alarm.update({ where: { id: alarm.id }, data: { acknowledged: true } })
+        await historize(updated, true)
+        return prismaToResolver(updated)
+      } else {
+        return prismaToResolver(alarm)
+      }
+    } else {
+      throw Error(`Alarm with id ${ id } not found`)
     }
   }
-  async delete() {
-    await this.alarms.deleteAlarm(this)
-  }
-  async update({ name, enabled, priority, condition, groupId, nodeId, deviceId, metricId }:UpdateAlarm) {
-    if (name) {
-      this.name = name
-    }
-    if (enabled) {
-      this.enabled = enabled
-    }
-    if (priority) {
-      this.priority = priority
-    }
-    if (condition) {
-      this.condition = condition
-    }
-    if (groupId) {
-      this.groupId = groupId
-    }
-    if (nodeId) {
-      this.nodeId = nodeId
-    }
-    if (deviceId) {
-      this.deviceId = deviceId
-    }
-    if (metricId) {
-      this.metricId = metricId
-    }
-    await this.alarms.updateAlarm(this)
+  async evaluateMetricAlarms(metric:SparkplugMetric) {
+    const alarms = await prisma.alarm.findMany({
+      where: {
+        groupId: metric.groupId,
+        nodeId: metric.nodeId,
+        deviceId: metric.deviceId,
+        metricId: metric.id
+      }
+    })
+    await Promise.all(alarms.map(async (alarm) => {
+      const result = evaluate(alarm, metric)
+      if (result && !alarm.active) {
+        log.info(`Alarm ${ alarm.id }:${ alarm.name } active`)
+        await prisma.alarm.update({ where: { id: alarm.id }, data: { active: true, acknowledged: false } })
+        historize(alarm, true)
+      } else if (!result && alarm.active) {
+        log.info(`Alarm ${ alarm.id }:${ alarm.name } cleared`)
+        await prisma.alarm.update({ where: { id: alarm.id }, data: { active: false } })
+        historize(alarm, false)
+      }
+    }))
+    return alarms
   }
 }
 
-class AlarmHistory {
-  private pool:Pool
-  private tableName = process.env.MANTLE_ALARM_HISTORY_TABLENAME || 'alarm_history'
-  private alarmTableName = process.env.MANTLE_ALARM_TABLENAME || 'alarm'
-  static async initializeAlarmHistory(pool:Pool) {
-    const alarmHistory = new AlarmHistory(pool)
-    await alarmHistory.createTableIfNotExists()
-    return alarmHistory
-  }
-  constructor(pool:Pool) {
-    this.pool = pool
-  }
-  private async createTableIfNotExists() {
-    let sql = `CREATE TABLE IF NOT EXISTS "${this.tableName}" (
-      "alarm_id" UUID REFERENCES ${this.alarmTableName}(id)
-      "timestamp" TIMESTAMPZ,
-      "acknowledged" BOOLEAN,
-      "active" BOOLEAN,
-    )`
-    await this.pool.query(sql)
-    sql = `SELECT create_hypertable('${this.tableName}','timestamp',if_not_exists => TRUE)`
-    await this.pool.query(sql)
-  }
-  public async log(alarm:Alarm, result:boolean) {
-    const sql = `INSERT INTO ${this.tableName} (alarm_id,timestamp,acknowledged,active) VALUES ($1,$2,$3,$4,$5)`
-    const values = [alarm.id, new Date(), alarm.acknowledged, result]
-    this.pool.query(sql, values)
-  }
-}
-
-export const alarms = new Alarms(pool)
+export const alarmHandler = new AlarmHandler()
