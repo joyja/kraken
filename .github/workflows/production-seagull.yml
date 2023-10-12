@@ -4,8 +4,7 @@ on:
       - main
     paths:
       - ".github/workflows/seagull.yml"
-      - "seagull/back/src/**"
-      - "seagull/back/static/**"
+      - "seagull/back/**"
 jobs:
   build:
     runs-on: ubuntu-latest
