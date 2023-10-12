@@ -16,6 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const VoiceResponse = twilio.twiml.VoiceResponse
 
 const calls:{[key:string]:{mantleId:string, rosterId:string, message:string}} = {}
+const url = process.env.SEAGULL_URL || 'https://seagull.anywherescada.com'
 
 // Endpoint to initiate the outbound call
 app.post('/make-call', async (req: Request, res: Response) => {
@@ -29,9 +30,8 @@ app.post('/make-call', async (req: Request, res: Response) => {
 	}
 	
 	const client = twilio(process.env.SEAGULL_TWILIO_ACCOUNT_SID!, process.env.SEAGULL_TWILIO_AUTH_TOKEN!)
-	
 	const call = await client.calls.create({
-		url:  `https://3fa4-172-116-78-15.ngrok.io/handle-response`, // Use the generated TwiML directly
+		url:  `${url}/handle-response`, // Use the generated TwiML directly
 		to: toNumber,
 		from: '+18559043932'
 	})
