@@ -29,5 +29,5 @@ COPY --from=build /app/node_modules ./node_modules
 EXPOSE 3000
 
 # Show current folder structure in logs
-CMD node ./build/index.js
+CMD node ./index.js
 
