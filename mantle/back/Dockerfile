@@ -16,6 +16,7 @@ COPY . .
 COPY --from=dependencies /app/node_modules ./node_modules
 
 # Install app dependencies
+RUN npx prisma generate
 RUN pnpm build
 RUN pnpm prune --prod
 
