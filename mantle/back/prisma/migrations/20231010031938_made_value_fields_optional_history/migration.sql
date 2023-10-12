@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "History" ALTER COLUMN "boolValue" DROP NOT NULL,
+ALTER COLUMN "floatValue" DROP NOT NULL,
+ALTER COLUMN "intValue" DROP NOT NULL,
+ALTER COLUMN "stringValue" DROP NOT NULL;

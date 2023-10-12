@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: <APP>
+  name: <APP>
+  namespace: anywherescada
+spec:
+  selector:
+    matchLabels:
+      app: <APP>
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: <APP>
+    spec:
+      containers:
+        - image: <IMAGE>
+          name: <APP>
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: <APP>-creds

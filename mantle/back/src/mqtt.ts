@@ -1,9 +1,11 @@
 import { newHost, type UPayload, type UTemplate } from 'kraken-sparkplug-client'
 import { v4 as uuidv4} from 'uuid'
 import { History } from './history'
-import { pool } from './database'
 import events from 'events'
 import { Log } from './log'
+import { alarmHandler } from './alarm'
+import { prisma } from './prisma'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 
 const log = new Log('mqtt')
 type Unpacked<T> = T extends (infer U)[] ? U : T
@@ -47,7 +49,17 @@ class SparkplugBasicMetrics extends SparkplugBasic{
             metric = new SparkplugMetric({ groupId, nodeId, deviceId, id: payloadMetric.name, timestamp: payloadMetric.timestamp, ...payloadMetric } )
             this.metrics.push(metric)
           }
-          history.log(metric)
+          history.log(metric).catch((error) => {
+            if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+              console.log('Unique constraint violation:', error.meta?.target);
+            } else {
+              // Handle or throw any other errors
+              throw error
+            } 
+          })
+          if (alarmHandler) {
+            alarmHandler.evaluateMetricAlarms(metric)
+          }
           log.info(`Metric ${metric.id} updated to value ${JSON.stringify(payloadMetric.value, null, 4)}`)
         }
       }
@@ -160,13 +172,14 @@ class SparkplugGroup extends SparkplugBasic {
 }
 
 class SparkplugData extends events.EventEmitter {
-  public history?:History
+  public history:History
   private client?:ReturnType<typeof newHost>
   groups:SparkplugGroup[]
   autoRebirthInterval?: ReturnType<typeof setInterval>
   constructor() {
     super()
     this.groups = []
+    this.history = new History(prisma)
   }
   async initialize({
     serverUrl,
@@ -189,7 +202,6 @@ class SparkplugData extends events.EventEmitter {
       clientId: process.env.MANTLE_CLIENT_ID || `mantle-${uuidv4()}`,
       primaryHostId: process.env.MANTLE_MQTTPRIMARYHOSTID || `mantle-${uuidv4()}`,
     })
-    this.history = await History.initializeHistory(pool)
     this.createEvents()
     this.emit('update',this.groups)
     this.client.publishHostOnline()

@@ -4,6 +4,7 @@ import fs from "fs"
 import path from "path"
 import * as resolvers from "./resolvers"
 import { spdata } from "./mqtt"
+import { NotificationHandler } from './notifier'
 
 // test
 // available when handling requests, needs to be provided by the implementor
@@ -22,10 +23,11 @@ const PORT = 4000
 
 server.listen(PORT, async () => {
 	spdata.initialize({
-		serverUrl: `${process.env.MANTLE_MQTTENCRYPT === "1" ? 'ssl' : 'tcp'}://${process.env.MANTLE_MQTTHOST}:${process.env.MANTLE_MQTTTPORT}`,
+		serverUrl: `${process.env.MANTLE_MQTTENCRYPT === "1" ? 'ssl' : 'tcp'}://${process.env.MANTLE_MQTTHOST}:${process.env.MANTLE_MQTTPORT}`,
 		username: process.env.MANTLE_MQTTUSERNAME!,
 		password: process.env.MANTLE_MQTTPASSWORD!,
 	})
 	spdata.startAutoRebirth(10000)
-  console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
+	const notifier = new NotificationHandler()
+	console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
 })
