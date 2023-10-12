@@ -1,4 +1,4 @@
-FROM keymetrics/pm2:18-buster AS base
+FROM node:20.6.0-bookworm AS base
 
 RUN npm i -g pnpm
 
@@ -24,7 +24,7 @@ FROM base AS deploy
 
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
-COPY ecosystem.config.cjs ./
+COPY --from=build /app/prisma ./prisma/
 COPY --from=build /app/build ./build/
 COPY --from=build /app/src/schema.graphql ./src/schema.graphql
 COPY --from=build /app/node_modules ./node_modules
@@ -33,5 +33,5 @@ COPY --from=build /app/node_modules ./node_modules
 EXPOSE 4000
 
 # Show current folder structure in logs
-CMD pm2-runtime start ecosystem.config.cjs
+CMD node ./build/index.js
 
