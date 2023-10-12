@@ -95,5 +95,5 @@ model User {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("MANTLE_DATABASE_URL")
 }
