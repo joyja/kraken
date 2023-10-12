@@ -3,7 +3,7 @@ on:
     branches:
       - main
     paths:
-      - ".github/workflows/seagull.yml"
+      - ".github/workflows/production-seagull.yml"
       - "seagull/back/**"
 jobs:
   build:
