@@ -401,6 +401,9 @@ class SparkplugData extends events.EventEmitter {
   }
   sendNodeCommand({ groupId, nodeId, metricId, value }:{ groupId:string, nodeId:string, metricId:string, value:any }) {
     const metric = this.getGroup(groupId)?.getNode(nodeId)?.getMetric(metricId)
+    console.log(groupId, nodeId, metricId, value)
+    console.log(this.getGroup(groupId))
+    console.log(metric)
     if (metric) {
       const payload:UPayload = {
         timestamp: new Date().getTime(),
@@ -409,6 +412,7 @@ class SparkplugData extends events.EventEmitter {
           value
         }]
       }
+      console.log(payload)
       this.client?.publishNodeCommand(groupId, nodeId, payload)
     }
   }
