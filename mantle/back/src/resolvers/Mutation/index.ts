@@ -21,19 +21,23 @@ import { alarmHandler } from '../../alarm'
 import { userHandler } from "../../user"
 import { rosterHandler } from "../../roster"
 
-// export function sendNodeCommand(
-//   root:unknown, 
-//   { groupId, nodeId, metricId, value }:{groupId:string, nodeId:string, metricId:string, value:string}
-// ) {
-//   return spdata.sendNodeCommand({ groupId, nodeId, metricId, value })
-// }
+export async function sendNodeCommand(
+  root:unknown, 
+  { groupId, nodeId, command, value }:{groupId:string, nodeId:string, command:string, value:string}
+) {
+  console.log('received node command')
+  await spdata.sendNodeCommand({ groupId, nodeId, metricId: `Node Control/${command}`, value })
+  console.log('sent node command')
+  return true
+}
 
-// export function sendDeviceCommand(
-//   root:unknown, 
-//   { groupId, nodeId, deviceId, metricId, value }:{groupId:string, nodeId:string, deviceId:string, metricId:string, value:string}
-// ) {
-//   return spdata.sendDeviceCommand({ groupId, nodeId, deviceId, metricId, value })
-// }
+export async function sendDeviceCommand(
+  root:unknown, 
+  { groupId, nodeId, deviceId, command, value }:{groupId:string, nodeId:string, deviceId:string, command:string, value:string}
+) {
+  spdata.sendDeviceCommand({ groupId, nodeId, deviceId, metricId: `Device Control/${command}`, value })
+  return true
+}
 
 export async function createAlarm(root:unknown, { input }:{ input: CreateAlarm}):Promise<Alarm> {
   return alarmHandler.create({ input })

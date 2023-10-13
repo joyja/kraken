@@ -22,7 +22,6 @@ const server = createServer(yoga)
 const PORT = 4000
 
 server.listen(PORT, async () => {
-	console.log(process.env)
 	spdata.initialize({
 		serverUrl: `${process.env.MANTLE_MQTTENCRYPT === "1" ? 'ssl' : 'tcp'}://${process.env.MANTLE_MQTTHOST}:${process.env.MANTLE_MQTTPORT}`,
 		username: process.env.MANTLE_MQTTUSERNAME!,

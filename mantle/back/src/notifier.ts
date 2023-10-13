@@ -17,7 +17,7 @@ export async function voiceCall({message, to, rosterId}:{message:string, to:stri
     body: JSON.stringify({
       to,
       message,
-      mantleId: process.env.MANTLE_ID || 'mantle-dev',
+      mantleId: process.env.MANTLE_ID || 'dev',
       rosterId
     })
   })
@@ -42,6 +42,7 @@ class Notifier {
   public rosterId: string
   private entry = 0
   private roster?: Roster & { users: Partial<RosterEntry & { user: User }>[] }
+  private terminated = false
   constructor(rosterId: string) {
     this.rosterId = rosterId
     this.start()
@@ -93,7 +94,9 @@ class Notifier {
       }
     }
     setTimeout(async () => {
-      await this.next()
+      if (!this.terminated) {
+        await this.next()
+      }
     }, this.roster!.timeBetweenRetries)
   }
   async next() {
@@ -106,7 +109,7 @@ class Notifier {
     this.entry++;
   }
   terminate() {
-    // TODO
+    this.terminated = true
   }
 }
 
