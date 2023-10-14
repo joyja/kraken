@@ -25,9 +25,7 @@ export async function sendNodeCommand(
   root:unknown, 
   { groupId, nodeId, command, value }:{groupId:string, nodeId:string, command:string, value:string}
 ) {
-  console.log('received node command')
-  await spdata.sendNodeCommand({ groupId, nodeId, metricId: `Node Control/${command}`, value })
-  console.log('sent node command')
+  await spdata.sendNodeCommand({ groupId, nodeId, metricId: `Node Control/${command}`, value: true })
   return true
 }
 
