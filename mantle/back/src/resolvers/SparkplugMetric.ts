@@ -13,3 +13,7 @@ export async function history(parent:SparkplugMetric) {
     }
   })
 }
+
+export function value(parent:SparkplugMetric) {
+  return parent.value?.toString ? parent.value.toString() : parent.value
+}

@@ -27,18 +27,18 @@ class RosterHandler {
     const data:{[key:string]:any} = {}
     // Filter out null values
     Object.keys(updateFields).forEach((key:string) => {
-      if (updateFields[key]) data[key] = updateFields[key]
+      if (updateFields[key] !== null && updateFields[key] !== undefined) data[key] = updateFields[key]
     })
-    return prisma.roster.update({ where: { id }, data, include: { users:true, alarms:true } }).then(prismaToResolver)
+    return prisma.roster.update({ where: { id }, data, include: { users: { orderBy: { order: 'asc' } }, alarms:true } }).then(prismaToResolver)
   }
   delete(id:string) {
-    return prisma.roster.delete({ where: { id }, include: { users: true, alarms: true }}).then(prismaToResolver)
+    return prisma.roster.delete({ where: { id }, include: { users: { orderBy: { order: 'asc' }}, alarms: true }}).then(prismaToResolver)
   }
   getAll() {
-    return prisma.roster.findMany({ include: { users: true, alarms: true }}).then(users => users.map(prismaToResolver))
+    return prisma.roster.findMany({ include: { users: { orderBy: { order: 'asc' }}, alarms: true }}).then(users => users.map(prismaToResolver))
   }
   getOne(id:string): Promise<ResolverRoster | void> {
-    return prisma.roster.findUnique({ where: { id }, include: { users: true, alarms: true } })
+    return prisma.roster.findUnique({ where: { id }, include: { users: { orderBy: { order: 'asc' }}, alarms: true } })
       .then((user) => {
         if (user) {
           prismaToResolver(user)
@@ -63,7 +63,7 @@ class RosterHandler {
     const data:{[key:string]:any} = {}
     // Filter out null values
     Object.keys(updateFields).forEach((key:string) => {
-      if (updateFields[key]) data[key] = updateFields[key]
+      if (updateFields[key] !== null && updateFields[key] !== undefined) data[key] = updateFields[key]
     })
     return prisma.rosterEntry.update({ where: { id }, data })
   }
@@ -87,8 +87,12 @@ class RosterHandler {
         const prevEntry = entries.find(e => e.order === order - 1)
         if (prevEntry) {
           await prisma.rosterEntry.update({ where: { id: prevEntry.id }, data: { order }})
-          await prisma.rosterEntry.update({ where: { id }, data: { order: order - 1 }})
+          return prisma.rosterEntry.update({ where: { id }, data: { order: order - 1 }})
+        } else {
+          return entry
         }
+      } else {
+        return entry
       }
     }
   }
@@ -101,8 +105,12 @@ class RosterHandler {
         const nextEntry = entries.find(e => e.order === order + 1)
         if (nextEntry) {
           await prisma.rosterEntry.update({ where: { id: nextEntry.id }, data: { order }})
-          await prisma.rosterEntry.update({ where: { id }, data: { order: order + 1 }})
+          return prisma.rosterEntry.update({ where: { id }, data: { order: order + 1 }})
+        } else {
+          return entry
         }
+      } else {
+        return entry
       }
     }
   }
@@ -111,12 +119,12 @@ class RosterHandler {
     const rosters = await Promise.all(unack
       .map(alarm => alarm.roster?.id)
       .filter((roster) => roster !== undefined && roster !== null)
-      .map((roster) => prisma.roster.findUnique({ where: { id: roster! }, include: { users: true } }))
+      .map((roster) => prisma.roster.findUnique({ where: { id: roster! }, include: { users: { orderBy: { order: 'asc' }} } }))
     )
     return rosters
   }
   async acknowledge(id:string) {
-    const roster = await prisma.roster.findUnique({ where: { id }, include: { users: true, alarms: true } })
+    const roster = await prisma.roster.findUnique({ where: { id }, include: { users: { orderBy: { order: 'asc' }}, alarms: true } })
     if (roster) {
       await Promise.all(roster.alarms.map(alarm => {
         alarmHandler.acknowledge(alarm.id)

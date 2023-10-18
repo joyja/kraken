@@ -3,12 +3,8 @@ import { alarmHandler } from "./alarm"
 import { prisma } from "./prisma";
 import { rosterHandler } from "./roster"
 
-const accountSid: string | undefined = process.env.MANTLE_TWILIO_ACCOUNT_SID;
-const authToken: string | undefined = process.env.MANTLE_TWILIO_AUTH_TOKEN;
-
 export async function voiceCall({message, to, rosterId}:{message:string, to:string, rosterId:string}) {
   const seagullUrl = process.env.MANTLE_SEAGULL_URL
-  console.log(seagullUrl)
   const res = await fetch(`${seagullUrl}/make-call`, {
     method: 'POST',
     headers: {
@@ -28,15 +24,26 @@ export async function voiceCall({message, to, rosterId}:{message:string, to:stri
   }
 }
 
-// export function sendSMS({message, to, from}:{message:string, to:string, from:string}) {
-//   return client.messages
-//     .create({
-//       body: message,
-//       to,
-//       from,
-//     })
-//     .then(message => console.log(message.sid));
-// }
+export async function sendSMS({message, to, rosterId}:{message:string, to:string, rosterId:string}) {
+  const seagullUrl = process.env.MANTLE_SEAGULL_URL
+  const res = await fetch(`${seagullUrl}/send-sms`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      to,
+      message,
+      mantleId: process.env.MANTLE_ID || 'dev',
+      rosterId
+    })
+  })
+  if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Error from server:', errorText);
+      // Handle error, maybe show a notification to the user
+  }
+}
 
 class Notifier {
   public rosterId: string
@@ -55,7 +62,8 @@ class Notifier {
           include: {
             user: true
           }
-        }
+        },
+
       }
     })
     if (roster) {
@@ -75,11 +83,11 @@ class Notifier {
       const { user } = entry
       if (user) {
         if (entry.sms && user.phone) {
-          // await sendSMS({
-          //   message: message,
-          //   to: user.phone,
-          //   from: '+18559043932'
-          // })
+          await sendSMS({
+            message: message,
+            to: user.phone,
+            rosterId: this.rosterId
+          })
         }
         if (entry.phone && user.phone) {
           await voiceCall({

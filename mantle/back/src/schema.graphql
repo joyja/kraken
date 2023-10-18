@@ -44,6 +44,13 @@ enum AlarmConditionMode {
   OUTSIDE_SETPOINTS
 }
 
+enum AlarmPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 type AlarmCondition {
   mode: AlarmConditionMode!
   setpoint: Float
@@ -68,11 +75,11 @@ type Alarm {
   id: String!
   name: String!
   enabled: Boolean!
-  priority: String!
+  priority: AlarmPriority!
   condition: AlarmCondition!
   groupId: String!
   nodeId: String!
-  deviceId: String!
+  deviceId: String
   metricId: String!
   acknowledged: Boolean!
   active: Boolean!
@@ -82,19 +89,20 @@ type Alarm {
 input CreateAlarm {
   name: String!
   enabled: Boolean!
-  priority: String!
+  priority: AlarmPriority!
   condition: AlarmConditionInput!
   groupId: String!
   nodeId: String!
-  deviceId: String!
+  deviceId: String
   metricId: String!
+  rosterId: String
 }
 
 input UpdateAlarm {
   id: String!
   name: String
   enabled: Boolean
-  priority: String
+  priority: AlarmPriority
   condition: AlarmConditionInput
   groupId: String
   nodeId: String
@@ -125,8 +133,8 @@ input UpdateUser {
 input CreateUser {
   id: String
   name: String!
-  email: String!
-  phone: String!
+  email: String
+  phone: String
 }
 
 input DeleteUser {
@@ -135,10 +143,10 @@ input DeleteUser {
 
 input UpdateRoster {
   id: String!
-  name: String!
-  enabled: Boolean!
-  retries: Int!
-  timeBetweenRetries: Int!
+  name: String
+  enabled: Boolean
+  retries: Int
+  timeBetweenRetries: Int
 }
 
 input CreateRoster {
@@ -165,9 +173,9 @@ type Roster {
 
 input UpdateRosterEntry {
   id: String!
-  sms: Boolean!
-  email: Boolean!
-  phone: Boolean!
+  sms: Boolean
+  email: Boolean
+  phone: Boolean
 }
 
 input MoveUpRosterEntry {
