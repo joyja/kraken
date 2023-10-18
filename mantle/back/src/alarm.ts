@@ -66,6 +66,7 @@ function parseAlarmCondition(data: any): AlarmCondition | null {
 function prismaToResolver(prismaAlarm:PrismaAlarm):ResolverAlarm {
   const condition = parseAlarmCondition(prismaAlarm.condition)
   if (condition) {
+    // @ts-ignore
     return {
       ...prismaAlarm,
       condition 
@@ -77,7 +78,7 @@ function prismaToResolver(prismaAlarm:PrismaAlarm):ResolverAlarm {
 
 function evaluate(alarm:PrismaAlarm, metric:SparkplugMetric) {
   const condition = parseAlarmCondition(alarm.condition)
-  const value = metric.value
+  const value = metric.value?.toString() ? parseFloat(metric.value?.toString()) : metric.value
   if (condition) {
     if (condition.mode === 'EQUAL') {
       return value === condition.setpoint
@@ -145,7 +146,7 @@ class AlarmHandler {
     return prisma.alarm.delete({ where: { id } }).then(prismaToResolver)
   }
   getAll(): Promise<ResolverAlarm[]> {
-    return prisma.alarm.findMany().then(alarms => alarms.map(prismaToResolver))
+    return prisma.alarm.findMany().then(alarms => alarms.map(prismaToResolver).sort((a, b) => a.name.localeCompare(b.name)))
   }
   getActive(): Promise<ResolverAlarm[]> {
     return prisma.alarm.findMany({ where: { active: true }, include: { roster:true } }).then(alarms => alarms.map(prismaToResolver))

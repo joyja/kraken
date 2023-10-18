@@ -22,14 +22,14 @@ export type Alarm = {
   acknowledged: Scalars['Boolean']['output'];
   active: Scalars['Boolean']['output'];
   condition: AlarmCondition;
-  deviceId: Scalars['String']['output'];
+  deviceId?: Maybe<Scalars['String']['output']>;
   enabled: Scalars['Boolean']['output'];
   groupId: Scalars['String']['output'];
   id: Scalars['String']['output'];
   metricId: Scalars['String']['output'];
   name: Scalars['String']['output'];
   nodeId: Scalars['String']['output'];
-  priority: Scalars['String']['output'];
+  priority: AlarmPriority;
   roster?: Maybe<Roster>;
 };
 
@@ -63,15 +63,23 @@ export enum AlarmConditionMode {
   OutsideSetpoints = 'OUTSIDE_SETPOINTS'
 }
 
+export enum AlarmPriority {
+  Critical = 'CRITICAL',
+  High = 'HIGH',
+  Low = 'LOW',
+  Medium = 'MEDIUM'
+}
+
 export type CreateAlarm = {
   condition: AlarmConditionInput;
-  deviceId: Scalars['String']['input'];
+  deviceId?: InputMaybe<Scalars['String']['input']>;
   enabled: Scalars['Boolean']['input'];
   groupId: Scalars['String']['input'];
   metricId: Scalars['String']['input'];
   name: Scalars['String']['input'];
   nodeId: Scalars['String']['input'];
-  priority: Scalars['String']['input'];
+  priority: AlarmPriority;
+  rosterId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateRoster = {
@@ -90,10 +98,10 @@ export type CreateRosterEntry = {
 };
 
 export type CreateUser = {
-  email: Scalars['String']['input'];
+  email?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  phone: Scalars['String']['input'];
+  phone?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type DeleteAlarm = {
@@ -124,6 +132,7 @@ export type MoveUpRosterEntry = {
 export type Mutation = {
   __typename?: 'Mutation';
   acknowledgeAlarm: Alarm;
+  acknowledgeRoster: Roster;
   createAlarm: Alarm;
   createRoster: Roster;
   createRosterEntry: RosterEntry;
@@ -134,8 +143,8 @@ export type Mutation = {
   deleteUser: User;
   moveDownRosterEntry: RosterEntry;
   moveUpRosterEntry: RosterEntry;
-  publishDeviceCommand: Scalars['Boolean']['output'];
-  publishNodeCommand: Scalars['Boolean']['output'];
+  sendDeviceCommand: Scalars['Boolean']['output'];
+  sendNodeCommand: Scalars['Boolean']['output'];
   updateAlarm: Alarm;
   updateRoster: Roster;
   updateRosterEntry: RosterEntry;
@@ -145,6 +154,12 @@ export type Mutation = {
 
 /** Read and write queries */
 export type MutationAcknowledgeAlarmArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** Read and write queries */
+export type MutationAcknowledgeRosterArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -210,17 +225,21 @@ export type MutationMoveUpRosterEntryArgs = {
 
 
 /** Read and write queries */
-export type MutationPublishDeviceCommandArgs = {
+export type MutationSendDeviceCommandArgs = {
   command: Scalars['String']['input'];
   deviceId: Scalars['String']['input'];
+  groupId: Scalars['String']['input'];
   nodeId: Scalars['String']['input'];
+  value: Scalars['String']['input'];
 };
 
 
 /** Read and write queries */
-export type MutationPublishNodeCommandArgs = {
+export type MutationSendNodeCommandArgs = {
   command: Scalars['String']['input'];
+  groupId: Scalars['String']['input'];
   nodeId: Scalars['String']['input'];
+  value: Scalars['String']['input'];
 };
 
 
@@ -331,23 +350,23 @@ export type UpdateAlarm = {
   metricId?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   nodeId?: InputMaybe<Scalars['String']['input']>;
-  priority?: InputMaybe<Scalars['String']['input']>;
+  priority?: InputMaybe<AlarmPriority>;
   rosterId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateRoster = {
-  enabled: Scalars['Boolean']['input'];
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['String']['input'];
-  name: Scalars['String']['input'];
-  retries: Scalars['Int']['input'];
-  timeBetweenRetries: Scalars['Int']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  retries?: InputMaybe<Scalars['Int']['input']>;
+  timeBetweenRetries?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type UpdateRosterEntry = {
-  email: Scalars['Boolean']['input'];
+  email?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['String']['input'];
-  phone: Scalars['Boolean']['input'];
-  sms: Scalars['Boolean']['input'];
+  phone?: InputMaybe<Scalars['Boolean']['input']>;
+  sms?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type UpdateUser = {
@@ -441,6 +460,7 @@ export type ResolversTypes = {
   AlarmCondition: ResolverTypeWrapper<AlarmCondition>;
   AlarmConditionInput: AlarmConditionInput;
   AlarmConditionMode: AlarmConditionMode;
+  AlarmPriority: AlarmPriority;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CreateAlarm: CreateAlarm;
   CreateRoster: CreateRoster;
@@ -512,14 +532,14 @@ export type AlarmResolvers<ContextType = any, ParentType extends ResolversParent
   acknowledged?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   condition?: Resolver<ResolversTypes['AlarmCondition'], ParentType, ContextType>;
-  deviceId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  deviceId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   groupId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metricId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   nodeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  priority?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  priority?: Resolver<ResolversTypes['AlarmPriority'], ParentType, ContextType>;
   roster?: Resolver<Maybe<ResolversTypes['Roster']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -541,6 +561,7 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   acknowledgeAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationAcknowledgeAlarmArgs, 'id'>>;
+  acknowledgeRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationAcknowledgeRosterArgs, 'id'>>;
   createAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationCreateAlarmArgs, 'input'>>;
   createRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationCreateRosterArgs, 'input'>>;
   createRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationCreateRosterEntryArgs, 'input'>>;
@@ -551,8 +572,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'input'>>;
   moveDownRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationMoveDownRosterEntryArgs, 'input'>>;
   moveUpRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationMoveUpRosterEntryArgs, 'input'>>;
-  publishDeviceCommand?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationPublishDeviceCommandArgs, 'command' | 'deviceId' | 'nodeId'>>;
-  publishNodeCommand?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationPublishNodeCommandArgs, 'command' | 'nodeId'>>;
+  sendDeviceCommand?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSendDeviceCommandArgs, 'command' | 'deviceId' | 'groupId' | 'nodeId' | 'value'>>;
+  sendNodeCommand?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSendNodeCommandArgs, 'command' | 'groupId' | 'nodeId' | 'value'>>;
   updateAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationUpdateAlarmArgs, 'input'>>;
   updateRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationUpdateRosterArgs, 'input'>>;
   updateRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationUpdateRosterEntryArgs, 'input'>>;

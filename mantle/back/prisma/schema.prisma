@@ -39,11 +39,11 @@ model Alarm {
   id           String         @id @default(uuid())
   name         String
   enabled      Boolean
-  priority     String
+  priority     AlarmPriority
   condition    Json
   groupId      String
   nodeId       String
-  deviceId     String
+  deviceId     String?
   metricId     String
   acknowledged Boolean        @default(true)
   active       Boolean        @default(false)
@@ -53,7 +53,7 @@ model Alarm {
 }
 
 model AlarmHistory {
-  alarm        Alarm    @relation(fields: [alarmId], references: [id])
+  alarm        Alarm    @relation(fields: [alarmId], references: [id], onDelete: Cascade)
   alarmId      String
   timestamp    DateTime @default(now())
   acknowledged Boolean
@@ -75,9 +75,9 @@ model Roster {
 
 model RosterEntry {
   id       String  @id @default(uuid())
-  roster   Roster  @relation(fields: [rosterId], references: [id])
+  roster   Roster  @relation(fields: [rosterId], references: [id], onDelete: Cascade)
   rosterId String
-  user     User    @relation(fields: [userId], references: [id])
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String
   sms      Boolean
   email    Boolean

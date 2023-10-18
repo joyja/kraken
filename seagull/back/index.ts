@@ -16,6 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const VoiceResponse = twilio.twiml.VoiceResponse
 
 const calls:{[key:string]:{mantleId:string, rosterId:string, message:string}} = {}
+const verificationCalls:{[key:string]:{userId:string, number:string, code:string}} = {}
 const url = process.env.SEAGULL_URL || 'https://seagull.anywherescada.com'
 
 // Endpoint to initiate the outbound call
@@ -96,6 +97,86 @@ app.post('/handle-key', async (req: Request, res: Response) => {
 
     res.type('text/xml')
     res.send(twiml.toString())
+})
+
+// Endpoint to handle verification calls
+app.post('/send-verification', async (req: Request, res: Response) => {
+	const number = req.body.number
+	const code = req.body.code
+	const userId = req.body.userId
+	const method = req.body.method
+
+	if (!number || !userId || !code) {
+		return res.status(400).send("Please provide a 'number', 'code' and a 'userid' in the request body.")
+	}
+	console.log(url)
+	const client = twilio(process.env.SEAGULL_TWILIO_ACCOUNT_SID!, process.env.SEAGULL_TWILIO_AUTH_TOKEN!)
+	if (method === 'call') {
+		const call = await client.calls.create({
+			url:  `${url}/handle-verification-response`, // Use the generated TwiML directly
+			to: number,
+			from: '+18559043932'
+		})
+		.catch(error => {
+			console.error(error)
+			res.status(500).send(error.message)
+		})
+		if (call) {
+			verificationCalls[call.sid] = {userId, number, code}
+		}
+		res.status(200).send('Call incoming!')
+	} else if (method === 'text') {
+		const message = await client.messages.create({
+			body: `Hello from anywherescada.com! Your verification code is ${code}`,
+			to: number,
+			from: '+18559043932'
+		})
+		.catch(error => {
+			console.error(error)
+			res.status(500).send(error.message)
+		})
+		res.status(200).send('Message Sent')
+	}
+})
+
+// Endpoint to handle the response after the verification call is answered
+app.post('/handle-verification-response', (req: Request, res: Response) => {
+	const callSid = req.body.CallSid
+	const { code } = verificationCalls[callSid]
+	const twiml = new VoiceResponse()
+
+	const preparedCode = code.split('').join(' ');
+
+	twiml.say(`Your code is ${preparedCode}. Please enter it at anywhere scada now and hang up when finished.`)
+	twiml.redirect('/handle-verification-response')
+
+	res.type('text/xml')
+	res.send(twiml.toString())
+})
+
+// Endpoint to handle SMS notification
+app.post('/send-sms', async (req: Request, res: Response) => {
+	const toNumber = req.body.to 
+	const message = req.body.message
+	const mantleId = req.body.mantleId
+	const rosterId = req.body.rosterId
+
+	if (!toNumber || !message || !mantleId || !rosterId) {
+		return res.status(400).send("Please provide a 'to' number, 'message', mantleId, and rosterId in the request body.")
+	}
+	
+	const client = twilio(process.env.SEAGULL_TWILIO_ACCOUNT_SID!, process.env.SEAGULL_TWILIO_AUTH_TOKEN!)
+	const sms = await client.messages.create({
+		body: `${message}. Please acknowledge at https://anywherescada.com/console/space/${mantleId}/rosters/`,
+		to: toNumber,
+		from: '+18559043932'
+	})
+	.catch(error => {
+		console.error(error)
+		res.status(500).send(error.message)
+	})
+	
+	res.status(200).send('SMS Sent!')
 })
 
 const PORT = 3000

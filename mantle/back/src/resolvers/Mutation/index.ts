@@ -20,6 +20,9 @@ import { Alarm,
 import { alarmHandler } from '../../alarm'
 import { userHandler } from "../../user"
 import { rosterHandler } from "../../roster"
+import { Log } from "../../log"
+
+const log = new Log('Mutations')
 
 export async function sendNodeCommand(
   root:unknown, 
@@ -38,6 +41,7 @@ export async function sendDeviceCommand(
 }
 
 export async function createAlarm(root:unknown, { input }:{ input: CreateAlarm}):Promise<Alarm> {
+  log.info(`Create alarm ${input.name}`)
   return alarmHandler.create({ input })
 }
 
@@ -70,6 +74,7 @@ export async function createRoster(root:unknown, { input }:{ input: CreateRoster
 }
 
 export async function updateRoster(root:unknown, { input }:{ input: UpdateRoster}) {
+  log.info(`Update roster ${input.name}`)
   return rosterHandler.update({ input })
 }
 
