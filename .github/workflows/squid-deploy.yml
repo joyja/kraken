@@ -33,28 +33,6 @@ jobs:
       - name: Prune to production dependencies
         run: pnpm prune --prod
 
-      - name: Create user and group if they don't exist
-        run: |
-          #!/bin/bash
-          set -eu
-
-          # Check if the user exists and create it if not
-          if ! id "squid-sa" &>/dev/null; then
-            sudo adduser --disabled-password --gecos "" squid-sa
-            # Be very cautious with the following line; it gives full sudo access
-            echo "squid-sa ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/squid-sa
-          fi
-
-          # Check if the group exists and create it if not
-          if ! getent group my_service_group; then
-            sudo addgroup my_service_group
-          fi
-
-          # Check if the user is in the group and add it if not
-          if ! id -nG "squid-sa" | grep -qw "my_service_group"; then
-            sudo adduser squid-sa my_service_group
-          fi
-
       - name: Set up the systemd service file
         run: |
           if [ ! -f /etc/systemd/system/squid.service ]; then
@@ -64,8 +42,7 @@ jobs:
 
             [Service]
             Type=simple
-            User=squid-sa
-            Group=my_service_group
+            User=joyja # Using the 'joyja' user here
             WorkingDirectory=$GITHUB_WORKSPACE
             ExecStart=/usr/bin/node $GITHUB_WORKSPACE/build/src/index.js # Adjusted to your start script
             Restart=on-failure
