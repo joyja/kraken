@@ -54,10 +54,10 @@ jobs:
             [Install]
             WantedBy=multi-user.target' | tee /etc/systemd/system/squid.service
 
-            /usr/bin/systemctl daemon-reload
-            /usr/bin/systemctl start squid.service
-            /usr/bin/systemctl enable squid.service
+            sudo /usr/bin/systemctl daemon-reload
+            sudo /usr/bin/systemctl start squid.service
+            sudo /usr/bin/systemctl enable squid.service
           else
             # If the service file already exists, you might want to restart the service
-            /usr/bin/systemctl restart squid.service
+            sudo /usr/bin/systemctl restart squid.service
           fi
