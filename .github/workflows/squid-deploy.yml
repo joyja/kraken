@@ -54,12 +54,12 @@ jobs:
           WantedBy=multi-user.target"
 
           if [ ! -f /etc/systemd/system/squid.service ]; then
-            echo "$SERVICE_CONTENT" | sudo tee /etc/systemd/system/squid.service
+            echo "$SERVICE_CONTENT" | tee /etc/systemd/system/squid.service
             sudo /usr/bin/systemctl daemon-reload
             sudo /usr/bin/systemctl start squid.service
             sudo /usr/bin/systemctl enable squid.service
           else
-            echo "$SERVICE_CONTENT" | sudo tee /etc/systemd/system/squid.service
+            echo "$SERVICE_CONTENT" | tee /etc/systemd/system/squid.service
             sudo /usr/bin/systemctl daemon-reload
             sudo /usr/bin/systemctl restart squid.service
           fi
