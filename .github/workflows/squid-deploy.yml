@@ -47,9 +47,9 @@ jobs:
           [Service]
           Type=simple
           User=joyja
-          WorkingDirectory=$WORKING_DIRECTORY # Use the new variable here
+          WorkingDirectory=$WORKING_DIRECTORY
           EnvironmentFile=/etc/squid/environment
-          ExecStart=/usr/bin/node $WORKING_DIRECTORY/build/src/index.js # And here
+          ExecStart=/usr/bin/node $WORKING_DIRECTORY/build/src/index.js
           Restart=on-failure
           RestartSec=10
           StandardOutput=syslog
