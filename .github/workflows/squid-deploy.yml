@@ -52,12 +52,12 @@ jobs:
             SyslogIdentifier=squid
 
             [Install]
-            WantedBy=multi-user.target' | sudo tee /etc/systemd/system/squid.service
+            WantedBy=multi-user.target' | tee /etc/systemd/system/squid.service
 
-            sudo systemctl daemon-reload
-            sudo systemctl start squid
-            sudo systemctl enable squid
+            systemctl daemon-reload
+            systemctl start squid
+            systemctl enable squid
           else
             # If the service file already exists, you might want to restart the service
-            sudo systemctl restart squid
+            systemctl restart squid
           fi
