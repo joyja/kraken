@@ -17,20 +17,15 @@ jobs:
       run:
         working-directory: ./squid/back
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
         with:
-          node-version: "16" # Specify the Node.js version number, you can adjust as needed
-          cache: "pnpm" # Caching pnpm modules
-
-      - name: Set up pnpm
-        uses: pnpm/actions-setup@v2.0.1
+          version: 6.32.9
+      - uses: actions/setup-node@v3
         with:
-          version: 6.x # Specify the pnpm version to use; adjust as needed
-
+          node-version: "18"
+          cache: "pnpm"
+      - run: pnpm install
       - name: Install dependencies and build
         run: |
           pnpm install
