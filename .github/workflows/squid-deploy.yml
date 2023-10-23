@@ -33,7 +33,12 @@ jobs:
       - name: Prune to production dependencies
         run: pnpm prune --prod
 
+      - name: Create WORKING_DIRECTORY env variable
+        run: echo "WORKING_DIRECTORY=$GITHUB_WORKSPACE/squid/back" >> $GITHUB_ENV
+
       - name: Set up the systemd service file
+        env:
+          WORKING_DIRECTORY: ${{env.WORKING_DIRECTORY}} # Use the new variable here
         run: |
           SERVICE_CONTENT="[Unit]
           Description=Squid Node.js App
@@ -42,8 +47,8 @@ jobs:
           [Service]
           Type=simple
           User=joyja
-          WorkingDirectory=${GITHUB_WORKSPACE} # This placeholder will be replaced by the actual path
-          ExecStart=/usr/bin/node ${GITHUB_WORKSPACE}/build/src/index.js # Placeholder will be replaced
+          WorkingDirectory=$WORKING_DIRECTORY # Use the new variable here
+          ExecStart=/usr/bin/node $WORKING_DIRECTORY/build/src/index.js # And here
           Restart=on-failure
           RestartSec=10
           StandardOutput=syslog
