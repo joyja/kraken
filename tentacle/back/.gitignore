@@ -89,5 +89,7 @@ sw.*
 # Vim swap files
 *.swp
 
+build/
+development/
 runtime/
 config/

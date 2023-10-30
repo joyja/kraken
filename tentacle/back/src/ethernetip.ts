@@ -12,7 +12,7 @@ interface EthernetIPConstructorOptions {
 export class EthernetIP {
   private host: string;
   private port: number;
-  private plc: Controller;
+  private plc: typeof Controller;
   private interval: number;
   private connected: boolean = false;
 
@@ -30,7 +30,7 @@ export class EthernetIP {
       this.connected = true;
 
       log.info(`Connected to Ethernet/IP device at ${this.host}:${this.port}`);
-    } catch (error) {
+    } catch (error:any) {
       log.error(`Failed to connect to Ethernet/IP device: ${error.message}`);
       this.connected = false;
     }
@@ -41,7 +41,7 @@ export class EthernetIP {
       await this.plc.disconnect();
       this.connected = false;
       log.info(`Disconnected from Ethernet/IP device at ${this.host}:${this.port}`);
-    } catch (error) {
+    } catch (error:any) {
       log.error(`Failed to disconnect from Ethernet/IP device: ${error.message}`);
     }
   }
@@ -55,7 +55,7 @@ export class EthernetIP {
     try {
       const tag = await this.plc.readTag(tagName);
       return tag.value;
-    } catch (error) {
+    } catch (error:any) {
       log.error(`Failed to read tag ${tagName}: ${error.message}`);
     }
   }
@@ -69,7 +69,7 @@ export class EthernetIP {
     try {
       await this.plc.writeTag(tagName, value, type);
       log.info(`Written value ${value} to tag ${tagName}`);
-    } catch (error) {
+    } catch (error:any) {
       log.error(`Failed to write to tag ${tagName}: ${error.message}`);
     }
   }

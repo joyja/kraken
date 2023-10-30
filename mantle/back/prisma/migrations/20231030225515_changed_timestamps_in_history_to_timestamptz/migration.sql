@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "AlarmHistory" ALTER COLUMN "timestamp" SET DATA TYPE TIMESTAMPTZ;
+
+-- AlterTable
+ALTER TABLE "History" ALTER COLUMN "timestamp" SET DATA TYPE TIMESTAMPTZ;
