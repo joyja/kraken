@@ -4,18 +4,26 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "TENTACLE_LOGLEVEL=DEBUG NODE_ENV=development env $(cat .env | grep -v \"#\" | xargs) ts-node-dev --exit-child --respawn src/index.ts",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@graphql-codegen/cli": "5.0.0",
+    "@types/lodash": "^4.14.200",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.2.2",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "@graphql-codegen/typescript-resolvers": "4.0.1",
+    "@graphql-codegen/typescript": "4.0.1"
   },
   "dependencies": {
     "chokidar": "^3.5.3",
@@ -24,6 +32,7 @@
     "graphql": "^16.8.1",
     "graphql-yoga": "^4.0.5",
     "kraken-sparkplug-client": "^0.0.13",
+    "lodash": "^4.17.21",
     "modbus-serial": "8.0.5-no-serial-port",
     "node-opcua": "^2.113.0",
     "node-opcua-client-crawler": "^2.113.0"

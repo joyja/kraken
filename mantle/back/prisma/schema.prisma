@@ -14,7 +14,7 @@ model History {
   floatValue  Float?
   stringValue String?
   boolValue   Boolean?
-  timestamp   DateTime @default(now())
+  timestamp   DateTime @default(now()) @db.Timestamptz()
 
   @@unique([groupId, nodeId, deviceId, metricId, timestamp])
 }
@@ -55,7 +55,7 @@ model Alarm {
 model AlarmHistory {
   alarm        Alarm    @relation(fields: [alarmId], references: [id], onDelete: Cascade)
   alarmId      String
-  timestamp    DateTime @default(now())
+  timestamp    DateTime @default(now()) @db.Timestamptz()
   acknowledged Boolean
   active       Boolean
 
