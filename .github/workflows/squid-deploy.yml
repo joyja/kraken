@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        runner: [squid1, camophore]
+        runner: [squid1, camophore, tensor1, pangolin1]
     defaults:
       run:
         working-directory: ./squid/back
