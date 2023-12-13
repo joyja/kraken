@@ -4,7 +4,7 @@
   "description": "Edge Infrastructure Management for Kraken",
   "main": "src/index.js",
   "scripts": {
-    "dev": "SQUID_LOGLEVEL=DEBUG NODE_ENV=development ts-node-dev --exit-child --respawn src/index.ts",
+    "dev": "SQUID_LOGLEVEL=DEBUG NODE_ENV=development env $(cat .env | grep -v \"#\" | xargs) pnpm ts-node-dev --exit-child --respawn src/index.ts",
     "codegen": "graphql-codegen --config codegen.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
