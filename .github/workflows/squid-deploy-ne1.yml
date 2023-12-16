@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        runner: [ne1-vl3]
+        runner: [ne1-cloud-host, ne1-vl3]
     defaults:
       run:
         working-directory: ./squid/back
