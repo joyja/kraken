@@ -5,7 +5,7 @@ on:
     branches:
       - main # Set your deploying branch
     paths:
-      - ".github/workflows/squid-deploy.yml"
+      - ".github/workflows/squid-deploy-ne1.yml"
       - "squid/back/**"
 jobs:
   deploy:
