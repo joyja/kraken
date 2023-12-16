@@ -1,0 +1,71 @@
+name: Squid Deploy Systemd
+
+on:
+  push:
+    branches:
+      - main # Set your deploying branch
+    paths:
+      - ".github/workflows/squid-deploy.yml"
+      - "squid/back/**"
+jobs:
+  deploy:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: [ne1-vl3]
+    defaults:
+      run:
+        working-directory: ./squid/back
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 6.32.9
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - run: pnpm install
+      - name: Install dependencies and build
+        run: |
+          pnpm install
+          pnpm build
+
+      - name: Prune to production dependencies
+        run: pnpm prune --prod
+
+      - name: Create WORKING_DIRECTORY env variable
+        run: echo "WORKING_DIRECTORY=$GITHUB_WORKSPACE/squid/back" >> $GITHUB_ENV
+
+      - name: Set up the systemd service file
+        env:
+          WORKING_DIRECTORY: ${{env.WORKING_DIRECTORY}} # Use the new variable here
+        run: |
+          SERVICE_CONTENT="[Unit]
+          Description=Squid Node.js App
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=squid
+          WorkingDirectory=$WORKING_DIRECTORY
+          EnvironmentFile=/etc/squid/environment
+          ExecStart=/usr/bin/node $WORKING_DIRECTORY/build/src/index.js
+          Restart=on-failure
+          RestartSec=10
+          StandardOutput=syslog
+          StandardError=syslog
+          SyslogIdentifier=squid
+
+          [Install]
+          WantedBy=multi-user.target"
+
+          if [ ! -f /etc/systemd/system/squid.service ]; then
+            echo "$SERVICE_CONTENT" | tee /etc/systemd/system/squid.service
+            sudo /usr/bin/systemctl daemon-reload
+            sudo /usr/bin/systemctl start squid.service
+            sudo /usr/bin/systemctl enable squid.service
+          else
+            echo "$SERVICE_CONTENT" | tee /etc/systemd/system/squid.service
+            sudo /usr/bin/systemctl daemon-reload
+            sudo /usr/bin/systemctl restart squid.service
+          fi
