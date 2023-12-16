@@ -35,9 +35,15 @@ class NebulaCert {
   }
   generateCaCertificate({ name, allowOverwrite }:NebulaCaCertInput) {
     if (allowOverwrite) {
-      fs.rmSync('/etc/squid/nebula/ca.crt')
-      fs.rmSync('/etc/squid/nebula/ca.key')
-      fs.rmSync('/etc/squid/nebula/ca.png')
+      if(fs.existsSync('/etc/squid/nebula/ca.crt')) {
+        fs.rmSync('/etc/squid/nebula/ca.crt')
+      }
+      if(fs.existsSync('/etc/squid/nebula/ca.key')) {
+        fs.rmSync('/etc/squid/nebula/ca.key')
+      }
+      if(fs.existsSync('/etc/squid/nebula/ca.png')) {
+        fs.rmSync('/etc/squid/nebula/ca.png')
+      }
     }
     return new Promise<void>((resolve, reject) => {
       exec(`nebula-cert ca -name ${name} -out-crt /etc/squid/nebula/ca.crt -out-key /etc/squid/nebula/ca.key -out-qr /etc/squid/nebula/ca.png`, (err, stdout, stderr) => {
