@@ -63,9 +63,15 @@ class NebulaCert {
   generateHostCertificate({ isOwn, name, nebulaIp, groups, allowOverwrite }:NebulaHostCertInput) {
     if (allowOverwrite) {
       const certName = isOwn ? 'host' : name
-      fs.rmSync(`/etc/squid/nebula/${certName}.crt`)
-      fs.rmSync(`/etc/squid/nebula/${certName}.key`)
-      fs.rmSync(`/etc/squid/nebula/${certName}.png`)
+      if (fs.existsSync(`/etc/squid/nebula/${certName}.crt`)) {
+        fs.rmSync(`/etc/squid/nebula/${certName}.crt`)
+      }
+      if (fs.existsSync(`/etc/squid/nebula/${certName}.key`)) {
+        fs.rmSync(`/etc/squid/nebula/${certName}.key`)
+      }
+      if (fs.existsSync(`/etc/squid/nebula/${certName}.png`)) {
+        fs.rmSync(`/etc/squid/nebula/${certName}.png`)
+      }
     }
     return new Promise<void>((resolve, reject) => {
       const certName = isOwn ? 'host' : name
