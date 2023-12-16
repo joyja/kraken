@@ -28,6 +28,28 @@ function runCommand(command:string) {
   })
 }
 
+function getIpCidr(interfaceName: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    exec(`ip addr show ${interfaceName}`, (error, stdout, stderr) => {
+      if (error) {
+        reject(`Error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        reject(`Error: ${stderr}`);
+        return;
+      }
+
+      const match = stdout.match(/inet (\d+\.\d+\.\d+\.\d+\/\d+)/);
+      if (match && match[1]) {
+        resolve(match[1]);
+      } else {
+        reject('IP address not found for the interface.');
+      }
+    });
+  });
+}
+
 class NebulaCert {
   public isInstalled:boolean
   constructor() {
@@ -173,6 +195,10 @@ class Nebula extends MQTTData {
       name: 'nebula/isLightHouse',
       getter: async () => this.isLighthouse,
       type: 'Boolean'
+    },{
+      name: 'nebula/ip',
+      getter: async () => this.getNebulaIp(),
+      type: 'String'
     }]
     const deviceControl:MqttDataDeviceControl[] = [{
       name: 'nebula/install',
@@ -415,6 +441,12 @@ class Nebula extends MQTTData {
     } else {
       return 'installed and certified, service running'
     }
+  }
+  getNebulaIp() {
+    return getIpCidr('squid-nebula').catch((err) => { 
+      // log.debug(`Couldn't retrieve nebula ip: ${err}`)
+      return null
+    })
   }
   get isConfigured() {
     return fs.existsSync('/etc/squid/nebula/config.yml')
