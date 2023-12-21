@@ -6,7 +6,7 @@ import { userHandler } from "../../user"
 
 export function info() { return 'Sparkplug B Historian and Alarm Notifier'}
 
-export function groups() {
+export function groups(_root:unknown, args:{historyDuration:number}) {
   return spdata.groups
 }
 

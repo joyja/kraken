@@ -215,7 +215,7 @@ Read only queries
 """
 type Query {
   info: String!
-  groups: [SparkplugGroup!]!
+  groups(historyDuration: Int): [SparkplugGroup!]!
   alarms: [Alarm!]!
   users: [User!]!
   rosters: [Roster!]!
