@@ -1,6 +1,8 @@
+import { prisma } from "../../prisma"
 import { spdata } from "../../mqtt"
 import { alarmHandler } from "../../alarm"
 import { Alarm } from "../types"
+import { ChartPage } from "@prisma/client"
 import { rosterHandler } from "../../roster"
 import { userHandler } from "../../user"
 
@@ -20,4 +22,8 @@ export function users() {
 
 export function rosters() {
   return rosterHandler.getAll()
+}
+
+export async function chartPages():Promise<ChartPage[]> {
+  return prisma.chartPage.findMany({ include: { charts: { include: { pens: true }}}})
 }

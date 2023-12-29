@@ -85,6 +85,34 @@ model RosterEntry {
   order    Int
 }
 
+model ChartPage {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  charts      Chart[]
+}
+
+model Chart {
+  id          String    @id @default(uuid())
+  chartPage   ChartPage @relation(fields: [chartPageId], references: [id], onDelete: Cascade)
+  chartPageId String
+  title       String
+  pens        Pen[]
+  x           Json // This will be in the format {autoRange: Boolean, max: Float, min: Float}
+  y           Json // This will be in the format {autoRange: Boolean, max: Float, min: Float}
+}
+
+model Pen {
+  id       String @id @default(uuid())
+  chart    Chart  @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  chartId  String
+  groupId  String
+  nodeId   String
+  deviceId String
+  metricId String
+  color    String
+}
+
 model User {
   id          String        @id @default(uuid())
   name        String
