@@ -70,6 +70,36 @@ export enum AlarmPriority {
   Medium = 'MEDIUM'
 }
 
+export type Axis = {
+  __typename?: 'Axis';
+  autoRange: Scalars['Boolean']['output'];
+  max?: Maybe<Scalars['Float']['output']>;
+  min?: Maybe<Scalars['Float']['output']>;
+};
+
+export type AxisEntry = {
+  autoRange: Scalars['Boolean']['input'];
+  max?: InputMaybe<Scalars['Float']['input']>;
+  min?: InputMaybe<Scalars['Float']['input']>;
+};
+
+export type Chart = {
+  __typename?: 'Chart';
+  id: Scalars['String']['output'];
+  pens: Array<Pen>;
+  title: Scalars['String']['output'];
+  x: Axis;
+  y: Axis;
+};
+
+export type ChartPage = {
+  __typename?: 'ChartPage';
+  charts: Array<Chart>;
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  name?: Maybe<Scalars['String']['output']>;
+};
+
 export type CreateAlarm = {
   condition: AlarmConditionInput;
   deviceId?: InputMaybe<Scalars['String']['input']>;
@@ -80,6 +110,35 @@ export type CreateAlarm = {
   nodeId: Scalars['String']['input'];
   priority: AlarmPriority;
   rosterId?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CreateChartEntry = {
+  chartPageId: Scalars['String']['input'];
+  title: Scalars['String']['input'];
+  x: AxisEntry;
+  y: AxisEntry;
+};
+
+export type CreateChartPageEntry = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+};
+
+export type CreateChartPenEntry = {
+  color: Scalars['String']['input'];
+  deviceId?: InputMaybe<Scalars['String']['input']>;
+  groupId: Scalars['String']['input'];
+  metricId: Scalars['String']['input'];
+  nodeId: Scalars['String']['input'];
+};
+
+export type CreatePenEntry = {
+  chartId: Scalars['String']['input'];
+  color: Scalars['String']['input'];
+  deviceId: Scalars['String']['input'];
+  groupId: Scalars['String']['input'];
+  metricId: Scalars['String']['input'];
+  nodeId: Scalars['String']['input'];
 };
 
 export type CreateRoster = {
@@ -105,6 +164,18 @@ export type CreateUser = {
 };
 
 export type DeleteAlarm = {
+  id: Scalars['String']['input'];
+};
+
+export type DeleteChartEntry = {
+  id: Scalars['String']['input'];
+};
+
+export type DeleteChartPageEntry = {
+  id: Scalars['String']['input'];
+};
+
+export type DeletePenEntry = {
   id: Scalars['String']['input'];
 };
 
@@ -134,10 +205,16 @@ export type Mutation = {
   acknowledgeAlarm: Alarm;
   acknowledgeRoster: Roster;
   createAlarm: Alarm;
+  createChart: Chart;
+  createChartPage: ChartPage;
+  createPen: Pen;
   createRoster: Roster;
   createRosterEntry: RosterEntry;
   createUser: User;
   deleteAlarm: Alarm;
+  deleteChart: Chart;
+  deleteChartPage: ChartPage;
+  deletePen: Pen;
   deleteRoster: Roster;
   deleteRosterEntry: RosterEntry;
   deleteUser: User;
@@ -146,6 +223,9 @@ export type Mutation = {
   sendDeviceCommand: Scalars['Boolean']['output'];
   sendNodeCommand: Scalars['Boolean']['output'];
   updateAlarm: Alarm;
+  updateChart: Chart;
+  updateChartPage: ChartPage;
+  updatePen: Pen;
   updateRoster: Roster;
   updateRosterEntry: RosterEntry;
   updateUser: User;
@@ -171,6 +251,24 @@ export type MutationCreateAlarmArgs = {
 
 
 /** Read and write queries */
+export type MutationCreateChartArgs = {
+  input: CreateChartEntry;
+};
+
+
+/** Read and write queries */
+export type MutationCreateChartPageArgs = {
+  input: CreateChartPageEntry;
+};
+
+
+/** Read and write queries */
+export type MutationCreatePenArgs = {
+  input: CreatePenEntry;
+};
+
+
+/** Read and write queries */
 export type MutationCreateRosterArgs = {
   input: CreateRoster;
 };
@@ -191,6 +289,24 @@ export type MutationCreateUserArgs = {
 /** Read and write queries */
 export type MutationDeleteAlarmArgs = {
   input: DeleteAlarm;
+};
+
+
+/** Read and write queries */
+export type MutationDeleteChartArgs = {
+  input: DeleteChartEntry;
+};
+
+
+/** Read and write queries */
+export type MutationDeleteChartPageArgs = {
+  input: DeleteChartPageEntry;
+};
+
+
+/** Read and write queries */
+export type MutationDeletePenArgs = {
+  input: DeletePenEntry;
 };
 
 
@@ -250,6 +366,24 @@ export type MutationUpdateAlarmArgs = {
 
 
 /** Read and write queries */
+export type MutationUpdateChartArgs = {
+  input: UpdateChartEntry;
+};
+
+
+/** Read and write queries */
+export type MutationUpdateChartPageArgs = {
+  input: UpdateChartPageEntry;
+};
+
+
+/** Read and write queries */
+export type MutationUpdatePenArgs = {
+  input: UpdatePenEntry;
+};
+
+
+/** Read and write queries */
 export type MutationUpdateRosterArgs = {
   input: UpdateRoster;
 };
@@ -266,14 +400,32 @@ export type MutationUpdateUserArgs = {
   input: UpdateUser;
 };
 
+export type Pen = {
+  __typename?: 'Pen';
+  chartId?: Maybe<Scalars['String']['output']>;
+  color?: Maybe<Scalars['String']['output']>;
+  deviceId?: Maybe<Scalars['String']['output']>;
+  groupId?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  metricId?: Maybe<Scalars['String']['output']>;
+  nodeId?: Maybe<Scalars['String']['output']>;
+};
+
 /** Read only queries */
 export type Query = {
   __typename?: 'Query';
   alarms: Array<Alarm>;
+  chartPages: Array<ChartPage>;
   groups: Array<SparkplugGroup>;
   info: Scalars['String']['output'];
   rosters: Array<Roster>;
   users: Array<User>;
+};
+
+
+/** Read only queries */
+export type QueryGroupsArgs = {
+  historyDuration?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type Roster = {
@@ -352,6 +504,26 @@ export type UpdateAlarm = {
   nodeId?: InputMaybe<Scalars['String']['input']>;
   priority?: InputMaybe<AlarmPriority>;
   rosterId?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateChartEntry = {
+  id: Scalars['String']['input'];
+  title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateChartPageEntry = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdatePenEntry = {
+  color?: InputMaybe<Scalars['String']['input']>;
+  deviceId?: InputMaybe<Scalars['String']['input']>;
+  groupId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['String']['input'];
+  metricId?: InputMaybe<Scalars['String']['input']>;
+  nodeId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateRoster = {
@@ -461,13 +633,24 @@ export type ResolversTypes = {
   AlarmConditionInput: AlarmConditionInput;
   AlarmConditionMode: AlarmConditionMode;
   AlarmPriority: AlarmPriority;
+  Axis: ResolverTypeWrapper<Axis>;
+  AxisEntry: AxisEntry;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  Chart: ResolverTypeWrapper<Chart>;
+  ChartPage: ResolverTypeWrapper<ChartPage>;
   CreateAlarm: CreateAlarm;
+  CreateChartEntry: CreateChartEntry;
+  CreateChartPageEntry: CreateChartPageEntry;
+  CreateChartPenEntry: CreateChartPenEntry;
+  CreatePenEntry: CreatePenEntry;
   CreateRoster: CreateRoster;
   CreateRosterEntry: CreateRosterEntry;
   CreateUser: CreateUser;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
   DeleteAlarm: DeleteAlarm;
+  DeleteChartEntry: DeleteChartEntry;
+  DeleteChartPageEntry: DeleteChartPageEntry;
+  DeletePenEntry: DeletePenEntry;
   DeleteRoster: DeleteRoster;
   DeleteRosterEntry: DeleteRosterEntry;
   DeleteUser: DeleteUser;
@@ -476,6 +659,7 @@ export type ResolversTypes = {
   MoveDownRosterEntry: MoveDownRosterEntry;
   MoveUpRosterEntry: MoveUpRosterEntry;
   Mutation: ResolverTypeWrapper<{}>;
+  Pen: ResolverTypeWrapper<Pen>;
   Query: ResolverTypeWrapper<{}>;
   Roster: ResolverTypeWrapper<Roster>;
   RosterEntry: ResolverTypeWrapper<RosterEntry>;
@@ -486,6 +670,9 @@ export type ResolversTypes = {
   SparkplugNode: ResolverTypeWrapper<SparkplugNode>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   UpdateAlarm: UpdateAlarm;
+  UpdateChartEntry: UpdateChartEntry;
+  UpdateChartPageEntry: UpdateChartPageEntry;
+  UpdatePenEntry: UpdatePenEntry;
   UpdateRoster: UpdateRoster;
   UpdateRosterEntry: UpdateRosterEntry;
   UpdateUser: UpdateUser;
@@ -497,13 +684,24 @@ export type ResolversParentTypes = {
   Alarm: Alarm;
   AlarmCondition: AlarmCondition;
   AlarmConditionInput: AlarmConditionInput;
+  Axis: Axis;
+  AxisEntry: AxisEntry;
   Boolean: Scalars['Boolean']['output'];
+  Chart: Chart;
+  ChartPage: ChartPage;
   CreateAlarm: CreateAlarm;
+  CreateChartEntry: CreateChartEntry;
+  CreateChartPageEntry: CreateChartPageEntry;
+  CreateChartPenEntry: CreateChartPenEntry;
+  CreatePenEntry: CreatePenEntry;
   CreateRoster: CreateRoster;
   CreateRosterEntry: CreateRosterEntry;
   CreateUser: CreateUser;
   Date: Scalars['Date']['output'];
   DeleteAlarm: DeleteAlarm;
+  DeleteChartEntry: DeleteChartEntry;
+  DeleteChartPageEntry: DeleteChartPageEntry;
+  DeletePenEntry: DeletePenEntry;
   DeleteRoster: DeleteRoster;
   DeleteRosterEntry: DeleteRosterEntry;
   DeleteUser: DeleteUser;
@@ -512,6 +710,7 @@ export type ResolversParentTypes = {
   MoveDownRosterEntry: MoveDownRosterEntry;
   MoveUpRosterEntry: MoveUpRosterEntry;
   Mutation: {};
+  Pen: Pen;
   Query: {};
   Roster: Roster;
   RosterEntry: RosterEntry;
@@ -522,6 +721,9 @@ export type ResolversParentTypes = {
   SparkplugNode: SparkplugNode;
   String: Scalars['String']['output'];
   UpdateAlarm: UpdateAlarm;
+  UpdateChartEntry: UpdateChartEntry;
+  UpdateChartPageEntry: UpdateChartPageEntry;
+  UpdatePenEntry: UpdatePenEntry;
   UpdateRoster: UpdateRoster;
   UpdateRosterEntry: UpdateRosterEntry;
   UpdateUser: UpdateUser;
@@ -555,6 +757,30 @@ export type AlarmConditionResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type AxisResolvers<ContextType = any, ParentType extends ResolversParentTypes['Axis'] = ResolversParentTypes['Axis']> = {
+  autoRange?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  max?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  min?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ChartResolvers<ContextType = any, ParentType extends ResolversParentTypes['Chart'] = ResolversParentTypes['Chart']> = {
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pens?: Resolver<Array<ResolversTypes['Pen']>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x?: Resolver<ResolversTypes['Axis'], ParentType, ContextType>;
+  y?: Resolver<ResolversTypes['Axis'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ChartPageResolvers<ContextType = any, ParentType extends ResolversParentTypes['ChartPage'] = ResolversParentTypes['ChartPage']> = {
+  charts?: Resolver<Array<ResolversTypes['Chart']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
@@ -563,10 +789,16 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   acknowledgeAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationAcknowledgeAlarmArgs, 'id'>>;
   acknowledgeRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationAcknowledgeRosterArgs, 'id'>>;
   createAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationCreateAlarmArgs, 'input'>>;
+  createChart?: Resolver<ResolversTypes['Chart'], ParentType, ContextType, RequireFields<MutationCreateChartArgs, 'input'>>;
+  createChartPage?: Resolver<ResolversTypes['ChartPage'], ParentType, ContextType, RequireFields<MutationCreateChartPageArgs, 'input'>>;
+  createPen?: Resolver<ResolversTypes['Pen'], ParentType, ContextType, RequireFields<MutationCreatePenArgs, 'input'>>;
   createRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationCreateRosterArgs, 'input'>>;
   createRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationCreateRosterEntryArgs, 'input'>>;
   createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
   deleteAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationDeleteAlarmArgs, 'input'>>;
+  deleteChart?: Resolver<ResolversTypes['Chart'], ParentType, ContextType, RequireFields<MutationDeleteChartArgs, 'input'>>;
+  deleteChartPage?: Resolver<ResolversTypes['ChartPage'], ParentType, ContextType, RequireFields<MutationDeleteChartPageArgs, 'input'>>;
+  deletePen?: Resolver<ResolversTypes['Pen'], ParentType, ContextType, RequireFields<MutationDeletePenArgs, 'input'>>;
   deleteRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationDeleteRosterArgs, 'input'>>;
   deleteRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationDeleteRosterEntryArgs, 'input'>>;
   deleteUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'input'>>;
@@ -575,14 +807,29 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendDeviceCommand?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSendDeviceCommandArgs, 'command' | 'deviceId' | 'groupId' | 'nodeId' | 'value'>>;
   sendNodeCommand?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSendNodeCommandArgs, 'command' | 'groupId' | 'nodeId' | 'value'>>;
   updateAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationUpdateAlarmArgs, 'input'>>;
+  updateChart?: Resolver<ResolversTypes['Chart'], ParentType, ContextType, RequireFields<MutationUpdateChartArgs, 'input'>>;
+  updateChartPage?: Resolver<ResolversTypes['ChartPage'], ParentType, ContextType, RequireFields<MutationUpdateChartPageArgs, 'input'>>;
+  updatePen?: Resolver<ResolversTypes['Pen'], ParentType, ContextType, RequireFields<MutationUpdatePenArgs, 'input'>>;
   updateRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationUpdateRosterArgs, 'input'>>;
   updateRosterEntry?: Resolver<ResolversTypes['RosterEntry'], ParentType, ContextType, RequireFields<MutationUpdateRosterEntryArgs, 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
 };
 
+export type PenResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pen'] = ResolversParentTypes['Pen']> = {
+  chartId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  deviceId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  groupId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  metricId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  nodeId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   alarms?: Resolver<Array<ResolversTypes['Alarm']>, ParentType, ContextType>;
-  groups?: Resolver<Array<ResolversTypes['SparkplugGroup']>, ParentType, ContextType>;
+  chartPages?: Resolver<Array<ResolversTypes['ChartPage']>, ParentType, ContextType>;
+  groups?: Resolver<Array<ResolversTypes['SparkplugGroup']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
   info?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   rosters?: Resolver<Array<ResolversTypes['Roster']>, ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
@@ -665,8 +912,12 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 export type Resolvers<ContextType = any> = {
   Alarm?: AlarmResolvers<ContextType>;
   AlarmCondition?: AlarmConditionResolvers<ContextType>;
+  Axis?: AxisResolvers<ContextType>;
+  Chart?: ChartResolvers<ContextType>;
+  ChartPage?: ChartPageResolvers<ContextType>;
   Date?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
+  Pen?: PenResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Roster?: RosterResolvers<ContextType>;
   RosterEntry?: RosterEntryResolvers<ContextType>;

@@ -210,6 +210,104 @@ type RosterEntry {
   order: Int
 }
 
+type ChartPage {
+  id: String!
+  name: String
+  description: String
+  charts: [Chart!]!
+}
+
+type Chart {
+  id: String!
+  title: String!
+  x: Axis!
+  y: Axis!
+  pens: [Pen!]!
+}
+
+type Pen {
+  id: String!
+  chartId: String
+  groupId: String
+  nodeId: String
+  deviceId: String
+  metricId: String
+  color: String
+}
+
+input CreateChartPageEntry {
+  name: String!
+  description: String
+}
+
+input UpdateChartPageEntry {
+  id: String!
+  name: String
+  description: String
+}
+
+input DeleteChartPageEntry {
+  id: String!
+}
+
+type Axis {
+  autoRange: Boolean!
+  min: Float
+  max: Float
+}
+
+input AxisEntry {
+  autoRange: Boolean!
+  min: Float
+  max: Float
+}
+
+input CreateChartEntry {
+  chartPageId: String!
+  title: String!
+  y: AxisEntry!
+  x: AxisEntry!
+}
+
+input UpdateChartEntry {
+  id: String!
+  title: String
+}
+
+input DeleteChartEntry {
+  id: String!
+}
+
+input CreateChartPenEntry {
+  groupId: String!
+  nodeId: String!
+  deviceId: String
+  metricId: String!
+  color: String!
+}
+
+input CreatePenEntry {
+  chartId: String!
+  groupId: String!
+  nodeId: String!
+  deviceId: String!
+  metricId: String!
+  color: String!
+}
+
+input UpdatePenEntry {
+  id: String!
+  groupId: String
+  nodeId: String
+  deviceId: String
+  metricId: String
+  color: String
+}
+
+input DeletePenEntry {
+  id: String!
+}
+
 """
 Read only queries
 """
@@ -219,6 +317,7 @@ type Query {
   alarms: [Alarm!]!
   users: [User!]!
   rosters: [Roster!]!
+  chartPages: [ChartPage!]!
 }
 
 """
@@ -253,5 +352,14 @@ type Mutation {
   deleteRosterEntry(input: DeleteRosterEntry!): RosterEntry!
   moveUpRosterEntry(input: MoveUpRosterEntry!): RosterEntry!
   moveDownRosterEntry(input: MoveDownRosterEntry!): RosterEntry!
+  createChartPage(input: CreateChartPageEntry!): ChartPage!
+  updateChartPage(input: UpdateChartPageEntry!): ChartPage!
+  deleteChartPage(input: DeleteChartPageEntry!): ChartPage!
+  createChart(input: CreateChartEntry!): Chart!
+  updateChart(input: UpdateChartEntry!): Chart!
+  deleteChart(input: DeleteChartEntry!): Chart!
+  createPen(input: CreatePenEntry!): Pen!
+  updatePen(input: UpdatePenEntry!): Pen!
+  deletePen(input: DeletePenEntry!): Pen!
   acknowledgeRoster(id: String!): Roster!
 }

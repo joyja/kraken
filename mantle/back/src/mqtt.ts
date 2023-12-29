@@ -363,7 +363,7 @@ class SparkplugData extends events.EventEmitter {
       this.emit('update',this.groups)
     })
     this.client!.on('connect',() => {
-      console.log('connecting')
+      console.log('connected')
       this.client!.publishHostOnline()
     })
     this.client!.on('reconnect',() => {
