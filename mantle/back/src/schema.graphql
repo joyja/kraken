@@ -267,11 +267,13 @@ input CreateChartEntry {
   title: String!
   y: AxisEntry!
   x: AxisEntry!
+  pens: [CreatePenEntry!]
 }
 
 input UpdateChartEntry {
   id: String!
   title: String
+  pens: [CreatePenEntry!]
 }
 
 input DeleteChartEntry {

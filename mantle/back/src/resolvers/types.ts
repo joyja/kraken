@@ -114,6 +114,7 @@ export type CreateAlarm = {
 
 export type CreateChartEntry = {
   chartPageId: Scalars['String']['input'];
+  pens?: InputMaybe<Array<CreatePenEntry>>;
   title: Scalars['String']['input'];
   x: AxisEntry;
   y: AxisEntry;
@@ -508,6 +509,7 @@ export type UpdateAlarm = {
 
 export type UpdateChartEntry = {
   id: Scalars['String']['input'];
+  pens?: InputMaybe<Array<CreatePenEntry>>;
   title?: InputMaybe<Scalars['String']['input']>;
 };
 

@@ -40,16 +40,23 @@ export async function deleteChartPage (_root:unknown,{ input:{ id } }:{ input:De
 }
 
 export async function createChart(_root:unknown,{ input }:{ input:CreateChartEntry }):Promise<Chart> {
-  return prisma.chart.create({ data: input, include: { pens: true }})
+  const { pens, ...scalarInputs } = input
+  return prisma.chart.create({ data: {...scalarInputs,
+    pens: { create: pens?.map((pen:CreatePenEntry) => ({ ...pen })) }
+  }, include: { pens: true }})
 }
 
 export async function updateChart(_root:unknown,{ input }:{ input:UpdateChartEntry }):Promise<Chart> {
-  const { id, ...updateFields }:{ id: string; [key: string]: any } = input
+  const { id, pens, ...updateFields }:{ id: string; [key: string]: any } = input
   const data:{[key:string]:any} = {}
   // Filter out null values
   Object.keys(updateFields).forEach((key:string) => {
     if (updateFields[key] !== null && updateFields[key] !== undefined) data[key] = updateFields[key]
   })
+  if (pens) {
+    await prisma.pen.deleteMany({ where: { chartId: id }})
+    await prisma.pen.createMany({ data: pens.map((pen:CreatePenEntry) => ({ ...pen, chartId: id }))})
+  }
   return prisma.chart.update({ where: { id }, data, include: { pens: true }})
 } 
 
