@@ -310,6 +310,27 @@ input DeletePenEntry {
   id: String!
 }
 
+input MetricHistoryEntry {
+  groupId: String!
+  nodeId: String!
+  deviceId: String!
+  metricId: String!
+}
+
+input HistoryEntry {
+  start: Date!
+  end: Date!
+  metrics: [MetricHistoryEntry!]!
+}
+
+type History {
+  groupId: String!
+  nodeId: String!
+  deviceId: String!
+  metricId: String!
+  history: [SparkplugMetricHistory!]!
+}
+
 """
 Read only queries
 """
@@ -320,6 +341,7 @@ type Query {
   users: [User!]!
   rosters: [Roster!]!
   chartPages: [ChartPage!]!
+  history(input: HistoryEntry!): [History!]!
 }
 
 """

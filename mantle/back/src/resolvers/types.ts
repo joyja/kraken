@@ -192,6 +192,28 @@ export type DeleteUser = {
   id: Scalars['String']['input'];
 };
 
+export type History = {
+  __typename?: 'History';
+  deviceId: Scalars['String']['output'];
+  groupId: Scalars['String']['output'];
+  history: Array<SparkplugMetricHistory>;
+  metricId: Scalars['String']['output'];
+  nodeId: Scalars['String']['output'];
+};
+
+export type HistoryEntry = {
+  end: Scalars['Date']['input'];
+  metrics: Array<MetricHistoryEntry>;
+  start: Scalars['Date']['input'];
+};
+
+export type MetricHistoryEntry = {
+  deviceId: Scalars['String']['input'];
+  groupId: Scalars['String']['input'];
+  metricId: Scalars['String']['input'];
+  nodeId: Scalars['String']['input'];
+};
+
 export type MoveDownRosterEntry = {
   id: Scalars['String']['input'];
 };
@@ -418,6 +440,7 @@ export type Query = {
   alarms: Array<Alarm>;
   chartPages: Array<ChartPage>;
   groups: Array<SparkplugGroup>;
+  history: Array<History>;
   info: Scalars['String']['output'];
   rosters: Array<Roster>;
   users: Array<User>;
@@ -427,6 +450,12 @@ export type Query = {
 /** Read only queries */
 export type QueryGroupsArgs = {
   historyDuration?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** Read only queries */
+export type QueryHistoryArgs = {
+  input: HistoryEntry;
 };
 
 export type Roster = {
@@ -657,7 +686,10 @@ export type ResolversTypes = {
   DeleteRosterEntry: DeleteRosterEntry;
   DeleteUser: DeleteUser;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
+  History: ResolverTypeWrapper<History>;
+  HistoryEntry: HistoryEntry;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  MetricHistoryEntry: MetricHistoryEntry;
   MoveDownRosterEntry: MoveDownRosterEntry;
   MoveUpRosterEntry: MoveUpRosterEntry;
   Mutation: ResolverTypeWrapper<{}>;
@@ -708,7 +740,10 @@ export type ResolversParentTypes = {
   DeleteRosterEntry: DeleteRosterEntry;
   DeleteUser: DeleteUser;
   Float: Scalars['Float']['output'];
+  History: History;
+  HistoryEntry: HistoryEntry;
   Int: Scalars['Int']['output'];
+  MetricHistoryEntry: MetricHistoryEntry;
   MoveDownRosterEntry: MoveDownRosterEntry;
   MoveUpRosterEntry: MoveUpRosterEntry;
   Mutation: {};
@@ -787,6 +822,15 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Date';
 }
 
+export type HistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['History'] = ResolversParentTypes['History']> = {
+  deviceId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  groupId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  history?: Resolver<Array<ResolversTypes['SparkplugMetricHistory']>, ParentType, ContextType>;
+  metricId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  nodeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   acknowledgeAlarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType, RequireFields<MutationAcknowledgeAlarmArgs, 'id'>>;
   acknowledgeRoster?: Resolver<ResolversTypes['Roster'], ParentType, ContextType, RequireFields<MutationAcknowledgeRosterArgs, 'id'>>;
@@ -832,6 +876,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   alarms?: Resolver<Array<ResolversTypes['Alarm']>, ParentType, ContextType>;
   chartPages?: Resolver<Array<ResolversTypes['ChartPage']>, ParentType, ContextType>;
   groups?: Resolver<Array<ResolversTypes['SparkplugGroup']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
+  history?: Resolver<Array<ResolversTypes['History']>, ParentType, ContextType, RequireFields<QueryHistoryArgs, 'input'>>;
   info?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   rosters?: Resolver<Array<ResolversTypes['Roster']>, ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
@@ -918,6 +963,7 @@ export type Resolvers<ContextType = any> = {
   Chart?: ChartResolvers<ContextType>;
   ChartPage?: ChartPageResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  History?: HistoryResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Pen?: PenResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
