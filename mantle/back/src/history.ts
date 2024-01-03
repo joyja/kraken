@@ -1,8 +1,17 @@
 import { PrismaClient, Prisma } from '@prisma/client'
 import { SparkplugMetric } from './mqtt'
 import { Log } from './log'
+import { differenceInMinutes, subMinutes } from 'date-fns'
+import { MetricHistoryEntry } from './resolvers/types'
 
 const log = new Log('history')
+
+interface MetricHistoryAggregate {
+  time: Date
+  data: {
+    [key:string]: number
+  }
+}
 
 export class History {
   private prisma:PrismaClient
@@ -41,6 +50,31 @@ export class History {
         timestamp: 'asc'
       }
     })
-  
+  }
+  async getHistoryBucketed({ metrics, start, end }:{ metrics:MetricHistoryEntry[], start:Date, end:Date}) {
+    const interval = `${Math.floor(differenceInMinutes(new Date(end),new Date(start)) * 60.0 / 300.0)} seconds`
+    const metricStrings = metrics.map((m) => `('${m.groupId}', '${m.nodeId}', '${m.deviceId}', '${m.metricId}')`)
+    const history = await this.prisma.$queryRawUnsafe<MetricHistoryAggregate[]>(`SELECT "time", json_object_agg("name","value") AS data FROM
+      (SELECT time_bucket('${interval}', "timestamp") AS "time",
+        CONCAT("groupId",'/',"nodeId",'/',"deviceId",'/',"metricId") as "name",
+        AVG("floatValue") as "value"
+      FROM "History"
+      WHERE ("groupId", "nodeId", "deviceId", "metricId") in (${metricStrings}) AND "timestamp" BETWEEN $1 AND $2
+      GROUP BY "time", "name"
+      ORDER BY "time" ASC) AS bucketed
+      GROUP BY "time"
+    `,new Date(start), new Date(end))
+    const result = metrics.map((m) => {
+      return {
+        ...m,
+        history: history.map((h:any) => {
+          return {
+            timestamp: h.time,
+            value: h.data[`${m.groupId}/${m.nodeId}/${m.deviceId}/${m.metricId}`]
+          }
+        }).filter((h:any) => h.value !== null && h.value !== undefined)
+      }
+    })
+    return result
   }
 }

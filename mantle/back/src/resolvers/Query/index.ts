@@ -1,10 +1,11 @@
 import { prisma } from "../../prisma"
 import { spdata } from "../../mqtt"
 import { alarmHandler } from "../../alarm"
-import { Alarm } from "../types"
+import { Alarm, HistoryEntry, SparkplugMetricHistory } from "../types"
 import { ChartPage } from "@prisma/client"
 import { rosterHandler } from "../../roster"
 import { userHandler } from "../../user"
+import { History } from "../../history"
 
 export function info() { return 'Sparkplug B Historian and Alarm Notifier'}
 
@@ -26,4 +27,10 @@ export function rosters() {
 
 export async function chartPages():Promise<ChartPage[]> {
   return prisma.chartPage.findMany({ include: { charts: { include: { pens: true }}}})
+}
+
+export async function history(_root:unknown, args:{ input: HistoryEntry }) {
+  const history = new History(prisma)
+  const { metrics, start, end } = args.input
+  return history.getHistoryBucketed({ metrics, start, end })
 }
