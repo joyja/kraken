@@ -21,7 +21,7 @@ export class History {
   async log(metric:SparkplugMetric) {
     let valueColumn = metric.type.startsWith('Int') ? 'intValue' : metric.type === 'Float' ? 'floatValue' : metric.type === 'String' ? 'stringValue' : metric.type === 'Boolean' ? 'boolValue' : null
     let value = metric.value
-    if (valueColumn && value) {
+    if (valueColumn && value !== null && value !== undefined) {
       await this.prisma.history.create({ data: {
         groupId: metric.groupId,
         nodeId: metric.nodeId,
