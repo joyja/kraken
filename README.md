@@ -1,6 +1,6 @@
 # Project Kraken
 
-<img src="https://github.com/joyja/kraken/assets/38839768/c3b4a48c-0828-4b4e-b0f5-54fd60566c98" width="100" />
+<img src="https://github.com/joyja/kraken/assets/38839768/c3b4a48c-0828-4b4e-b0f5-54fd60566c98" width="200" />
 
 Kraken is the Joy Automation monorepo for all of our SCADA tools. Here's a list:
 
