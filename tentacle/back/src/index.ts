@@ -3,6 +3,7 @@ import { createServer } from 'node:http'
 import fs from "fs"
 import path from "path"
 import * as resolvers from "./resolvers"
+import { plc } from "./plc"
 
 // available when handling requests, needs to be provided by the implementor ()
 // eslint-disable-next-line @*typescript-eslint/ban-types
@@ -19,5 +20,7 @@ const server = createServer(yoga)
 const PORT = 4000
 
 server.listen(PORT, async () => {
+	await plc.transpile()
+	plc.start()
   console.log(`Running a GraphQL API server at http://localhost:${PORT}/graphql`)
 })

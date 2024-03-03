@@ -8,7 +8,7 @@ import chokidar from 'chokidar'
 import { differenceInMilliseconds, getUnixTime } from 'date-fns'
 import ts from 'typescript'
 
-const getDatatype = function (value:any) {
+function getDatatype (value:any) {
   if (typeof value === 'boolean') {
     return 'BOOLEAN'
   } else if (typeof value === 'string') {
@@ -21,6 +21,61 @@ const getDatatype = function (value:any) {
   }
 }
 
+function createFileIfNotExists (path:string, initialValue:string ) {
+  if (!fs.existsSync(path)) {
+    fs.writeFileSync(
+      path,
+      initialValue
+    )
+  }
+}
+
+function createDirIfNotExists (path:string) {
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path)
+  }
+}
+
+function findAllFiles(dir: string, extensions: string[], filelist: string[] = []): string[] {
+  fs.readdirSync(dir).forEach(file => {
+    const filePath = path.join(dir, file);
+    if (fs.statSync(filePath).isDirectory()) {
+      filelist = findAllFiles(filePath, extensions, filelist);
+    } else if (extensions.some(extension => filePath.endsWith(extension))) {
+      filelist.push(filePath);
+    }
+  });
+  return filelist;
+}
+
+function ensureDirExists(filePath: string) {
+  const dirname = path.dirname(filePath);
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname, { recursive: true });
+  }
+}
+
+function copyFile(source: string, target: string) {
+  ensureDirExists(target);
+  fs.copyFileSync(source, target);
+}
+
+function removeDir(dir: string, excludeFiles: string[]) {
+    if (fs.existsSync(dir)) {
+        fs.readdirSync(dir).forEach(file => {
+            const currentPath = path.join(dir, file);
+            if (fs.lstatSync(currentPath).isDirectory()) {
+                removeDir(currentPath, excludeFiles);
+            } else {
+                // Check if the current file is not in the list of excluded files
+                if (!excludeFiles.includes(currentPath)) {
+                    fs.unlinkSync(currentPath);
+                }
+            }
+        });
+    }
+}
+
 export class PLC {
   public modbus:{[key:string]:Modbus}
   public opcua:{[key:string]:Opcua}
@@ -30,10 +85,15 @@ export class PLC {
   public metrics:{[key:string]:any}
   public running:boolean
   public runtimeDir:string
+  public developmentDir:string
   public runtimeConfigFile:string
   public runtimeVariableFile:string
   public runtimeClassesDir:string
   public runtimeProgramsDir:string
+  public developmentConfigFile:string
+  public developmentVariableFile:string
+  public developmentClassesDir:string
+  public developmentProgramsDir:string
   public config:any
   public variables:any
   public classes:any
@@ -47,49 +107,62 @@ export class PLC {
     this.global = {}
     this.metrics = {}
     this.running = false
+
+    //Handle runtime dir
     this.runtimeDir = path.resolve(process.cwd(), 'runtime')
-    if (!fs.existsSync(this.runtimeDir)) {
-      fs.mkdirSync(this.runtimeDir)
-    }
+    // createDirIfNotExists(this.runtimeDir)
+    this.developmentDir = path.resolve(process.cwd(), 'development')
+    createDirIfNotExists(this.developmentDir)
+    
+    //Handle config
+    const configInit = JSON.stringify({ tasks: {}, mqtt: {}, modbus: {}, opcua: {} }, null, 2)
     this.runtimeConfigFile = path.resolve(this.runtimeDir, 'config.json')
-    if (!fs.existsSync(this.runtimeConfigFile)) {
-      fs.writeFileSync(
-        this.runtimeConfigFile,
-        JSON.stringify({ tasks: {}, mqtt: {}, modbus: {}, opcua: {} }, null, 2)
-      )
-    }
+    // createFileIfNotExists(this.runtimeConfigFile, configInit)
+    this.developmentConfigFile = path.resolve(this.developmentDir, 'config.json')
+    createFileIfNotExists(this.developmentConfigFile, configInit)
+
+    //Handle variables
+    const variableInit = JSON.stringify({}, null, 2)
     this.runtimeVariableFile = path.resolve(this.runtimeDir, 'variables.json')
-    if (!fs.existsSync(this.runtimeVariableFile)) {
-      fs.writeFileSync(this.runtimeVariableFile, JSON.stringify({}, null, 2))
-    }
+    // createFileIfNotExists(this.runtimeVariableFile, variableInit)
+    this.developmentVariableFile = path.resolve(this.developmentDir, 'variables.json')
+    createFileIfNotExists(this.developmentVariableFile, variableInit)
+    
+    //Handle classes dir
     this.runtimeClassesDir = path.resolve(this.runtimeDir, 'classes')
-    if (!fs.existsSync(this.runtimeClassesDir)) {
-      fs.mkdirSync(this.runtimeClassesDir)
-    }
+    // createDirIfNotExists(this.runtimeClassesDir)
+    this.developmentClassesDir = path.resolve(this.developmentDir, 'classes')
+    createDirIfNotExists(this.developmentClassesDir)
+
+    //Handle programs dir
     this.runtimeProgramsDir = path.resolve(this.runtimeDir, 'programs')
-    if (!fs.existsSync(this.runtimeProgramsDir)) {
-      fs.mkdirSync(this.runtimeProgramsDir)
-    }
+    // createDirIfNotExists(this.runtimeProgramsDir)
+    this.developmentProgramsDir = path.resolve(this.developmentDir, 'programs')
+    createDirIfNotExists(this.developmentProgramsDir)
   }
   getConfig() {
     this.config = JSON.parse(fs.readFileSync(this.runtimeConfigFile, 'utf8'))
     this.variables = JSON.parse(fs.readFileSync(this.runtimeVariableFile, 'utf8'))
-    this.classes = fs
-      .readdirSync(path.resolve(this.runtimeClassesDir))
-      .map((filename) => {
-        delete require.cache[require.resolve(path.resolve(
-          this.runtimeClassesDir,
-          `${filename}`
-        ))]
-        const classes = require(path.resolve(
-          this.runtimeClassesDir,
-          `${filename}`
-        ))
-        return classes
-      })
-      .reduce((acc, current) => {
-        return [...acc, ...current]
-      }, [])
+    if (fs.existsSync(this.runtimeClassesDir)) {
+      this.classes = fs
+        .readdirSync(path.resolve(this.runtimeClassesDir))
+        .map((filename) => {
+          delete require.cache[require.resolve(path.resolve(
+            this.runtimeClassesDir,
+            `${filename}`
+          ))]
+          const classes = require(path.resolve(
+            this.runtimeClassesDir,
+            `${filename}`
+          ))
+          return classes
+        })
+        .reduce((acc, current) => {
+          return [...acc, ...current]
+        }, [])
+    } else {
+      this.classes = []
+    }
     this.persistence = new Persistence({
       variables: this.variables,
       global: this.global,
@@ -148,30 +221,45 @@ export class PLC {
     }
   }
   transpile() {
-    // Parse the configuration
-    const tsConfigPath = path.resolve(process.cwd(), 'tsconfig.json')
-    const tsConfigFile = ts.sys.readFile(tsConfigPath,'utf8')
-    if (!tsConfigFile) throw Error('tsconfig.json not found')
-    const parsedConfig = ts.parseConfigFileTextToJson(tsConfigPath, tsConfigFile);
-    const configFile = ts.parseJsonConfigFileContent(parsedConfig.config, ts.sys, './');
+    const sourceDir = path.resolve(process.cwd(), 'development');
+    const outDir = path.resolve(process.cwd(), 'runtime');
+    const options = {
+      noEmitOnError: true,
+      noImplicitAny: true,
+      target: ts.ScriptTarget.ESNext,
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+      outDir,
+      rootDir: sourceDir
+    }
+    removeDir(outDir, [path.join(outDir, 'persistence.json')]);
+    ensureDirExists(sourceDir);
 
-    // Create program
-    const program = ts.createProgram(configFile.fileNames, configFile.options);
+    const allFiles = findAllFiles(sourceDir, ['.ts', '.json']);
+    const host = ts.createCompilerHost(options);
+    host.writeFile = (fileName, contents, writeByteOrderMark) => {
+      const relativePath = path.relative(sourceDir, fileName);
+      const outputPath = path.join(outDir, relativePath);
+      ensureDirExists(outputPath);
+      fs.writeFileSync(outputPath, contents);
+    };
 
-    // Emit the files
-    const emitResult = program.emit();
+    const tsFiles = allFiles.filter(file => file.endsWith('.ts'));
+    if (tsFiles.length > 0) {
+      const program = ts.createProgram(tsFiles, options, host);
+      program.emit();
+    }
 
-    // Report errors, if any
-    const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
-    allDiagnostics.forEach(diagnostic => {
-        if (diagnostic.file) {
-            const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!);
-            const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-            console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
-        } else {
-            console.log(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
-        }
-    });
+    const jsonFiles = allFiles.filter(file => file.endsWith('.json'));
+    if (jsonFiles.length > 0) {
+      jsonFiles.forEach(file => {
+        const relativePath = path.relative(sourceDir, file);
+        const outputPath = path.join(outDir, relativePath);
+        copyFile(file, outputPath);
+      });
+    }
+
+    console.log("Compilation and copying completed successfully.");
   }
   start() {
     if (!this.running) {
@@ -237,10 +325,11 @@ export class PLC {
                     `runtime/programs/${this.config.tasks[taskKey].program}.js`
                   )
                 ))]
-                await require(path.resolve(
+                const { program } = await import(path.resolve(
                   process.cwd(),
                   `runtime/programs/${this.config.tasks[taskKey].program}.js`
-                ))({ global })
+                ))
+                program({ global })
                 for (const variableKey of Object.keys(this.variables)) {
                   const variable = this.variables[variableKey]
                   if (variable.source) {
@@ -372,6 +461,7 @@ export class PLC {
     if (this.running) {
       this.stop()
     }
+    this.transpile()
     this.start()
   }
 }
