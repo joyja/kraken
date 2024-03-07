@@ -37,15 +37,15 @@ export function runFunction(args:{functionPath:string, args:string[]}) {
   }
 }
 
-function startPlc () {
+export function startPlc () {
   plc.start()
   return plc
 }
-function stopPlc () {
+export function stopPlc () {
   plc.stop()
   return plc
 }
-function restartPlc () {
+export function restartPlc () {
   plc.restart()
   return plc
 }

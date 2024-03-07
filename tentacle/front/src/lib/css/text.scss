@@ -1,0 +1,111 @@
+$fontSizes: (
+  'xs': ('size': '0.75rem', 'lineHeight': '1rem'),
+  'sm': ('size': '0.875rem', 'lineHeight': '1.25rem'),
+  'md': ('size': '1rem', 'lineHeight': '1.5rem'),
+  'lg': ('size': '1.125rem', 'lineHeight': '1.75rem'),
+  'xl': ('size': '1.25rem', 'lineHeight': '1.75rem'),
+  '2xl': ('size': '1.5rem', 'lineHeight': '2rem'),
+  '3xl': ('size': '1.875rem', 'lineHeight': '2.25rem'),
+  '4xl': ('size': '2.25rem', 'lineHeight': '2.5rem'),
+  '5xl': ('size': '3rem', 'lineHeight': '1'),
+  '6xl': ('size': '3.75rem', 'lineHeight': '1'),
+  '7xl': ('size': '4.5rem', 'lineHeight': '1'),
+  '8xl': ('size': '6rem', 'lineHeight': '1'),
+  '9xl': ('size': '8rem', 'lineHeight': '1'),
+);
+
+$fontWeights: (
+  'thin': 100,
+  'extralight': 200,
+  'light': 300,
+  'normal': 400,
+  'medium': 500,
+  'semibold': 600,
+  'bold': 700,
+  'extrabold': 800,
+  'black': 900,
+);
+
+:root {
+  @each $fontSize, $properties in $fontSizes {
+    @each $property, $value in $properties {
+      @if $property =='size' {
+        --text-#{$fontSize}: #{$value};
+      }
+
+      @else if $property =='lineHeight' {
+        --text-#{$fontSize}-lh: #{$value};
+      }
+    }
+  }
+
+  @each $fontWeight, $value in $fontWeights {
+    --font-#{$fontWeight}: #{$value};
+  }
+}
+
+@each $fontSize, $properties in $fontSizes {
+  .text-#{$fontSize} {
+    font-size: var(--text-#{$fontSize});
+    line-height: var(--text-#{$fontSize}-lh);
+  }
+}
+
+h2,
+h3,
+h4 {
+  margin-bottom: var(--spacing-unit);
+}
+
+h2 {
+  @extend .text-3xl;
+}
+
+h3 {
+  @extend .text-2xl;
+}
+
+h4 {
+  @extend .text-xl;
+}
+
+p {
+  @extend .text-md;
+  margin-bottom: calc(var(--spacing-unit) * 3);
+}
+
+a {
+  color: var(--theme-link);
+  text-decoration: underline;
+  transition: color 0.5s;
+
+  &:hover {
+    color: color-mix(in HSL, var(--theme-neutral-900) 15%, var(--theme-link));
+  }
+  &:visited {
+    color: var(--theme-link-visited);
+    &:hover {
+      color: color-mix(in HSL, var(--theme-neutral-900) 50%, var(--theme-link-visited));
+    }
+  }
+}
+
+.text-end {
+  text-align: end;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-start {
+  text-align: start;
+}

@@ -1,0 +1,85 @@
+$themes: (
+  "themeLight": (
+    "theme-font-basic": "'Space Grotesk', sans-serif",
+    "theme-primary": "var(--sky-500)",
+    "background-image": "url('https://res.cloudinary.com/jarautomation/image/upload/e_contrast:level_-100,o_40/v1704849050/joyautomation.com/texture-waves.webp')",
+    "theme-primary-hover": "var(--sky-600)",
+    "theme-secondary": "var(--gray-300)",
+    "theme-text": "var(--black)",
+    "theme-background": "var(--gray-100)",
+    "theme-accent": "var(--amber-500)",
+    "theme-nav": "var(--sky-700)",
+    "theme-link": "var(--amber-500)",
+    "theme-link-visited": "var(--sky-700)",
+    "theme-neutral": (
+      50: 'var(--gray-50)',
+      100: 'var(--gray-100)',
+      200: 'var(--gray-200)',
+      300: 'var(--gray-300)',
+      400: 'var(--gray-400)',
+      500: 'var(--gray-500)',
+      600: 'var(--gray-600)',
+      700: 'var(--gray-700)',
+      800: 'var(--gray-800)',
+      900: 'var(--gray-900)',
+      950: 'var(--gray-950)',
+    ),
+    "theme-logo-neutral": (
+      "light": 'var(--gray-400)',
+      "medium": 'var(--gray-500)',
+      "dark": 'var(--gray-600)',
+    )
+  ),
+  "themeDark": (
+    "theme-font-basic": "'Space Grotesk', sans-serif",
+    "theme-primary": "var(--sky-700)",
+    "background-image": "url('https://res.cloudinary.com/jarautomation/image/upload/e_contrast:level_-100,o_20/v1704849050/joyautomation.com/texture-waves.webp')",
+    "theme-primary-hover": "var(--sky-600)",
+    "theme-text": "var(--white)",
+    "theme-background": "var(--gray-950)",
+    "theme-accent": "var(--amber-700)",
+    "theme-secondary": "var(--gray-800)",
+    "theme-nav": "var(--sky-950)",
+    "theme-link": "var(--amber-500)",
+    "theme-link-visited": "var(--sky-300)",
+    "theme-neutral": (50: 'var(--gray-950)',
+      100: 'var(--gray-900)',
+      200: 'var(--gray-800)',
+      300: 'var(--gray-700)',
+      400: 'var(--gray-600)',
+      500: 'var(--gray-500)',
+      600: 'var(--gray-400)',
+      700: 'var(--gray-300)',
+      800: 'var(--gray-200)',
+      900: 'var(--gray-100)',
+      950: 'var(--gray-50)',
+    ),
+    "theme-logo-neutral": (
+      "light": 'var(--gray-400)',
+      "medium": 'var(--gray-500)',
+      "dark": 'var(--gray-600)',
+    ))
+);
+
+@each $theme-name, $theme-map in $themes {
+
+  // Create a class for the theme
+  .#{$theme-name} {
+
+    // Iterate over each property in the theme map
+    @each $property, $value in $theme-map {
+
+      // Check if the value is a nested map (like for 'neutral')
+      @if (type-of($value)=='map') {
+        @each $nested-key, $nested-value in $value {
+          --#{$property}-#{$nested-key}: #{$nested-value};
+        }
+      }
+
+      @else {
+        --#{$property}: #{$value};
+      }
+    }
+  }
+}
+

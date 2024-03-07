@@ -1,0 +1,98 @@
+:root {
+  --spacing-unit: 0.325rem;
+}
+
+$spacingMults: (
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20
+);
+
+@each $mult in $spacingMults {
+
+  .m-#{$mult},
+  .mx-#{$mult},
+  .ml-#{$mult} {
+    margin-left: calc(#{$mult} * var(--spacing-unit));
+  }
+
+  .m-#{$mult},
+  .mx-#{$mult},
+  .mr-#{$mult} {
+    margin-right: calc(#{$mult} * var(--spacing-unit));
+  }
+
+  .m-#{$mult},
+  .my-#{$mult},
+  .mt-#{$mult} {
+    margin-top: calc(#{$mult} * var(--spacing-unit));
+  }
+
+  .m-#{$mult},
+  .my-#{$mult},
+  .mb-#{$mult} {
+    margin-bottom: calc(#{$mult} * var(--spacing-unit));
+  }
+
+  .p-#{$mult},
+  .px-#{$mult},
+  .pl-#{$mult} {
+    padding-left: calc(#{$mult} * var(--spacing-unit));
+  }
+
+  .p-#{$mult},
+  .px-#{$mult},
+  .pr-#{$mult} {
+    padding-right: calc(#{$mult} * var(--spacing-unit));
+  }
+
+  .p-#{$mult},
+  .py-#{$mult},
+  .pt-#{$mult} {
+    padding-top: calc(#{$mult} * var(--spacing-unit));
+  }
+
+  .p-#{$mult},
+  .px-#{$mult},
+  .pb-#{$mult} {
+    padding-bottom: calc(#{$mult} * var(--spacing-unit));
+  }
+
+  .space-x-#{$mult} {
+    &>* {
+      margin-right: calc(var(--spacing-unit)*#{$mult});
+    }
+
+    &>*:last-child {
+      margin-right: 0;
+    }
+  }
+
+  .space-y-#{$mult} {
+    &>* {
+      margin-bottom: calc(var(--spacing-unit)*#{$mult});
+    }
+
+    &>*:last-child {
+      margin-bottom: 0;
+    }
+  }
+}

@@ -114,38 +114,38 @@ export function variables (root:unknown, args:unknown) {
   }
 }
 
-export function program (args:{name:string}) {
+export function program (_root:unknown, args:{name:string}) {
   return fs.readFileSync(
-    path.resolve(process.cwd(), 'runtime/programs', args.name),
+    path.resolve(process.cwd(), 'development/programs', args.name),
     { encoding: 'utf8', flag: 'r' }
   )
 }
 export function programs () {
   const result = getAllFiles(
-    path.resolve(process.cwd(), 'runtime/programs')
-  ).map((file) => file.replace(`${process.cwd()}/runtime/programs/`, ''))
+    path.resolve(process.cwd(), 'development/programs')
+  ).map((file) => file.replace(`${process.cwd()}/development/programs/`, ''))
   return result
 }
 // export function tFunction () {
 //   return fs
-//     .readdirSync(path.resolve(process.cwd(), 'runtime/classes'))
-//     .map((file) => file.replace(`${process.cwd()}/runtime/classes/`, ''))
+//     .readdirSync(path.resolve(process.cwd(), 'development/classes'))
+//     .map((file) => file.replace(`${process.cwd()}/development/classes/`, ''))
 // }
 // export function tFunctions () {
 //   return fs
-//     .readdirSync(path.resolve(process.cwd(), 'runtime/functions'))
-//     .map((file) => file.replace(`${process.cwd()}/runtime/functions/`, ''))
+//     .readdirSync(path.resolve(process.cwd(), 'development/functions'))
+//     .map((file) => file.replace(`${process.cwd()}/development/functions/`, ''))
 // }
 export function tClass (args:{name:string}) {
   return fs.readFileSync(
-    path.resolve(process.cwd(), 'runtime/classes', args.name),
+    path.resolve(process.cwd(), 'development/classes', args.name),
     { encoding: 'utf8', flag: 'r' }
   )
 }
 export function tClasses () {
   return fs
-    .readdirSync(path.resolve(process.cwd(), 'runtime/classes'))
-    .map((file) => file.replace(`${process.cwd()}/runtime/classes/`, ''))
+    .readdirSync(path.resolve(process.cwd(), 'development/classes'))
+    .map((file) => file.replace(`${process.cwd()}/development/classes/`, ''))
 }
 export function changes () {
   return plc.fileChanges

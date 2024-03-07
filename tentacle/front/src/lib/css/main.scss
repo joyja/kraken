@@ -1,0 +1,17 @@
+@import './preflight.scss';
+@import './spacing.scss';
+@import './colors.scss';
+@import './layout.scss';
+@import './shadow.scss';
+@import './rounded.scss';
+@import './text.scss';
+@import './buttons.scss';
+@import './themes.scss';
+@import './form.scss';
+
+body {
+  font-family: var(--theme-font-basic);
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  transition: background-color 0.5s, color 0.5s;
+}
