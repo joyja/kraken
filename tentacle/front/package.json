@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "vite dev --host",
 		"build": "vite build",
 		"preview": "vite preview",
 		"test": "npm run test:integration && npm run test:unit",
@@ -12,12 +12,15 @@
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
 		"test:integration": "playwright test",
-		"test:unit": "vitest"
+		"test:unit": "vitest",
+		"copy-highlight": "node scripts/copy-highlight-themes.js",
+		"postinstall": "pnpm run copy-highlight"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.20.4",
+		"@types/prismjs": "^1.26.3",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
 		"eslint": "^8.28.0",
@@ -32,5 +35,15 @@
 		"vite": "^4.4.2",
 		"vitest": "^0.32.2"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@fontsource/birthstone-bounce": "^5.0.19",
+		"@fontsource/caveat": "^5.0.17",
+		"@fontsource/righteous": "^5.0.19",
+		"@fontsource/space-grotesk": "^5.0.17",
+		"date-fns": "^3.3.1",
+		"highlight.js": "^11.9.0",
+		"nanoid": "^5.0.6",
+		"sass": "^1.71.1"
+	}
 }

@@ -1,3 +1,5 @@
+scalar Date
+
 """
 PLC status and diagnostics information
 """
@@ -9,6 +11,7 @@ type Plc {
 File change type to use for change log (since last runtime update)
 """
 type change {
+  timestamp: Date!
   event: String!
   path: String!
 }

@@ -169,11 +169,12 @@ export class PLC {
       classes: this.classes,
     })
     this.fileChanges = []
-    chokidar.watch(this.runtimeDir).on('all', (event, filePath) => {
+    chokidar.watch(this.developmentDir).on('all', (event, filePath) => {
       if (
-        filePath !== path.resolve(process.cwd(), 'runtime/persistence.json')
+        filePath !== path.resolve(process.cwd(), 'development/persistence.json')
       ) {
         this.fileChanges.push({
+          timestamp: Date.now(),
           event,
           path: filePath.replace(process.cwd(), ''),
         })
