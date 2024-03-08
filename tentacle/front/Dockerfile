@@ -24,12 +24,11 @@ FROM base AS deploy
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 COPY --from=build /app/build ./build/
-COPY --from=build /app/src/schema.graphql ./src/schema.graphql
+COPY --from=build /app/.svelte-kit ./.svelte-kit/
 COPY --from=build /app/node_modules ./node_modules
 
 # Expose the listening port of your app
-EXPOSE 4000
+EXPOSE 3000
 
 # Show current folder structure in logs
-CMD node ./build/src/index.js
-
+CMD node ./build/index.js

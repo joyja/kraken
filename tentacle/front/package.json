@@ -13,8 +13,7 @@
 		"format": "prettier --plugin-search-dir . --write .",
 		"test:integration": "playwright test",
 		"test:unit": "vitest",
-		"copy-highlight": "node scripts/copy-highlight-themes.js",
-		"postinstall": "pnpm run copy-highlight"
+		"copy-highlight": "node scripts/copy-highlight-themes.js"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",
@@ -41,6 +40,7 @@
 		"@fontsource/caveat": "^5.0.17",
 		"@fontsource/righteous": "^5.0.19",
 		"@fontsource/space-grotesk": "^5.0.17",
+		"@sveltejs/adapter-node": "^4.0.1",
 		"date-fns": "^3.3.1",
 		"highlight.js": "^11.9.0",
 		"nanoid": "^5.0.6",
