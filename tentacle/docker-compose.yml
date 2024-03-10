@@ -32,7 +32,7 @@ services:
       - tentacle-plc-development:/home/coder/project:rw
     environment:
       - DOCKER_USER=root
-      - PASSWORD=number1!
+      - PASSWORD=${CODE_SERVER_PASSWORD}
 networks:
   upstream: {}
 volumes:
