@@ -2,6 +2,7 @@ import { sendRequest } from "$lib/graphql/request"
 import * as query from "$lib/graphql/query"
 import * as mutation from "$lib/graphql/mutation"
 import type { Actions } from "@sveltejs/kit"
+import { env } from "$env/dynamic/private"
 
 export const actions:Actions = {
   stopPLC() {
@@ -93,7 +94,7 @@ export const actions:Actions = {
   }
 }
 
-export async function load({ parent }) {
+export async function load({ parent, url }) {
   let message = (await parent()).message
   const changes = await sendRequest({
     query: query.changes
@@ -127,6 +128,13 @@ export async function load({ parent }) {
     query: query.values
   })
     .then(res => res.data?.values)
+    .catch(error => {
+      message = error.message
+    })
+  const metrics = await sendRequest({
+    query: query.metrics
+  })
+    .then(res => res.data?.metrics)
     .catch(error => {
       message = error.message
     })
@@ -180,15 +188,23 @@ export async function load({ parent }) {
     .catch(error => {
       message = error.message
     })
+
+  const codeserverHost = process.env.TENTACLE_CODESERVER_HOST || url.hostname
+  const codeserverProtocol = process.env.TENTACLE_CODESERVER_PROTOCOL || 'http'
+  const codeserverPort = process.env.TENTACLE_CODESERVER_PORT || 8080
+  const codeserverUrl = process.env.TENTACLE_CODESERVER_URL || '/'
+  const codeserverEndpoint = `${codeserverProtocol}://${codeserverHost}:${codeserverPort}${codeserverUrl}`
   return {
     changes,
     config,
     programs,
     classes,
+    metrics,
     variables,
     message,
     mqtt: [],
     opcua: [],
     modbus: [],
+    codeserverEndpoint
   }
 }

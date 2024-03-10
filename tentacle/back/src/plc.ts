@@ -99,6 +99,8 @@ export class PLC {
   public classes:any
   public persistence:any
   public fileChanges:any[] = []
+  public watcher:any
+  private programCacheId = Date.now()
   constructor() {
     this.modbus = {}
     this.opcua = {}
@@ -169,10 +171,12 @@ export class PLC {
       classes: this.classes,
     })
     this.fileChanges = []
-    chokidar.watch(this.developmentDir).on('all', (event, filePath) => {
+    if (this.watcher) this.watcher.close()
+    this.watcher = chokidar.watch(this.developmentDir).on('all', (event, filePath) => {
       if (
         filePath !== path.resolve(process.cwd(), 'development/persistence.json')
       ) {
+        console.log(event)
         this.fileChanges.push({
           timestamp: Date.now(),
           event,
@@ -259,7 +263,7 @@ export class PLC {
         copyFile(file, outputPath);
       });
     }
-
+    this.programCacheId=Date.now()
     console.log("Compilation and copying completed successfully.");
   }
   start() {
@@ -328,7 +332,7 @@ export class PLC {
                 ))]
                 const { program } = await import(path.resolve(
                   process.cwd(),
-                  `runtime/programs/${this.config.tasks[taskKey].program}.js`
+                  `runtime/programs/${this.config.tasks[taskKey].program}.js?update=${this.programCacheId}`
                 ))
                 program({ global })
                 for (const variableKey of Object.keys(this.variables)) {
