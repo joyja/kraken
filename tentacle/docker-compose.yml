@@ -2,7 +2,7 @@ services:
   tentacle-plc:
     restart: always
     container_name: tentacle-plc
-    image:  joyja/kraken.tentacle:v0.0.1
+    image: joyja/kraken.tentacle:v0.0.1
     ports:
       - 4000:4000
     volumes:
@@ -12,7 +12,7 @@ services:
   tentacle-plc-front:
     restart: always
     container_name: tentacle-plc-ui
-    image:  joyja/kraken.tentacle-ui:v0.0.1
+    image: joyja/kraken.tentacle-ui:v0.0.1
     ports:
       - 3000:3000
     networks:
