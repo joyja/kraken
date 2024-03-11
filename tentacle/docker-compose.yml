@@ -2,7 +2,7 @@ services:
   tentacle-plc:
     restart: always
     container_name: tentacle-plc
-    image: joyja/kraken.tentacle:v0.0.1
+    image:  joyja/kraken.tentacle:v0.0.1
     ports:
       - 4000:4000
     volumes:
@@ -12,7 +12,7 @@ services:
   tentacle-plc-front:
     restart: always
     container_name: tentacle-plc-ui
-    image: joyja/kraken.tentacle-ui:v0.0.1
+    image:  joyja/kraken.tentacle-ui:v0.0.1
     ports:
       - 3000:3000
     networks:
@@ -32,8 +32,27 @@ services:
       - tentacle-plc-development:/home/coder/project:rw
     environment:
       - DOCKER_USER=root
-      - PASSWORD=number1!
+      - PASSWORD=${CODE_SERVER_PASSWORD}
+  caddy:
+    container_name: caddy
+    image: caddy:2.7.5
+    restart: always
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    networks:
+      - upstream
+    volumes:
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
 networks:
   upstream: {}
 volumes:
   tentacle-plc-development: {}
+  caddy_data: {}
+  caddy_config: {}

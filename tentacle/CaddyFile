@@ -1,0 +1,6 @@
+http:// {
+	reverse_proxy http://tentacle-plc-ui:3000
+    handle_path /codeserver* {
+      reverse_proxy http://tentacle-plc-code-server:8080
+    }
+}
