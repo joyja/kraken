@@ -203,7 +203,10 @@ export type History = {
 
 export type HistoryEntry = {
   end: Scalars['Date']['input'];
+  interval?: InputMaybe<Scalars['String']['input']>;
   metrics: Array<MetricHistoryEntry>;
+  raw?: InputMaybe<Scalars['Boolean']['input']>;
+  samples?: InputMaybe<Scalars['Int']['input']>;
   start: Scalars['Date']['input'];
 };
 
@@ -442,6 +445,7 @@ export type Query = {
   groups: Array<SparkplugGroup>;
   history: Array<History>;
   info: Scalars['String']['output'];
+  rawHistory: Array<SparkplugMetricHistory>;
   rosters: Array<Roster>;
   users: Array<User>;
 };
@@ -455,6 +459,12 @@ export type QueryGroupsArgs = {
 
 /** Read only queries */
 export type QueryHistoryArgs = {
+  input: HistoryEntry;
+};
+
+
+/** Read only queries */
+export type QueryRawHistoryArgs = {
   input: HistoryEntry;
 };
 
@@ -878,6 +888,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   groups?: Resolver<Array<ResolversTypes['SparkplugGroup']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
   history?: Resolver<Array<ResolversTypes['History']>, ParentType, ContextType, RequireFields<QueryHistoryArgs, 'input'>>;
   info?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  rawHistory?: Resolver<Array<ResolversTypes['SparkplugMetricHistory']>, ParentType, ContextType, RequireFields<QueryRawHistoryArgs, 'input'>>;
   rosters?: Resolver<Array<ResolversTypes['Roster']>, ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
 };

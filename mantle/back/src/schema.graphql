@@ -321,6 +321,9 @@ input HistoryEntry {
   start: Date!
   end: Date!
   metrics: [MetricHistoryEntry!]!
+  interval: String
+  samples: Int
+  raw: Boolean
 }
 
 type History {
@@ -342,6 +345,7 @@ type Query {
   rosters: [Roster!]!
   chartPages: [ChartPage!]!
   history(input: HistoryEntry!): [History!]!
+  rawHistory(input: HistoryEntry!): [SparkplugMetricHistory!]!
 }
 
 """
