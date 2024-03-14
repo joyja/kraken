@@ -31,6 +31,6 @@ export async function chartPages():Promise<ChartPage[]> {
 
 export async function history(_root:unknown, args:{ input: HistoryEntry }) {
   const history = new History(prisma)
-  const { metrics, start, end } = args.input
-  return history.getHistoryBucketed({ metrics, start, end })
+  const { metrics, start, end, interval, samples, raw } = args.input
+  return history.getHistoryBucketed({ metrics, start, end, interval, samples, raw })
 }
