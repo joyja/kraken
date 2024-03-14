@@ -77,9 +77,9 @@ export class History {
     let selector:string
     console.log('interval', interval)
     if (!raw) {
-      selector = `(SELECT time_bucket_gapfill('${interval || autoInterval}', "timestamp") AS "time",
+      selector = `(SELECT time_bucket('${interval || autoInterval}', "timestamp") AS "time",
         CONCAT("groupId",'/',"nodeId",'/',"deviceId",'/',"metricId") as "name",
-        interpolate(AVG("floatValue")) as "value"`
+        AVG("floatValue") as "value"`
     } else {
       selector = `(SELECT "timestamp" AS "time",
         CONCAT("groupId",'/',"nodeId",'/',"deviceId",'/',"metricId") as "name",
