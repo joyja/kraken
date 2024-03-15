@@ -1,0 +1,26 @@
+{
+  "name": "kraken",
+  "private": false,
+  "workspaces": [
+    "packages/tentacle/back",
+    "packages/tentacle/front",
+    "packages/squid/back",
+    "packages/squid/front",
+    "packages/mantle/back",
+    "packages/mantle/front",
+    "packages/sparkplug-client",
+    "packages/cuttlefish",
+    "packages/ethernet-ip",
+    "packages/seagull/back",
+    "packages/demo/front"
+  ],
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-svelte3": "^4.0.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.2"
+  }
+}
