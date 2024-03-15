@@ -5,8 +5,8 @@ on:
     branches:
       - main # Set your deploying branch
     paths:
-      - ".github/workflows/squid-deploy.yml"
-      - "squid/back/**"
+      - '.github/workflows/squid-deploy.yml'
+      - 'packages/squid/back/**'
 jobs:
   deploy:
     runs-on: ${{ matrix.runner }}
@@ -15,7 +15,7 @@ jobs:
         runner: [squid1, camophore, tensor1, pangolin1]
     defaults:
       run:
-        working-directory: ./squid/back
+        working-directory: ./packagessquid/back
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
@@ -23,7 +23,7 @@ jobs:
           version: 6.32.9
       - uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: '16'
       - run: pnpm install
       - name: Install dependencies and build
         run: |
