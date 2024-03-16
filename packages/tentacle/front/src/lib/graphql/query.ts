@@ -34,6 +34,7 @@ export const variables = `
       datatype
       initialValue
       persistent
+      decimals
       changeEvents {
         inLastMinute
         inLastHour
@@ -45,6 +46,7 @@ export const variables = `
         datatype
         initialValue
         persistent
+        decimals
       }
       source {
         name

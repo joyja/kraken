@@ -108,6 +108,7 @@ export type Variable = {
   changeEvents?: Maybe<EventTracker>;
   children: Array<Variable>;
   datatype: Scalars['String']['output'];
+  decimals?: Maybe<Scalars['Int']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   initialValue?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
@@ -399,6 +400,7 @@ export type VariableResolvers<ContextType = any, ParentType extends ResolversPar
   changeEvents?: Resolver<Maybe<ResolversTypes['eventTracker']>, ParentType, ContextType>;
   children?: Resolver<Array<ResolversTypes['Variable']>, ParentType, ContextType>;
   datatype?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  decimals?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   initialValue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
