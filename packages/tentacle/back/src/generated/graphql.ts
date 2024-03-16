@@ -127,9 +127,9 @@ export type VariableSource = {
 /** Variable exertnal source parameters, used to configure the source specific to the protocol used */
 export type VariableSourceParams = {
   __typename?: 'VariableSourceParams';
-  format: Scalars['String']['output'];
-  register: Scalars['Int']['output'];
-  registerType: Scalars['String']['output'];
+  format?: Maybe<Scalars['String']['output']>;
+  register?: Maybe<Scalars['Int']['output']>;
+  registerType?: Maybe<Scalars['String']['output']>;
 };
 
 /** Atomic Variable type used for String, Numbers, and Booleans */
@@ -416,9 +416,9 @@ export type VariableSourceResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type VariableSourceParamsResolvers<ContextType = any, ParentType extends ResolversParentTypes['VariableSourceParams'] = ResolversParentTypes['VariableSourceParams']> = {
-  format?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  register?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  registerType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  format?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  register?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  registerType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

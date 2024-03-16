@@ -29,9 +29,9 @@ type atomicVariable {
 Variable exertnal source parameters, used to configure the source specific to the protocol used
 """
 type VariableSourceParams {
-  register: Int!
-  registerType: String!
-  format: String!
+  register: Int
+  registerType: String
+  format: String
 }
 
 """
