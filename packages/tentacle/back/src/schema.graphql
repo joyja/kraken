@@ -52,6 +52,7 @@ type Variable {
   description: String
   datatype: String!
   initialValue: String
+  decimals: Int
   persistent: Boolean
   source: VariableSource
   children: [Variable!]!

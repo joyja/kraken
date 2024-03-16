@@ -168,7 +168,7 @@
 							<div class="variable__attribute">{variable?.changeEvents?.inLastHour || 0} / Hr</div>
 						</div>
 						<div class="variable__description">{variable.description}</div>
-						<div class="variable__value">{variable.value}</div>
+						<div class="variable__value"><span>{variable.decimals ? parseFloat(variable.value).toFixed(variable.decimals) : variable.value }</span></div>
 					</li>
 				{/each}
 			{:else}
@@ -335,7 +335,7 @@
 	}
 	.variable {
 		display: grid;
-		grid-template-columns: 1fr 60px;
+		grid-template-columns: 1fr 120px;
 		padding: var(--spacing-unit);
 	}
 	.variable__attributes {
@@ -370,8 +370,12 @@
 	.variable__value {
 		display: flex;
 		align-items: center;
+		text-align: end;
 		grid-row-start: 1;
 		grid-row: span 2;
+		& > * {
+			flex-grow: 1;
+		}
 	}
 	.expand {
 		transition: transform 0.3s ease-out;
