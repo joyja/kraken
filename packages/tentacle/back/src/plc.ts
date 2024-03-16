@@ -7,6 +7,7 @@ import { Persistence } from './persistence'
 import chokidar from 'chokidar'
 import { differenceInMilliseconds, getUnixTime } from 'date-fns'
 import ts from 'typescript'
+import { EventTracker } from './eventTracker'
 
 function getDatatype (value:any):string {
   if (typeof value === 'boolean') {
@@ -106,6 +107,7 @@ export class PLC {
     this.opcua = {}
     this.mqtt = {}
     this.intervals = []
+    this.variables = []
     this.global = {}
     this.metrics = {}
     this.running = false
@@ -146,6 +148,10 @@ export class PLC {
   async getConfig():Promise<void> {
     this.config = JSON.parse(fs.readFileSync(this.runtimeConfigFile, 'utf8'))
     this.variables = JSON.parse(fs.readFileSync(this.runtimeVariableFile, 'utf8'))
+    Object.keys(this.variables).forEach((key) => {
+      this.variables[key].changeEvents = new EventTracker()
+    })
+    
     if (fs.existsSync(this.runtimeClassesDir)) {
       const classImports = await Promise.all(fs
         .readdirSync(path.resolve(this.runtimeClassesDir))
@@ -394,10 +400,11 @@ export class PLC {
                       outsideDeadband = variable.lastValue !== this.global[key]
                     }
                     const outsideDeadbandMaxTime = lastValue === undefined || lastPublished === undefined || differenceInMilliseconds(now, lastPublished) > deadbandMaxTime
-                    if (outsideDeadband || outsideDeadbandMaxTime) {
+                    if ((outsideDeadband || outsideDeadbandMaxTime) && variable.mqttDisabled !== true) {
+                      this.variables[key].changeEvents.recordEvent()
                       for (const mqttKey of Object.keys(this.mqtt)){
                         this.mqtt[mqttKey].queue.push({
-                          name: key.replaceAll('.', '/'),
+                          name: key,
                           value: this.global[key],
                           type: getDatatype(this.global[key]),
                           timestamp: getUnixTime(new Date()),
@@ -406,6 +413,7 @@ export class PLC {
                       variable.lastValue = this.global[key]
                       variable.lastPublished = now
                     }
+                    variable.changeEvents.cleanup()
                   }
                   const functionStop = process.hrtime(functionStart)
                   metrics[taskKey].functionExecutionTime =

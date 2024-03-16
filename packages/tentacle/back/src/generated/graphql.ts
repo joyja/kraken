@@ -1,4 +1,4 @@
-import { GraphQLResolveInfo } from 'graphql';
+import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -14,6 +14,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  Date: { input: any; output: any; }
 };
 
 /** Read/Write queries */
@@ -59,22 +60,22 @@ export type Query = {
   __typename?: 'Query';
   /** Lists all file changes that have occurred since the last PLC restart */
   changes: Array<Change>;
-  /** Returns the code for a single class */
-  class: Scalars['String']['output'];
-  /** Lists all classes */
-  classes: Array<Scalars['String']['output']>;
   /** The current configration */
   configuration: Config;
   /** Information about the Tentacle PLC environment as a string. */
   info: Scalars['String']['output'];
   /** Task diagnostic data */
   metrics: Array<TaskMetric>;
-  /** The PLC status information */
-  plc: Plc;
   /** Returns the code for a single program */
   program: Scalars['String']['output'];
   /** Lists all programs */
   programs: Array<Scalars['String']['output']>;
+  /** Returns the code for a single class */
+  tClass: Scalars['String']['output'];
+  /** Lists all classes */
+  tClasses: Array<Scalars['String']['output']>;
+  /** The PLC status information */
+  tPlc: Plc;
   /** Single value of an atomic variable or class property.Example path for classes: motor1.running where motor1 is the class instance and running is a property of motor1's class. */
   value?: Maybe<AtomicVariable>;
   /** Lists all variable and class property values */
@@ -85,13 +86,13 @@ export type Query = {
 
 
 /** Read only queries */
-export type QueryClassArgs = {
+export type QueryProgramArgs = {
   name: Scalars['String']['input'];
 };
 
 
 /** Read only queries */
-export type QueryProgramArgs = {
+export type QueryTClassArgs = {
   name: Scalars['String']['input'];
 };
 
@@ -104,6 +105,7 @@ export type QueryValueArgs = {
 /** Variable configuration */
 export type Variable = {
   __typename?: 'Variable';
+  changeEvents?: Maybe<EventTracker>;
   children: Array<Variable>;
   datatype: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
@@ -143,6 +145,7 @@ export type Change = {
   __typename?: 'change';
   event: Scalars['String']['output'];
   path: Scalars['String']['output'];
+  timestamp: Scalars['Date']['output'];
 };
 
 /** Overall Tentacle PLC configration */
@@ -218,6 +221,14 @@ export type ConfigTask = {
   name: Scalars['String']['output'];
   program: Scalars['String']['output'];
   scanRate: Scalars['Int']['output'];
+};
+
+/** Event Tracker for counting events */
+export type EventTracker = {
+  __typename?: 'eventTracker';
+  inLastDay: Scalars['Int']['output'];
+  inLastHour: Scalars['Int']['output'];
+  inLastMinute: Scalars['Int']['output'];
 };
 
 /** Task metrics for diagnostic data */
@@ -301,6 +312,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  Date: ResolverTypeWrapper<Scalars['Date']['output']>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Mutation: ResolverTypeWrapper<{}>;
@@ -320,12 +332,14 @@ export type ResolversTypes = {
   configOpcua: ResolverTypeWrapper<ConfigOpcua>;
   configOpcuaConfig: ResolverTypeWrapper<ConfigOpcuaConfig>;
   configTask: ResolverTypeWrapper<ConfigTask>;
+  eventTracker: ResolverTypeWrapper<EventTracker>;
   taskMetric: ResolverTypeWrapper<TaskMetric>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Boolean: Scalars['Boolean']['output'];
+  Date: Scalars['Date']['output'];
   Float: Scalars['Float']['output'];
   Int: Scalars['Int']['output'];
   Mutation: {};
@@ -345,8 +359,13 @@ export type ResolversParentTypes = {
   configOpcua: ConfigOpcua;
   configOpcuaConfig: ConfigOpcuaConfig;
   configTask: ConfigTask;
+  eventTracker: EventTracker;
   taskMetric: TaskMetric;
 };
+
+export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
+  name: 'Date';
+}
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   restartPlc?: Resolver<Maybe<ResolversTypes['Plc']>, ParentType, ContextType>;
@@ -363,20 +382,21 @@ export type PlcResolvers<ContextType = any, ParentType extends ResolversParentTy
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   changes?: Resolver<Array<ResolversTypes['change']>, ParentType, ContextType>;
-  class?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryClassArgs, 'name'>>;
-  classes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   configuration?: Resolver<ResolversTypes['config'], ParentType, ContextType>;
   info?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metrics?: Resolver<Array<ResolversTypes['taskMetric']>, ParentType, ContextType>;
-  plc?: Resolver<ResolversTypes['Plc'], ParentType, ContextType>;
   program?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryProgramArgs, 'name'>>;
   programs?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  tClass?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryTClassArgs, 'name'>>;
+  tClasses?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  tPlc?: Resolver<ResolversTypes['Plc'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['atomicVariable']>, ParentType, ContextType, RequireFields<QueryValueArgs, 'variablePath'>>;
   values?: Resolver<Array<ResolversTypes['atomicVariable']>, ParentType, ContextType>;
   variables?: Resolver<Array<ResolversTypes['Variable']>, ParentType, ContextType>;
 };
 
 export type VariableResolvers<ContextType = any, ParentType extends ResolversParentTypes['Variable'] = ResolversParentTypes['Variable']> = {
+  changeEvents?: Resolver<Maybe<ResolversTypes['eventTracker']>, ParentType, ContextType>;
   children?: Resolver<Array<ResolversTypes['Variable']>, ParentType, ContextType>;
   datatype?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -412,6 +432,7 @@ export type AtomicVariableResolvers<ContextType = any, ParentType extends Resolv
 export type ChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['change'] = ResolversParentTypes['change']> = {
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -482,6 +503,13 @@ export type ConfigTaskResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type EventTrackerResolvers<ContextType = any, ParentType extends ResolversParentTypes['eventTracker'] = ResolversParentTypes['eventTracker']> = {
+  inLastDay?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  inLastHour?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  inLastMinute?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type TaskMetricResolvers<ContextType = any, ParentType extends ResolversParentTypes['taskMetric'] = ResolversParentTypes['taskMetric']> = {
   functionExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   intervalExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
@@ -491,6 +519,7 @@ export type TaskMetricResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type Resolvers<ContextType = any> = {
+  Date?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
   Plc?: PlcResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
@@ -507,6 +536,7 @@ export type Resolvers<ContextType = any> = {
   configOpcua?: ConfigOpcuaResolvers<ContextType>;
   configOpcuaConfig?: ConfigOpcuaConfigResolvers<ContextType>;
   configTask?: ConfigTaskResolvers<ContextType>;
+  eventTracker?: EventTrackerResolvers<ContextType>;
   taskMetric?: TaskMetricResolvers<ContextType>;
 };
 

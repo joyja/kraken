@@ -26,9 +26,8 @@
 		"vitest": "^0.34.6"
 	},
 	"dependencies": {
-		"typescript": "^5.2.2",
 		"chokidar": "^3.5.3",
-		"date-fns": "^2.30.0",
+		"date-fns": "^3.5.0",
 		"ethernet-ip": "^1.2.5",
 		"graphql": "^16.8.1",
 		"graphql-yoga": "^4.0.5",
@@ -37,6 +36,7 @@
 		"modbus-serial": "8.0.5-no-serial-port",
 		"node-opcua": "^2.113.0",
 		"node-opcua-client-crawler": "^2.113.0",
-		"prettier": "^3.2.5"
+		"prettier": "^3.2.5",
+		"typescript": "^5.2.2"
 	}
 }

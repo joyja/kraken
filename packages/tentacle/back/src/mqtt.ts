@@ -1,6 +1,6 @@
 import { type UPayload, newClient } from 'kraken-sparkplug-client'
 import { getUnixTime } from 'date-fns'
-import _ from 'lodash'
+import _, { countBy } from 'lodash'
 import { denormalize } from './denormalize'
 
 const getDatatype = function(value: any):string {
@@ -53,7 +53,7 @@ export class Mqtt {
   primaryHosts: any[]
 
   maxHistoryToPublish: number
-
+  
   public config: {
     serverUrl: string
     username: string
@@ -107,8 +107,8 @@ export class Mqtt {
     return denormalize(this.global)
   }
 
+
   async publish():Promise<void> {
-    console.log(this.queue)
     if (this.queue.length > 0) {
       const record = {
         timestamp: getUnixTime(new Date()),

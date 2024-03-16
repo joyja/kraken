@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import Link from '$lib/components/icons/Link.svelte';
-	import format from 'date-fns/format';
+	import { format } from 'date-fns';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import { slide } from 'svelte/transition';
 	import { enhance } from '$app/forms';
@@ -20,10 +20,10 @@
 	export let data: PageData;
 	export let form;
 	let codes = [
-		...data.programs.map((program) => {
+		...data.programs.map((program:Program) => {
 			return { name: program, type: 'program', visible: false, code: '' };
 		}),
-		...data.classes.map((tClass) => {
+		...data.classes.map((tClass:TClass) => {
 			return { name: tClass.name, type: 'class', visible: false, code: '' };
 		})
 	];
@@ -33,15 +33,15 @@
 				? {
 						...code,
 						visible: form?.visible,
-						code: hljs.highlight(form.program, { language: 'typescript' }).value
+						code: hljs.highlight(form?.program, { language: 'typescript' }).value
 				  }
 				: { ...code, visible: false };
 		});
 	}
-	$: tasks = data?.config?.tasks?.map((task) => {
+	$: tasks = data?.config?.tasks?.map((task:Task) => {
 		return {
 			...task,
-			...data?.metrics?.find((metric) => {
+			...data?.metrics?.find((metric:Metric) => {
 				return task.name === metric.task;
 			})
 		};
@@ -163,8 +163,9 @@
 					<li class="variable">
 						<div class="flex variable__attributes">
 							{variable.name}
-							{#if variable.persistent}<div class="variable__attribute">P</div>{/if}
-							{#if variable.source}<div class="variable__attribute"><Link /></div>{/if}
+							{#if variable.persistent}<div class="variable__attribute variable__attribute--icon">P</div>{/if}
+							{#if variable.source}<div class="variable__attribute variable__attribute--icon"><Link /></div>{/if}
+							<div class="variable__attribute">{variable?.changeEvents?.inLastHour || 0} / Hr</div>
 						</div>
 						<div class="variable__description">{variable.description}</div>
 						<div class="variable__value">{variable.value}</div>
@@ -351,6 +352,9 @@
 		background-color: var(--theme-neutral-300);
 		border-radius: var(--rounded-full);
 		margin-left: var(--spacing-unit);
+		min-width: 1rem;
+	}
+	.variable__attribute--icon {
 		width: 1rem;
 		height: 1rem;
 	}

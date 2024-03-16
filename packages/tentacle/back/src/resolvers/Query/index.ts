@@ -5,6 +5,7 @@ import _ from 'lodash'
 import fs from 'fs'
 import path from 'path'
 import { getAllFiles } from "../../recursiveReaddr"
+import { constructSimpleBrowsePath } from "node-opcua"
 
 export function info ():string { 
   return 'Tentacle: A modern soft PLC'

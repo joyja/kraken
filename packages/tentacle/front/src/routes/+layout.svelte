@@ -15,7 +15,7 @@
 
 	export let data;
 	function toggleTheme() {
-		const highlightStyleLink = document.getElementById('highlightStyle');
+		const highlightStyleLink = document.getElementById('highlightStyle') as HTMLLinkElement;
 		document.body.classList.toggle(theme);
 		if (theme == 'themeLight') {
 			theme = 'themeDark';
@@ -39,7 +39,7 @@
 			});
 		});
 	});
-	let interval: NodeJS.Timer;
+	let interval: ReturnType<typeof setInterval>;
 	onMount(() => {
 		// Initialize Prism.js
 		interval = setInterval(() => {

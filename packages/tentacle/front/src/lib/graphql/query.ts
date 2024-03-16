@@ -34,6 +34,11 @@ export const variables = `
       datatype
       initialValue
       persistent
+      changeEvents {
+        inLastMinute
+        inLastHour
+        inLastDay
+      }
       children{
         name
         description

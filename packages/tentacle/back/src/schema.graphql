@@ -55,6 +55,7 @@ type Variable {
   persistent: Boolean
   source: VariableSource
   children: [Variable!]!
+  changeEvents: eventTracker
 }
 
 """
@@ -148,6 +149,15 @@ type taskMetric {
   functionExecutionTime: Float!
   intervalExecutionTime: Float!
   totalScanTime: Float!
+}
+
+"""
+Event Tracker for counting events
+"""
+type eventTracker {
+  inLastMinute: Int!
+  inLastHour: Int!
+  inLastDay: Int!
 }
 
 """

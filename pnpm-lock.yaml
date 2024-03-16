@@ -572,8 +572,8 @@ importers:
         specifier: ^3.5.3
         version: 3.6.0
       date-fns:
-        specifier: ^2.30.0
-        version: 2.30.0
+        specifier: ^3.5.0
+        version: 3.5.0
       ethernet-ip:
         specifier: ^1.2.5
         version: 1.2.5
