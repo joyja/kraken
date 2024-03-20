@@ -8,6 +8,7 @@ import chokidar from 'chokidar'
 import { differenceInMilliseconds, getUnixTime } from 'date-fns'
 import ts from 'typescript'
 import { EventTracker } from './eventTracker'
+import { type MemoryUsage } from './generated/graphql'
 
 function getDatatype (value:any):string {
   if (typeof value === 'boolean') {
@@ -414,6 +415,19 @@ export class PLC {
                       variable.lastPublished = now
                     }
                     variable.changeEvents.cleanup()
+                  }
+                  if (this.config.publishPerformanceMetrics === true) {
+                    const memoryUsage:MemoryUsage = process.memoryUsage()
+                    for (const mqttKey of Object.keys(this.mqtt)){
+                      Object.keys(memoryUsage).forEach((key) => {
+                        this.mqtt[mqttKey].queue.push({
+                          name: `memoryUsage.${key}`,
+                          value: memoryUsage[key as keyof MemoryUsage],
+                          type: getDatatype(memoryUsage[key as keyof MemoryUsage]),
+                          timestamp: getUnixTime(new Date()),
+                        })
+                      })
+                    }
                   }
                   const functionStop = process.hrtime(functionStart)
                   metrics[taskKey].functionExecutionTime =
