@@ -1,5 +1,5 @@
 import { denormalize } from "../../denormalize"
-import { type Config, type TaskMetric } from "../../generated/graphql"
+import { type MemoryUsage, type Config, type TaskMetric } from "../../generated/graphql"
 import { type PLC, plc } from "../../plc"
 import _ from 'lodash'
 import fs from 'fs'
@@ -139,4 +139,8 @@ export function changes ():any[] {
 }
 export function tPlc():PLC {
   return plc
+}
+
+export function memoryUsage():MemoryUsage {
+  return process.memoryUsage()
 }
