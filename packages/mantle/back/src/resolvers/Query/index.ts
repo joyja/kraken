@@ -2,7 +2,6 @@ import { prisma } from '../../prisma';
 import { spdata } from '../../mqtt';
 import { alarmHandler } from '../../alarm';
 import { Alarm, HistoryEntry } from '../types';
-import { ChartPage } from '@prisma/client';
 import { rosterHandler } from '../../roster';
 import { userHandler } from '../../user';
 import { History } from '../../history';
@@ -25,12 +24,6 @@ export function users() {
 
 export function rosters() {
 	return rosterHandler.getAll();
-}
-
-export async function chartPages(): Promise<ChartPage[]> {
-	return prisma.chartPage.findMany({
-		include: { charts: { include: { pens: true } } }
-	});
 }
 
 export async function history(_root: unknown, args: { input: HistoryEntry }) {

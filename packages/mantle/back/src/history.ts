@@ -113,6 +113,7 @@ export class History {
         CONCAT("groupId",'/',"nodeId",'/',"deviceId",'/',"metricId") as "name",
         AVG("floatValue") as "value"`;
 		}
+		//@ts-ignore next-line
 		const history = await this.prisma.$queryRawUnsafe<MetricHistoryAggregate[]>(
 			`SELECT "time", json_object_agg("name","value") AS data FROM
       ${selector}

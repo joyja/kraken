@@ -124,7 +124,11 @@
 		<ul class="card__content">
 			{#if data?.mqtt && data.mqtt.length > 0}
 				{#each data?.mqtt || [] as mqtt}
-					<li>{mqtt}</li>
+					<li>
+						<div>{mqtt.name}</div>
+						<div class="subtext">{mqtt.description}</div>
+						<div class="subtext">{mqtt.config.serverUrl}</div>
+					</li>
 				{/each}
 			{:else}
 				There are no MQTT connections configured.
@@ -382,5 +386,10 @@
 	}
 	.expand--open {
 		transform: rotate(180deg);
+	}
+	.mqtt-details {
+		> div:first-child {
+			font-weight: var(--);
+		}
 	}
 </style>

@@ -201,9 +201,9 @@ export async function load({ parent, url }) {
     metrics,
     variables,
     message,
-    mqtt: [],
-    opcua: [],
-    modbus: [],
+    mqtt: config.mqtt || [],
+    opcua: config.opcua || [],
+    modbus: config.modbus || [],
     codeserverEndpoint
   }
 }

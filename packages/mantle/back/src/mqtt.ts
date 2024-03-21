@@ -85,7 +85,7 @@ class SparkplugBasicMetrics extends SparkplugBasic {
 	}
 }
 
-export type SparkplugMetric = {
+export type SparkplugMetricT = {
 	updateCount: number;
 } & NonNullable<Unpacked<UPayload['metrics']>>;
 type SparkplugMetricInit = {
@@ -94,6 +94,8 @@ type SparkplugMetricInit = {
 	nodeId: string;
 	deviceId?: string;
 	timestamp?: Unpacked<UPayload>['timestamp'];
+	type: string;
+	value: any;
 } & NonNullable<Unpacked<UPayload['metrics']>>;
 
 export class SparkplugMetric extends SparkplugBasicMetrics {
@@ -101,11 +103,15 @@ export class SparkplugMetric extends SparkplugBasicMetrics {
 	public groupId: string;
 	public nodeId: string;
 	public deviceId?: string;
+	public type: string;
+	public value: any;
 	constructor(init: SparkplugMetricInit) {
 		super(init);
 		this.groupId = init.groupId;
 		this.nodeId = init.nodeId;
 		this.deviceId = init.deviceId;
+		this.type = init.type;
+		this.value = init.value;
 		Object.assign(this, { ...init, timestamp: this.timestamp });
 	}
 
@@ -524,6 +530,7 @@ class SparkplugData extends events.EventEmitter {
 				metrics: [
 					{
 						...metric,
+						type: 'Boolean',
 						value
 					}
 				]
@@ -556,6 +563,7 @@ class SparkplugData extends events.EventEmitter {
 				metrics: [
 					{
 						...metric,
+						type: 'Boolean',
 						value: JSON.stringify(value)
 					}
 				]
