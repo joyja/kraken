@@ -162,6 +162,17 @@ type eventTracker {
 }
 
 """
+Memory Usage of Tentacle PLC Back
+"""
+type memoryUsage {
+  rss: Int!
+  heapTotal: Int!
+  heapUsed: Int!
+  external: Int!
+  arrayBuffers: Int!
+}
+
+"""
 Read/Write queries
 """
 type Mutation {
@@ -240,4 +251,8 @@ type Query {
   The PLC status information
   """
   tPlc: Plc!
+  """
+  memory usage
+  """
+  memoryUsage: memoryUsage!
 }

@@ -232,6 +232,16 @@ export type EventTracker = {
   inLastMinute: Scalars['Int']['output'];
 };
 
+/** Memory Usage of Tentacle PLC Back */
+export type MemoryUsage = {
+  __typename?: 'memoryUsage';
+  arrayBuffers: Scalars['Int']['output'];
+  external: Scalars['Int']['output'];
+  heapTotal: Scalars['Int']['output'];
+  heapUsed: Scalars['Int']['output'];
+  rss: Scalars['Int']['output'];
+};
+
 /** Task metrics for diagnostic data */
 export type TaskMetric = {
   __typename?: 'taskMetric';
@@ -334,6 +344,7 @@ export type ResolversTypes = {
   configOpcuaConfig: ResolverTypeWrapper<ConfigOpcuaConfig>;
   configTask: ResolverTypeWrapper<ConfigTask>;
   eventTracker: ResolverTypeWrapper<EventTracker>;
+  memoryUsage: ResolverTypeWrapper<MemoryUsage>;
   taskMetric: ResolverTypeWrapper<TaskMetric>;
 };
 
@@ -361,6 +372,7 @@ export type ResolversParentTypes = {
   configOpcuaConfig: ConfigOpcuaConfig;
   configTask: ConfigTask;
   eventTracker: EventTracker;
+  memoryUsage: MemoryUsage;
   taskMetric: TaskMetric;
 };
 
@@ -512,6 +524,15 @@ export type EventTrackerResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type MemoryUsageResolvers<ContextType = any, ParentType extends ResolversParentTypes['memoryUsage'] = ResolversParentTypes['memoryUsage']> = {
+  arrayBuffers?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  external?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  heapTotal?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  heapUsed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  rss?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type TaskMetricResolvers<ContextType = any, ParentType extends ResolversParentTypes['taskMetric'] = ResolversParentTypes['taskMetric']> = {
   functionExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   intervalExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
@@ -539,6 +560,7 @@ export type Resolvers<ContextType = any> = {
   configOpcuaConfig?: ConfigOpcuaConfigResolvers<ContextType>;
   configTask?: ConfigTaskResolvers<ContextType>;
   eventTracker?: EventTrackerResolvers<ContextType>;
+  memoryUsage?: MemoryUsageResolvers<ContextType>;
   taskMetric?: TaskMetricResolvers<ContextType>;
 };
 
