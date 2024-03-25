@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: .packages/mantle/back
+        working-directory: /packages/mantle/back
     steps:
       - name: Checkout master
         uses: actions/checkout@main
