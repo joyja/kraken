@@ -3,7 +3,7 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/mantle-deploy.yml'
+      - '.github/workflows/mantle-register.yml'
       - 'packages/mantle/back/**'
 jobs:
   build:
