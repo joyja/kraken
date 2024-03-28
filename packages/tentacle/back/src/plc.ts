@@ -326,7 +326,10 @@ export class PLC {
       })
       this.persistence.load()
       for (const taskKey of Object.keys(this.config.tasks)) {
-        const { program } = await importFresh(`../runtime/programs/${this.config.tasks[taskKey].program}.js`)
+        const { program } = await importFresh(path.resolve(
+          process.cwd(),
+          `runtime/programs/${this.config.tasks[taskKey].program}.js`
+        ))
         this.metrics[taskKey] = {}
         let intervalStart: [number, number] | undefined
         this.intervals.push({
