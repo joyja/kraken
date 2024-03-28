@@ -9,6 +9,8 @@ import { differenceInMilliseconds, getUnixTime } from 'date-fns'
 import ts from 'typescript'
 import { EventTracker } from './eventTracker'
 import { type MemoryUsage } from './generated/graphql'
+import { writeHeapSnapshot } from 'v8'
+import { pubsub } from './pubsub'
 
 function getDatatype (value:any):string {
   if (typeof value === 'boolean') {
@@ -78,7 +80,20 @@ function removeDir(dir: string, excludeFiles: string[]): void {
     }
 }
 
+// Function to dynamically import a module and invalidate the cache
+async function importFresh(modulePath:string) {
+  // Resolve the full path of the module
+  const resolvedPath = require.resolve(modulePath);
+
+  // Delete the module from the cache
+  delete require.cache[resolvedPath];
+
+  // Dynamically import the module, which should now bypass the cache
+  return require(resolvedPath);
+}
+
 export class PLC {
+  public heapDumpInterval?:NodeJS.Timeout
   public modbus:Record<string, Modbus>
   public opcua:Record<string, Opcua>
   public mqtt:Record<string, Mqtt>
@@ -176,6 +191,7 @@ export class PLC {
       classes: this.classes,
     });
     this.fileChanges = []
+    pubsub.publish('fileChanges', this.fileChanges)
     if (this.watcher !== undefined) this.watcher.close()
     this.watcher = chokidar.watch(this.developmentDir).on('all', (event, filePath) => {
       if (
@@ -186,11 +202,12 @@ export class PLC {
           event,
           path: filePath.replace(process.cwd(), ''),
         })
+        pubsub.publish('fileChanges', this.fileChanges)
       }
     })
     setTimeout(() => {
-      // Clear out changes so initial files don't get put in the log.
       this.fileChanges.length = 0
+      pubsub.publish('fileChanges', this.fileChanges)
     }, 500)
     if (this.config?.modbus !== undefined) {
       Object.keys(this.config.modbus).forEach((modbusKey) => {
@@ -308,7 +325,8 @@ export class PLC {
         }
       })
       this.persistence.load()
-      Object.keys(this.config.tasks).forEach((taskKey) => {
+      for (const taskKey of Object.keys(this.config.tasks)) {
+        const { program } = await importFresh(`../runtime/programs/${this.config.tasks[taskKey].program}.js`)
         this.metrics[taskKey] = {}
         let intervalStart: [number, number] | undefined
         this.intervals.push({
@@ -325,6 +343,7 @@ export class PLC {
                 metrics,
                 taskKey,
               }) => {
+                const variableChanges = []
                 const intervalStop = intervalStart !== undefined
                   ? process.hrtime(intervalStart)
                   : [0,0]
@@ -333,10 +352,6 @@ export class PLC {
                   : 0
                 const functionStart = process.hrtime()
                 try {
-                  const { program } = await import(path.resolve(
-                    process.cwd(),
-                    `runtime/programs/${this.config.tasks[taskKey].program}.js?update=${this.programCacheId}`
-                  ))
                   program({ global })
                   for (const variableKey of Object.keys(this.variables)) {
                     const variable = this.variables[variableKey]
@@ -403,6 +418,12 @@ export class PLC {
                     const outsideDeadbandMaxTime = lastValue === undefined || lastPublished === undefined || differenceInMilliseconds(now, lastPublished) > deadbandMaxTime
                     if ((outsideDeadband || outsideDeadbandMaxTime) && variable.mqttDisabled !== true) {
                       this.variables[key].changeEvents.recordEvent()
+                      variableChanges.push({
+                        name: key,
+                        value: this.global[key],
+                        type: getDatatype(this.global[key]),
+                        timestamp: getUnixTime(new Date()),
+                      })
                       for (const mqttKey of Object.keys(this.mqtt)){
                         this.mqtt[mqttKey].queue.push({
                           name: key,
@@ -434,12 +455,16 @@ export class PLC {
                     (functionStop[0] * 1e9 + functionStop[1]) / 1e6
                   persistence.persist()
                   metrics[taskKey].totalScanTime =
-                    metrics.main.functionExecutionTime +
-                    metrics.main.intervalExecutionTime
+                    metrics[taskKey].functionExecutionTime +
+                    metrics[taskKey].intervalExecutionTime
+                  pubsub.publish('taskMetrics', Object.keys(metrics).map((key) => { 
+                    return {task:key, ...metrics[key] }
+                  }))
                 } catch (error) {
                   console.log(error)
                 }
                 intervalStart = process.hrtime()
+                pubsub.publish('values', variableChanges)
               })({
                 global,
                 persistence,
@@ -461,7 +486,7 @@ export class PLC {
           scanRate: this.config.tasks[taskKey].scanRate,
           name: taskKey,
         })
-      })
+      }
       this.running = true
     } else {
       throw Error('The PLC is already running.')

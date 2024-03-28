@@ -64,6 +64,8 @@ export type Query = {
   configuration: Config;
   /** Information about the Tentacle PLC environment as a string. */
   info: Scalars['String']['output'];
+  /** memory usage */
+  memoryUsage: MemoryUsage;
   /** Task diagnostic data */
   metrics: Array<TaskMetric>;
   /** Returns the code for a single program */
@@ -102,6 +104,17 @@ export type QueryValueArgs = {
   variablePath: Scalars['String']['input'];
 };
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  countdown: Scalars['Int']['output'];
+  value: VariableValue;
+};
+
+
+export type SubscriptionCountdownArgs = {
+  from: Scalars['Int']['input'];
+};
+
 /** Variable configuration */
 export type Variable = {
   __typename?: 'Variable';
@@ -131,6 +144,15 @@ export type VariableSourceParams = {
   format?: Maybe<Scalars['String']['output']>;
   register?: Maybe<Scalars['Int']['output']>;
   registerType?: Maybe<Scalars['String']['output']>;
+};
+
+/** Variable value (for subscriptions) */
+export type VariableValue = {
+  __typename?: 'VariableValue';
+  name: Scalars['String']['output'];
+  timestamp: Scalars['Date']['output'];
+  type: Scalars['String']['output'];
+  value: Scalars['String']['output'];
 };
 
 /** Atomic Variable type used for String, Numbers, and Booleans */
@@ -330,9 +352,11 @@ export type ResolversTypes = {
   Plc: ResolverTypeWrapper<Plc>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  Subscription: ResolverTypeWrapper<{}>;
   Variable: ResolverTypeWrapper<Variable>;
   VariableSource: ResolverTypeWrapper<VariableSource>;
   VariableSourceParams: ResolverTypeWrapper<VariableSourceParams>;
+  VariableValue: ResolverTypeWrapper<VariableValue>;
   atomicVariable: ResolverTypeWrapper<AtomicVariable>;
   change: ResolverTypeWrapper<Change>;
   config: ResolverTypeWrapper<Config>;
@@ -358,9 +382,11 @@ export type ResolversParentTypes = {
   Plc: Plc;
   Query: {};
   String: Scalars['String']['output'];
+  Subscription: {};
   Variable: Variable;
   VariableSource: VariableSource;
   VariableSourceParams: VariableSourceParams;
+  VariableValue: VariableValue;
   atomicVariable: AtomicVariable;
   change: Change;
   config: Config;
@@ -397,6 +423,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   changes?: Resolver<Array<ResolversTypes['change']>, ParentType, ContextType>;
   configuration?: Resolver<ResolversTypes['config'], ParentType, ContextType>;
   info?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  memoryUsage?: Resolver<ResolversTypes['memoryUsage'], ParentType, ContextType>;
   metrics?: Resolver<Array<ResolversTypes['taskMetric']>, ParentType, ContextType>;
   program?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryProgramArgs, 'name'>>;
   programs?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -406,6 +433,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   value?: Resolver<Maybe<ResolversTypes['atomicVariable']>, ParentType, ContextType, RequireFields<QueryValueArgs, 'variablePath'>>;
   values?: Resolver<Array<ResolversTypes['atomicVariable']>, ParentType, ContextType>;
   variables?: Resolver<Array<ResolversTypes['Variable']>, ParentType, ContextType>;
+};
+
+export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
+  countdown?: SubscriptionResolver<ResolversTypes['Int'], "countdown", ParentType, ContextType, RequireFields<SubscriptionCountdownArgs, 'from'>>;
+  value?: SubscriptionResolver<ResolversTypes['VariableValue'], "value", ParentType, ContextType>;
 };
 
 export type VariableResolvers<ContextType = any, ParentType extends ResolversParentTypes['Variable'] = ResolversParentTypes['Variable']> = {
@@ -433,6 +465,14 @@ export type VariableSourceParamsResolvers<ContextType = any, ParentType extends 
   format?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   register?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   registerType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type VariableValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['VariableValue'] = ResolversParentTypes['VariableValue']> = {
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -546,9 +586,11 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   Plc?: PlcResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Subscription?: SubscriptionResolvers<ContextType>;
   Variable?: VariableResolvers<ContextType>;
   VariableSource?: VariableSourceResolvers<ContextType>;
   VariableSourceParams?: VariableSourceParamsResolvers<ContextType>;
+  VariableValue?: VariableValueResolvers<ContextType>;
   atomicVariable?: AtomicVariableResolvers<ContextType>;
   change?: ChangeResolvers<ContextType>;
   config?: ConfigResolvers<ContextType>;

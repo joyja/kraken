@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import * as resolvers from './resolvers'
 import { plc } from './plc'
+import { sentry } from './sentry'
 
 // available when handling requests, needs to be provided by the implementor ()
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

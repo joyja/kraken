@@ -2,7 +2,7 @@
 	"name": "tentacle-back",
 	"version": "0.0.1",
 	"description": "",
-	"main": "index.js",
+	"main": "index.ts",
 	"scripts": {
 		"dev": "TENTACLE_LOGLEVEL=DEBUG NODE_ENV=development env $(cat .env | grep -v \"#\" | xargs) ts-node-dev --exit-child --respawn src/index.ts",
 		"codegen": "graphql-codegen --config codegen.ts",
@@ -26,6 +26,8 @@
 		"vitest": "^0.34.6"
 	},
 	"dependencies": {
+		"@sentry/node": "^7.108.0",
+		"@sentry/profiling-node": "^7.108.0",
 		"chokidar": "^3.5.3",
 		"date-fns": "^3.5.0",
 		"ethernet-ip": "^1.2.5",

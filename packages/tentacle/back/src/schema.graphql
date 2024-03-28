@@ -60,6 +60,16 @@ type Variable {
 }
 
 """
+Variable value (for subscriptions)
+"""
+type VariableValue {
+  name: String!
+  value: String!
+  type: String!
+  timestamp: Date!
+}
+
+"""
 Task configuration
 """
 type configTask {
@@ -255,4 +265,11 @@ type Query {
   memory usage
   """
   memoryUsage: memoryUsage!
+}
+
+type Subscription {
+  countdown(from: Int!): Int!
+  values: [VariableValue!]!
+  taskMetrics: [taskMetric!]!
+  changes: [change!]!
 }

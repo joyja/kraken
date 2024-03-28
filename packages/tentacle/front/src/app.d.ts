@@ -3,7 +3,11 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			variables: { value:string }[]
+			metrics: { task:string, functionExecutionTime:number, intervalExecutionTime:number, totalScanTime:number }[]
+			changes: { timestamp:string, event:string, path:string } []
+		}
 		// interface PageData {}
 		// interface Platform {}
 	}

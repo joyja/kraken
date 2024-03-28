@@ -3,11 +3,10 @@
 	import Moon from '$lib/components/icons/Sun.svelte';
 	import '$lib/css/main.scss';
 	let theme = 'themeLight';
-	import { onNavigate } from '$app/navigation';
+	import { invalidate, onNavigate } from '$app/navigation';
 	import PauseCircle from '$lib/components/icons/PauseCircle.svelte';
 	import ArrowPath from '$lib/components/icons/ArrowPath.svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import { invalidateAll } from '$app/navigation';
 	import { enhance } from '$app/forms';
 	import Toast from '$lib/components/Toast.svelte';
 	import PlayCircle from '$lib/components/icons/PlayCircle.svelte';
@@ -43,7 +42,7 @@
 	onMount(() => {
 		// Initialize Prism.js
 		interval = setInterval(() => {
-			invalidateAll();
+			invalidate('/api/values');
 		}, 2500);
 	});
 	onDestroy(() => {
