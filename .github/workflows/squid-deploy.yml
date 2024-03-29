@@ -49,7 +49,7 @@ jobs:
           User=joyja
           WorkingDirectory=$WORKING_DIRECTORY
           EnvironmentFile=/etc/squid/environment
-          ExecStart=/usr/bin/node $WORKING_DIRECTORY/pacages/build/src/index.js
+          ExecStart=/usr/bin/node $WORKING_DIRECTORY/build/src/index.js
           Restart=on-failure
           RestartSec=10
           StandardOutput=syslog
