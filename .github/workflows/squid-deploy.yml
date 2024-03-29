@@ -15,7 +15,7 @@ jobs:
         runner: [squid1, camophore, tensor1, pangolin1]
     defaults:
       run:
-        working-directory: ./packagessquid/back
+        working-directory: ./packages/squid/back
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
