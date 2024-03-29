@@ -356,6 +356,8 @@ export class PLC {
                 const functionStart = process.hrtime()
                 try {
                   program({ global })
+                  const functionStop = process.hrtime(functionStart)
+                  const functionModbusStart = process.hrtime()
                   for (const variableKey of Object.keys(this.variables)) {
                     const variable = this.variables[variableKey]
                     if (variable.source !== undefined) {
@@ -383,6 +385,8 @@ export class PLC {
                       // }
                     }
                   }
+                  const functionModbusStop = process.hrtime(functionModbusStart)
+                  const functionOpcuaStart = process.hrtime()
                   for (const opcuaKey of Object.keys(this.opcua)) {
                     const opcuaNodeVariables = Object.keys(this.variables)
                       .filter((variableKey) => {
@@ -404,6 +408,8 @@ export class PLC {
                         }
                       })
                   }
+                  const functionOpcuaStop = process.hrtime(functionOpcuaStart)
+                  const functionMqttStart = process.hrtime()
                   for (const key of Object.keys(this.variables)) {
                     const now = new Date()
                     const variable = this.variables[key]
@@ -453,13 +459,32 @@ export class PLC {
                       })
                     }
                   }
-                  const functionStop = process.hrtime(functionStart)
+                  const functionMqttStop = process.hrtime(functionMqttStart)
+                  metrics[taskKey].modbusExecutionTime = (functionModbusStop[0] * 1e9 + functionModbusStop[1]) / 1e6
+                  metrics[taskKey].opcuaExecutionTime = (functionOpcuaStop[0] * 1e9 + functionOpcuaStop[1]) / 1e6
+                  metrics[taskKey].mqttExecutionTime = (functionMqttStop[0] * 1e9 + functionMqttStop[1]) / 1e6
+
+                  
+                  const persistenceStart = process.hrtime()
+                  persistence.persist()
+                  const persistenceStop = process.hrtime(persistenceStart)
+
+                  metrics[taskKey].persistenceExecutionTime = (persistenceStop[0] * 1e9 + persistenceStop[1]) / 1e6
+                  
+                  metrics[taskKey].overheadExecutionTime = 
+                    metrics[taskKey].modbusExecutionTime +
+                    metrics[taskKey].opcuaExecutionTime +
+                    metrics[taskKey].mqttExecutionTime +
+                    metrics[taskKey].persistenceExecutionTime
+                  
                   metrics[taskKey].functionExecutionTime =
                     (functionStop[0] * 1e9 + functionStop[1]) / 1e6
-                  persistence.persist()
-                  metrics[taskKey].totalScanTime =
+                  
+                    metrics[taskKey].totalScanTime =
                     metrics[taskKey].functionExecutionTime +
+                    metrics[taskKey].overheadExecutionTime +
                     metrics[taskKey].intervalExecutionTime
+
                   pubsub.publish('taskMetrics', Object.keys(metrics).map((key) => { 
                     return {task:key, ...metrics[key] }
                   }))

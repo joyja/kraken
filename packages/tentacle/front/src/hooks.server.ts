@@ -108,6 +108,7 @@ function generateSources () {
         task
         totalScanTime
         functionExecutionTime
+        overheadExecutionTime
         intervalExecutionTime
       } 
     }`,
