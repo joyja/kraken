@@ -34,7 +34,7 @@ jobs:
         run: pnpm prune --prod
 
       - name: Create WORKING_DIRECTORY env variable
-        run: echo "WORKING_DIRECTORY=$GITHUB_WORKSPACE/squid/back" >> $GITHUB_ENV
+        run: echo "WORKING_DIRECTORY=$GITHUB_WORKSPACE/packages/squid/back" >> $GITHUB_ENV
 
       - name: Set up the systemd service file
         env:
