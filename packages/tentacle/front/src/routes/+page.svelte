@@ -398,9 +398,4 @@
 	.expand--open {
 		transform: rotate(180deg);
 	}
-	.mqtt-details {
-		> div:first-child {
-			font-weight: var(--);
-		}
-	}
 </style>
