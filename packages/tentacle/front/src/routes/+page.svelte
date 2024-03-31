@@ -94,20 +94,28 @@
 						</div>
 						<div class="flex justify-between mt-1">
 							<div class="text-xs">{task?.intervalExecutionTime?.toFixed(2)}ms</div>
+							<div class="text-xs">{task?.overheadExecutionTime?.toFixed(2)}ms</div>
 							<div class="text-xs">{task?.functionExecutionTime?.toFixed(2)}ms</div>
 						</div>
 						<div class="flex metric-bar">
 							<div
 								style:flex-basis="{task
 									? (task.intervalExecutionTime /
-											(task.intervalExecutionTime + task.functionExecutionTime)) *
+											(task.intervalExecutionTime + task.overheadExecutionTime + task.functionExecutionTime)) *
+									  100
+									: 100}%"
+							/>
+							<div
+								style:flex-basis="{task
+									? (task.overheadExecutionTime /
+											(task.intervalExecutionTime + task.overheadExecutionTime + task.functionExecutionTime)) *
 									  100
 									: 100}%"
 							/>
 							<div
 								style:flex-basis="{task
 									? (task.functionExecutionTime /
-											(task.intervalExecutionTime + task.functionExecutionTime)) *
+											(task.intervalExecutionTime + task.overheadExecutionTime + task.functionExecutionTime)) *
 									  100
 									: 0}%"
 							/>
@@ -233,6 +241,9 @@
 			height: var(--spacing-unit);
 			&:first-child {
 				background-color: var(--neutral-400);
+			}
+			&:nth-child(2) {
+				background-color: var(--fuchsia-500);
 			}
 			&:last-child {
 				background-color: var(--theme-accent);
@@ -386,10 +397,5 @@
 	}
 	.expand--open {
 		transform: rotate(180deg);
-	}
-	.mqtt-details {
-		> div:first-child {
-			font-weight: var(--);
-		}
 	}
 </style>
