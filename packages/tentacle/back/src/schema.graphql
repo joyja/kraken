@@ -158,6 +158,11 @@ Task metrics for diagnostic data
 type taskMetric {
   task: String!
   functionExecutionTime: Float!
+  modbusExecutionTime: Float!
+  mqttExecutionTime: Float!
+  opcuaExecutionTime: Float!
+  persistenceExecutionTime: Float!
+  overheadExecutionTime: Float!
   intervalExecutionTime: Float!
   totalScanTime: Float!
 }
