@@ -410,63 +410,65 @@ export class PLC {
                   }
                   const functionOpcuaStop = process.hrtime(functionOpcuaStart)
                   const functionMqttStart = process.hrtime()
-                  for (const key of Object.keys(this.variables)) {
-                    const now = new Date()
-                    const variable = this.variables[key]
-                    const isNumeric = variable.datatype === 'number'
-                    const lastPublished = variable.lastPublished
-                    const lastValue = variable.lastValue
-                    const deadbandMaxTime = variable.deadband?.maxTime
-                    let outsideDeadband = false
-                    if (isNumeric) {
-                      const deadband = (variable.deadband?.value !== undefined ? variable.deadband.value : 0)
-                      outsideDeadband = variable.lastValue === undefined || Math.abs(this.global[key] - variable.lastValue) > deadband
-                    } else {
-                      outsideDeadband = variable.lastValue !== this.global[key]
-                    }
-                    const outsideDeadbandMaxTime = lastValue === undefined || lastPublished === undefined || differenceInMilliseconds(now, lastPublished) > deadbandMaxTime
-                    if ((outsideDeadband || outsideDeadbandMaxTime) && variable.mqttDisabled !== true) {
-                      this.variables[key].changeEvents.recordEvent()
-                      variableChanges.push({
-                        name: key,
-                        value: this.global[key],
-                        type: getDatatype(this.global[key]),
-                        timestamp: getUnixTime(new Date()),
-                      })
-                      for (const mqttKey of Object.keys(this.mqtt)){
-                        this.mqtt[mqttKey].queue.push({
+                  Promise.resolve().then(() => {
+                    for (const key of Object.keys(this.variables)) {
+                      const now = new Date()
+                      const variable = this.variables[key]
+                      const isNumeric = variable.datatype === 'number'
+                      const lastPublished = variable.lastPublished
+                      const lastValue = variable.lastValue
+                      const deadbandMaxTime = variable.deadband?.maxTime
+                      let outsideDeadband = false
+                      if (isNumeric) {
+                        const deadband = (variable.deadband?.value !== undefined ? variable.deadband.value : 0)
+                        outsideDeadband = variable.lastValue === undefined || Math.abs(this.global[key] - variable.lastValue) > deadband
+                      } else {
+                        outsideDeadband = variable.lastValue !== this.global[key]
+                      }
+                      const outsideDeadbandMaxTime = lastValue === undefined || lastPublished === undefined || differenceInMilliseconds(now, lastPublished) > deadbandMaxTime
+                      if ((outsideDeadband || outsideDeadbandMaxTime) && variable.mqttDisabled !== true) {
+                        this.variables[key].changeEvents.recordEvent()
+                        variableChanges.push({
                           name: key,
                           value: this.global[key],
                           type: getDatatype(this.global[key]),
                           timestamp: getUnixTime(new Date()),
                         })
+                        for (const mqttKey of Object.keys(this.mqtt)){
+                          this.mqtt[mqttKey].queue.push({
+                            name: key,
+                            value: this.global[key],
+                            type: getDatatype(this.global[key]),
+                            timestamp: getUnixTime(new Date()),
+                          })
+                        }
+                        variable.lastValue = this.global[key]
+                        variable.lastPublished = now
                       }
-                      variable.lastValue = this.global[key]
-                      variable.lastPublished = now
                     }
-                    variable.changeEvents.cleanup()
-                  }
-                  if (this.config.publishPerformanceMetrics === true) {
-                    const memoryUsage:MemoryUsage = process.memoryUsage()
-                    for (const mqttKey of Object.keys(this.mqtt)){
-                      Object.keys(memoryUsage).forEach((key) => {
-                        this.mqtt[mqttKey].queue.push({
-                          name: `memoryUsage.${key}`,
-                          value: memoryUsage[key as keyof MemoryUsage],
-                          type: getDatatype(memoryUsage[key as keyof MemoryUsage]),
-                          timestamp: getUnixTime(new Date()),
+                    if (this.config.publishPerformanceMetrics === true) {
+                      const memoryUsage:MemoryUsage = process.memoryUsage()
+                      for (const mqttKey of Object.keys(this.mqtt)){
+                        Object.keys(memoryUsage).forEach((key) => {
+                          this.mqtt[mqttKey].queue.push({
+                            name: `memoryUsage.${key}`,
+                            value: memoryUsage[key as keyof MemoryUsage],
+                            type: getDatatype(memoryUsage[key as keyof MemoryUsage]),
+                            timestamp: getUnixTime(new Date()),
+                          })
                         })
-                      })
+                      }
                     }
-                  }
+                  })
                   const functionMqttStop = process.hrtime(functionMqttStart)
                   metrics[taskKey].modbusExecutionTime = (functionModbusStop[0] * 1e9 + functionModbusStop[1]) / 1e6
                   metrics[taskKey].opcuaExecutionTime = (functionOpcuaStop[0] * 1e9 + functionOpcuaStop[1]) / 1e6
                   metrics[taskKey].mqttExecutionTime = (functionMqttStop[0] * 1e9 + functionMqttStop[1]) / 1e6
-
                   
                   const persistenceStart = process.hrtime()
-                  persistence.persist()
+                  Promise.resolve().then(() => {
+                    persistence.persist()
+                  })
                   const persistenceStop = process.hrtime(persistenceStart)
 
                   metrics[taskKey].persistenceExecutionTime = (persistenceStop[0] * 1e9 + persistenceStop[1]) / 1e6
@@ -492,7 +494,7 @@ export class PLC {
                   console.log(error)
                 }
                 intervalStart = process.hrtime()
-                pubsub.publish('values', variableChanges)
+                // pubsub.publish('values', variableChanges)
               })({
                 global,
                 persistence,
