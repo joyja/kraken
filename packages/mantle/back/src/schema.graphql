@@ -1,393 +1,401 @@
 scalar Date
 
 type SparkplugMetricHistory {
-  value: String!
-  timestamp: Date!
+	value: String!
+	timestamp: Date!
 }
 
 type SparkplugMetric {
-  id: String!
-  updateCount: Int!
-  updatedOn: Date!
-  type: String!
-  value: String
-  history: [SparkplugMetricHistory!]!
+	id: String!
+	updateCount: Int!
+	updatedOn: Date!
+	type: String!
+	value: String
+	history: [SparkplugMetricHistory!]!
 }
 
 type SparkplugDevice {
-  id: String!
-  updatedOn: Date!
-  metrics: [SparkplugMetric!]!
+	id: String!
+	updatedOn: Date!
+	metrics: [SparkplugMetric!]!
 }
 
 type SparkplugNode {
-  id: String!
-  updatedOn: Date!
-  devices: [SparkplugDevice!]!
-  unbornDevices: [SparkplugDevice!]!
-  metrics: [SparkplugMetric!]!
+	id: String!
+	updatedOn: Date!
+	devices: [SparkplugDevice!]!
+	unbornDevices: [SparkplugDevice!]!
+	metrics: [SparkplugMetric!]!
 }
 
 type SparkplugGroup {
-  id: String!
-  updatedOn: Date!
-  nodes: [SparkplugNode!]!
-  unbornNodes: [SparkplugNode!]!
+	id: String!
+	updatedOn: Date!
+	nodes: [SparkplugNode!]!
+	unbornNodes: [SparkplugNode!]!
+}
+
+type SparkplugMetricUpdate {
+	groupId: String!
+	nodeId: String!
+	deviceId: String!
+	metricId: String!
+	value: String
+	timestamp: Date!
 }
 
 enum AlarmConditionMode {
-  NOT_EQUAL
-  EQUAL
-  BELOW_SETPOINT
-  ABOVE_SETPOINT
-  BETWEEN_SETPOINTS
-  OUTSIDE_SETPOINTS
+	NOT_EQUAL
+	EQUAL
+	BELOW_SETPOINT
+	ABOVE_SETPOINT
+	BETWEEN_SETPOINTS
+	OUTSIDE_SETPOINTS
 }
 
 enum AlarmPriority {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
+	LOW
+	MEDIUM
+	HIGH
+	CRITICAL
 }
 
 type AlarmCondition {
-  mode: AlarmConditionMode!
-  setpoint: Float
-  inclusive: Boolean
-  setpointLow: Float
-  inclusiveLow: Boolean
-  setpointHigh: Float
-  inclusiveHigh: Boolean
+	mode: AlarmConditionMode!
+	setpoint: Float
+	inclusive: Boolean
+	setpointLow: Float
+	inclusiveLow: Boolean
+	setpointHigh: Float
+	inclusiveHigh: Boolean
 }
 
 input AlarmConditionInput {
-  mode: AlarmConditionMode!
-  setpoint: Float
-  inclusive: Boolean
-  setpointLow: Float
-  inclusiveLow: Boolean
-  setpointHigh: Float
-  inclusiveHigh: Boolean
+	mode: AlarmConditionMode!
+	setpoint: Float
+	inclusive: Boolean
+	setpointLow: Float
+	inclusiveLow: Boolean
+	setpointHigh: Float
+	inclusiveHigh: Boolean
 }
 
 type Alarm {
-  id: String!
-  name: String!
-  enabled: Boolean!
-  priority: AlarmPriority!
-  condition: AlarmCondition!
-  groupId: String!
-  nodeId: String!
-  deviceId: String
-  metricId: String!
-  acknowledged: Boolean!
-  active: Boolean!
-  roster: Roster
+	id: String!
+	name: String!
+	enabled: Boolean!
+	priority: AlarmPriority!
+	condition: AlarmCondition!
+	groupId: String!
+	nodeId: String!
+	deviceId: String
+	metricId: String!
+	acknowledged: Boolean!
+	active: Boolean!
+	roster: Roster
 }
 
 input CreateAlarm {
-  name: String!
-  enabled: Boolean!
-  priority: AlarmPriority!
-  condition: AlarmConditionInput!
-  groupId: String!
-  nodeId: String!
-  deviceId: String
-  metricId: String!
-  rosterId: String
+	name: String!
+	enabled: Boolean!
+	priority: AlarmPriority!
+	condition: AlarmConditionInput!
+	groupId: String!
+	nodeId: String!
+	deviceId: String
+	metricId: String!
+	rosterId: String
 }
 
 input UpdateAlarm {
-  id: String!
-  name: String
-  enabled: Boolean
-  priority: AlarmPriority
-  condition: AlarmConditionInput
-  groupId: String
-  nodeId: String
-  deviceId: String
-  metricId: String
-  rosterId: String
+	id: String!
+	name: String
+	enabled: Boolean
+	priority: AlarmPriority
+	condition: AlarmConditionInput
+	groupId: String
+	nodeId: String
+	deviceId: String
+	metricId: String
+	rosterId: String
 }
 
 input DeleteAlarm {
-  id: String!
+	id: String!
 }
 
 type User {
-  id: String
-  name: String
-  email: String
-  phone: String
-  RosterEntry: [RosterEntry!]
+	id: String
+	name: String
+	email: String
+	phone: String
+	RosterEntry: [RosterEntry!]
 }
 
 input UpdateUser {
-  id: String!
-  name: String
-  email: String
-  phone: String
+	id: String!
+	name: String
+	email: String
+	phone: String
 }
 
 input CreateUser {
-  id: String
-  name: String!
-  email: String
-  phone: String
+	id: String
+	name: String!
+	email: String
+	phone: String
 }
 
 input DeleteUser {
-  id: String!
+	id: String!
 }
 
 input UpdateRoster {
-  id: String!
-  name: String
-  enabled: Boolean
-  retries: Int
-  timeBetweenRetries: Int
+	id: String!
+	name: String
+	enabled: Boolean
+	retries: Int
+	timeBetweenRetries: Int
 }
 
 input CreateRoster {
-  name: String!
-  enabled: Boolean!
-  retries: Int!
-  timeBetweenRetries: Int!
+	name: String!
+	enabled: Boolean!
+	retries: Int!
+	timeBetweenRetries: Int!
 }
 
 input DeleteRoster {
-  id: String!
+	id: String!
 }
 
 type Roster {
-  id: String
-  name: String
-  enabled: Boolean
-  users: [RosterEntry!]!
-  retries: Int
-  timeBetweenRetries: Int
-  retired: Boolean
-  alarms: [Alarm!]!
+	id: String
+	name: String
+	enabled: Boolean
+	users: [RosterEntry!]!
+	retries: Int
+	timeBetweenRetries: Int
+	retired: Boolean
+	alarms: [Alarm!]!
 }
 
 input UpdateRosterEntry {
-  id: String!
-  sms: Boolean
-  email: Boolean
-  phone: Boolean
+	id: String!
+	sms: Boolean
+	email: Boolean
+	phone: Boolean
 }
 
 input MoveUpRosterEntry {
-  id: String!
+	id: String!
 }
 
 input MoveDownRosterEntry {
-  id: String!
+	id: String!
 }
 
 input CreateRosterEntry {
-  rosterId: String!
-  userId: String!
-  sms: Boolean!
-  email: Boolean!
-  phone: Boolean!
+	rosterId: String!
+	userId: String!
+	sms: Boolean!
+	email: Boolean!
+	phone: Boolean!
 }
 
 input DeleteRosterEntry {
-  id: String!
+	id: String!
 }
 
 type RosterEntry {
-  id: String
-  roster: Roster
-  rosterId: String
-  user: User
-  userId: String
-  sms: Boolean
-  email: Boolean
-  phone: Boolean
-  order: Int
+	id: String
+	roster: Roster
+	rosterId: String
+	user: User
+	userId: String
+	sms: Boolean
+	email: Boolean
+	phone: Boolean
+	order: Int
 }
 
 type ChartPage {
-  id: String!
-  name: String
-  description: String
-  charts: [Chart!]!
+	id: String!
+	name: String
+	description: String
+	charts: [Chart!]!
 }
 
 type Chart {
-  id: String!
-  title: String!
-  x: Axis!
-  y: Axis!
-  pens: [Pen!]!
+	id: String!
+	title: String!
+	x: Axis!
+	y: Axis!
+	pens: [Pen!]!
 }
 
 type Pen {
-  id: String!
-  chartId: String
-  groupId: String
-  nodeId: String
-  deviceId: String
-  metricId: String
-  color: String
+	id: String!
+	chartId: String
+	groupId: String
+	nodeId: String
+	deviceId: String
+	metricId: String
+	color: String
 }
 
 input CreateChartPageEntry {
-  name: String!
-  description: String
+	name: String!
+	description: String
 }
 
 input UpdateChartPageEntry {
-  id: String!
-  name: String
-  description: String
+	id: String!
+	name: String
+	description: String
 }
 
 input DeleteChartPageEntry {
-  id: String!
+	id: String!
 }
 
 type Axis {
-  autoRange: Boolean!
-  min: Float
-  max: Float
+	autoRange: Boolean!
+	min: Float
+	max: Float
 }
 
 input AxisEntry {
-  autoRange: Boolean!
-  min: Float
-  max: Float
+	autoRange: Boolean!
+	min: Float
+	max: Float
 }
 
 input CreateChartEntry {
-  chartPageId: String!
-  title: String!
-  y: AxisEntry!
-  x: AxisEntry!
-  pens: [CreatePenEntry!]
+	chartPageId: String!
+	title: String!
+	y: AxisEntry!
+	x: AxisEntry!
+	pens: [CreatePenEntry!]
 }
 
 input UpdateChartEntry {
-  id: String!
-  title: String
-  pens: [CreatePenEntry!]
+	id: String!
+	title: String
+	pens: [CreatePenEntry!]
 }
 
 input DeleteChartEntry {
-  id: String!
+	id: String!
 }
 
 input CreateChartPenEntry {
-  groupId: String!
-  nodeId: String!
-  deviceId: String
-  metricId: String!
-  color: String!
+	groupId: String!
+	nodeId: String!
+	deviceId: String
+	metricId: String!
+	color: String!
 }
 
 input CreatePenEntry {
-  chartId: String!
-  groupId: String!
-  nodeId: String!
-  deviceId: String!
-  metricId: String!
-  color: String!
+	chartId: String!
+	groupId: String!
+	nodeId: String!
+	deviceId: String!
+	metricId: String!
+	color: String!
 }
 
 input UpdatePenEntry {
-  id: String!
-  groupId: String
-  nodeId: String
-  deviceId: String
-  metricId: String
-  color: String
+	id: String!
+	groupId: String
+	nodeId: String
+	deviceId: String
+	metricId: String
+	color: String
 }
 
 input DeletePenEntry {
-  id: String!
+	id: String!
 }
 
 input MetricHistoryEntry {
-  groupId: String!
-  nodeId: String!
-  deviceId: String!
-  metricId: String!
+	groupId: String!
+	nodeId: String!
+	deviceId: String!
+	metricId: String!
 }
 
 input HistoryEntry {
-  start: Date!
-  end: Date!
-  metrics: [MetricHistoryEntry!]!
-  interval: String
-  samples: Int
-  raw: Boolean
+	start: Date!
+	end: Date!
+	metrics: [MetricHistoryEntry!]!
+	interval: String
+	samples: Int
+	raw: Boolean
 }
 
 type History {
-  groupId: String!
-  nodeId: String!
-  deviceId: String!
-  metricId: String!
-  history: [SparkplugMetricHistory!]!
+	groupId: String!
+	nodeId: String!
+	deviceId: String!
+	metricId: String!
+	history: [SparkplugMetricHistory!]!
 }
 
 """
 Read only queries
 """
 type Query {
-  info: String!
-  groups(historyDuration: Int): [SparkplugGroup!]!
-  alarms: [Alarm!]!
-  users: [User!]!
-  rosters: [Roster!]!
-  chartPages: [ChartPage!]!
-  history(input: HistoryEntry!): [History!]!
-  rawHistory(input: HistoryEntry!): [SparkplugMetricHistory!]!
+	info: String!
+	groups(historyDuration: Int): [SparkplugGroup!]!
+	alarms: [Alarm!]!
+	users: [User!]!
+	rosters: [Roster!]!
+	chartPages: [ChartPage!]!
+	history(input: HistoryEntry!): [History!]!
+	rawHistory(input: HistoryEntry!): [SparkplugMetricHistory!]!
 }
 
 """
 Read and write queries
 """
 type Mutation {
-  sendNodeCommand(
-    groupId: String!
-    nodeId: String!
-    command: String!
-    value: String!
-  ): Boolean!
-  sendDeviceCommand(
-    groupId: String!
-    nodeId: String!
-    deviceId: String!
-    command: String!
-    value: String!
-  ): Boolean!
-  createAlarm(input: CreateAlarm!): Alarm!
-  updateAlarm(input: UpdateAlarm!): Alarm!
-  deleteAlarm(input: DeleteAlarm!): Alarm!
-  acknowledgeAlarm(id: String!): Alarm!
-  createUser(input: CreateUser!): User!
-  updateUser(input: UpdateUser!): User!
-  deleteUser(input: DeleteUser!): User!
-  createRoster(input: CreateRoster!): Roster!
-  updateRoster(input: UpdateRoster!): Roster!
-  deleteRoster(input: DeleteRoster!): Roster!
-  createRosterEntry(input: CreateRosterEntry!): RosterEntry!
-  updateRosterEntry(input: UpdateRosterEntry!): RosterEntry!
-  deleteRosterEntry(input: DeleteRosterEntry!): RosterEntry!
-  moveUpRosterEntry(input: MoveUpRosterEntry!): RosterEntry!
-  moveDownRosterEntry(input: MoveDownRosterEntry!): RosterEntry!
-  createChartPage(input: CreateChartPageEntry!): ChartPage!
-  updateChartPage(input: UpdateChartPageEntry!): ChartPage!
-  deleteChartPage(input: DeleteChartPageEntry!): ChartPage!
-  createChart(input: CreateChartEntry!): Chart!
-  updateChart(input: UpdateChartEntry!): Chart!
-  deleteChart(input: DeleteChartEntry!): Chart!
-  createPen(input: CreatePenEntry!): Pen!
-  updatePen(input: UpdatePenEntry!): Pen!
-  deletePen(input: DeletePenEntry!): Pen!
-  acknowledgeRoster(id: String!): Roster!
+	sendNodeCommand(groupId: String!, nodeId: String!, command: String!, value: String!): Boolean!
+	sendDeviceCommand(
+		groupId: String!
+		nodeId: String!
+		deviceId: String!
+		command: String!
+		value: String!
+	): Boolean!
+	createAlarm(input: CreateAlarm!): Alarm!
+	updateAlarm(input: UpdateAlarm!): Alarm!
+	deleteAlarm(input: DeleteAlarm!): Alarm!
+	acknowledgeAlarm(id: String!): Alarm!
+	createUser(input: CreateUser!): User!
+	updateUser(input: UpdateUser!): User!
+	deleteUser(input: DeleteUser!): User!
+	createRoster(input: CreateRoster!): Roster!
+	updateRoster(input: UpdateRoster!): Roster!
+	deleteRoster(input: DeleteRoster!): Roster!
+	createRosterEntry(input: CreateRosterEntry!): RosterEntry!
+	updateRosterEntry(input: UpdateRosterEntry!): RosterEntry!
+	deleteRosterEntry(input: DeleteRosterEntry!): RosterEntry!
+	moveUpRosterEntry(input: MoveUpRosterEntry!): RosterEntry!
+	moveDownRosterEntry(input: MoveDownRosterEntry!): RosterEntry!
+	createChartPage(input: CreateChartPageEntry!): ChartPage!
+	updateChartPage(input: UpdateChartPageEntry!): ChartPage!
+	deleteChartPage(input: DeleteChartPageEntry!): ChartPage!
+	createChart(input: CreateChartEntry!): Chart!
+	updateChart(input: UpdateChartEntry!): Chart!
+	deleteChart(input: DeleteChartEntry!): Chart!
+	createPen(input: CreatePenEntry!): Pen!
+	updatePen(input: UpdatePenEntry!): Pen!
+	deletePen(input: DeletePenEntry!): Pen!
+	acknowledgeRoster(id: String!): Roster!
+}
+
+type Subscription {
+	metricUpdate: [SparkplugMetricUpdate!]!
 }

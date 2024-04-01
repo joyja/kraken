@@ -6,6 +6,7 @@ import { Log } from './log';
 import { alarmHandler } from './alarm';
 import { prisma } from './prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { pubsub } from './pubsub';
 
 const log = new Log('mqtt');
 type Unpacked<T> = T extends Array<infer U> ? U : T;
@@ -45,6 +46,18 @@ class SparkplugBasicMetrics extends SparkplugBasic {
 		payload: UPayload | UTemplate
 	) {
 		if (payload.metrics) {
+			pubsub.publish('metricUpdate', 
+				payload.metrics
+					.filter((m) => m.name)
+					.map((m) => ({ 
+						groupId,
+						nodeId,
+						deviceId,
+						metricId: m.name,
+						timestamp: m.timestamp?.toString(),
+						value: m.value
+					}))
+			);
 			for (const payloadMetric of payload.metrics) {
 				if (payloadMetric.name) {
 					let metric = this.getMetric(payloadMetric.name);
@@ -63,7 +76,7 @@ class SparkplugBasicMetrics extends SparkplugBasic {
 					}
 					history.log(metric).catch((error) => {
 						if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
-							console.log('Unique constraint violation:', error.meta?.target);
+							log.debug(`Unique constraint violation: ${error.meta?.target}`);
 						} else {
 							// Handle or throw any other errors
 							throw error;

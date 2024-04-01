@@ -55,7 +55,7 @@ export class History {
 					timestamp: metric.updatedOn,
 					[valueColumn]: value
 				}
-			});
+			})
 		} else {
 			log.info(
 				`Received metric with invalid value (${JSON.stringify(value, null, 2)}) or value type (${metric.type}), not logging.`
