@@ -103,25 +103,24 @@ export class History {
 			(m) => `('${m.groupId}', '${m.nodeId}', '${m.deviceId}', '${m.metricId}')`
 		);
 		let selector: string;
-		console.log('interval', interval);
 		if (!raw) {
-			selector = `(SELECT time_bucket('${interval || autoInterval}', "timestamp") AS "time",
-        CONCAT("groupId",'/',"nodeId",'/',"deviceId",'/',"metricId") as "name",
-        AVG("floatValue") as "value"`;
-		} else {
-			selector = `(SELECT "timestamp" AS "time",
-        CONCAT("groupId",'/',"nodeId",'/',"deviceId",'/',"metricId") as "name",
-        AVG("floatValue") as "value"`;
-		}
-		//@ts-ignore next-line
-		const history = await this.prisma.$queryRawUnsafe<MetricHistoryAggregate[]>(
-			`SELECT "time", json_object_agg("name","value") AS data FROM
-      ${selector}
-      FROM "History"
-      WHERE ("groupId", "nodeId", "deviceId", "metricId") in (${metricStrings}) AND "timestamp" BETWEEN $1 AND $2
-      GROUP BY "time", "name"
-      ORDER BY "time" ASC) AS bucketed
-      GROUP BY "time"
+				selector = `(SELECT time_bucket('${interval || autoInterval}', "timestamp") AS "time",
+					CONCAT("groupId",'/',"nodeId",'/',"deviceId",'/',"metricId") as "name",
+					AVG("floatValue") as "value"`;
+			} else {
+				selector = `(SELECT "timestamp" AS "time",
+					CONCAT("groupId",'/',"nodeId",'/',"deviceId",'/',"metricId") as "name",
+					AVG("floatValue") as "value"`;
+			}
+			//@ts-ignore next-line
+			const history = await this.prisma.$queryRawUnsafe<MetricHistoryAggregate[]>(
+				`SELECT "time", json_object_agg("name","value") AS data FROM
+				${selector}
+				FROM "History"
+				WHERE ("groupId", "nodeId", "deviceId", "metricId") in (${metricStrings}) AND "timestamp" BETWEEN $1 AND $2
+				GROUP BY "time", "name"
+				ORDER BY "time" ASC) AS bucketed
+				GROUP BY "time"
     `,
 			new Date(start),
 			new Date(end)

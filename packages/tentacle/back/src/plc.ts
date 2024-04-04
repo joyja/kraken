@@ -8,9 +8,10 @@ import chokidar from 'chokidar'
 import { differenceInMilliseconds, getUnixTime } from 'date-fns'
 import ts from 'typescript'
 import { EventTracker } from './eventTracker'
-import { type MemoryUsage } from './generated/graphql'
+import { type MemoryUsage, type VariableValue } from './generated/graphql'
 import { writeHeapSnapshot } from 'v8'
 import { pubsub } from './pubsub'
+import { getVariableValues } from 'graphql'
 
 function getDatatype (value:any):string {
   if (typeof value === 'boolean') {
@@ -346,7 +347,7 @@ export class PLC {
                 metrics,
                 taskKey,
               }) => {
-                const variableChanges = []
+                const variableChanges:VariableValue[] = []
                 const intervalStop = intervalStart !== undefined
                   ? process.hrtime(intervalStart)
                   : [0,0]
@@ -494,7 +495,7 @@ export class PLC {
                   console.log(error)
                 }
                 intervalStart = process.hrtime()
-                // pubsub.publish('values', variableChanges)
+                pubsub.publish('values', variableChanges)
               })({
                 global,
                 persistence,
