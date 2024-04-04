@@ -16,7 +16,7 @@ async function getVariables () {
     .catch(error => {
       console.log(error)
     })
-  variables = await sendRequest({
+  const variables = await sendRequest({
     query: query.variables
   })
     .then(res => {
@@ -66,7 +66,10 @@ async function getVariables () {
     .catch(error => {
       console.log(error)
     })
+  return variables
 }
+
+const variablesPromise = getVariables()
 
 declare global {
   //eslint-disable-next-line no-var
@@ -147,6 +150,7 @@ getVariables()
 generateSources()
 
 export const handle:Handle = async ({ event, resolve }) => {
+  variables = await variablesPromise
   event.locals.variables = variables
   event.locals.metrics = taskMetrics
   event.locals.changes = changes
