@@ -4,6 +4,10 @@ import type { Handle } from '@sveltejs/kit';
 import EventSource from 'eventsource';
 import { env } from '$env/dynamic/private';
 
+let variables:{name:string, value:string}[] = []
+let taskMetrics:{task:string, functionExecutionTime:number, intervalExecutionTime:number, totalScanTime:number}[] = []
+let changes:{timestamp:string, path:string, event:string}[] = []
+
 async function getVariables () {
   const varValues = await sendRequest({
     query: query.values
@@ -12,7 +16,7 @@ async function getVariables () {
     .catch(error => {
       console.log(error)
     })
-  const variables = await sendRequest({
+  variables = await sendRequest({
     query: query.variables
   })
     .then(res => {
@@ -62,19 +66,12 @@ async function getVariables () {
     .catch(error => {
       console.log(error)
     })
-  return variables
 }
-
-const variablesPromise = getVariables()
 
 declare global {
   //eslint-disable-next-line no-var
   var sources: EventSource[]
 }
-
-let variables:{name:string, value:string}[] = []
-let taskMetrics:{task:string, functionExecutionTime:number, intervalExecutionTime:number, totalScanTime:number}[] = []
-let changes:{timestamp:string, path:string, event:string}[] = []
 
 function generateSources () {
   const protocol = env.TENTACLE_PROTOCOL || 'http'
@@ -146,10 +143,10 @@ if (globalThis.sources && globalThis.sources.length > 0) {
   globalThis.sources = []
 }
 
+getVariables()
 generateSources()
 
 export const handle:Handle = async ({ event, resolve }) => {
-  variables = await variablesPromise
   event.locals.variables = variables
   event.locals.metrics = taskMetrics
   event.locals.changes = changes
