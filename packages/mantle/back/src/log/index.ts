@@ -1,3 +1,5 @@
+import chalk from 'chalk'
+
 enum LogLevel {
 	debug = 'DEBUG',
 	info = 'INFO',
@@ -5,9 +7,9 @@ enum LogLevel {
 	error = 'ERROR'
 }
 
-type ErrorWithMessage = {
-	message: string;
-};
+interface ErrorWithMessage {
+	message: string
+}
 
 function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
 	return (
@@ -15,53 +17,79 @@ function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
 		error !== null &&
 		'message' in error &&
 		typeof (error as Record<string, unknown>).message === 'string'
-	);
+	)
 }
 
 function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
-	if (isErrorWithMessage(maybeError)) return maybeError;
+	if (isErrorWithMessage(maybeError)) return maybeError
 
 	try {
-		return new Error(JSON.stringify(maybeError));
+		return new Error(JSON.stringify(maybeError))
 	} catch {
 		// fallback in case there's an error stringifying the maybeError
 		// like with circular references for example.
-		return new Error(String(maybeError));
+		return new Error(String(maybeError))
 	}
 }
 
+function joinWithConjunction(arr: string[], conjunction: 'and' | 'or' = 'or'): string {
+	if (arr.length === 0) return ''
+	if (arr.length === 1) return arr[0]
+
+	// Join all elements except the last with a comma and space
+	const allButLast = arr.slice(0, -1).join(', ')
+
+	// Add the specified conjunction ('or' or 'and') before the last element
+	return `${allButLast} ${conjunction} ${arr[arr.length - 1]}`
+}
+
 export class Log {
-	public level: LogLevel;
-	public context?: string;
+	public level: LogLevel
+	public context?: string
 	constructor(context?: string) {
-		this.level = process.env.SQUID_LOGLEVEL
-			? (process.env.SQUID_LOGLEVEL as LogLevel)
-			: process.env.NODE_ENV === 'development'
-				? LogLevel.warn
-				: LogLevel.warn;
-		this.context = context;
+		this.context = context
+		const { MANTLE_LOG_LEVEL } = process.env
+		const isValidLogLevel = Object.values(LogLevel).includes(MANTLE_LOG_LEVEL as LogLevel)
+
+		if (isValidLogLevel) {
+			this.level = MANTLE_LOG_LEVEL as LogLevel
+		} else {
+			this.level = process.env.NODE_ENV === 'development' ? LogLevel.debug : LogLevel.info
+			console.log(
+				chalk.yellow(
+					`While creating log for context ${context}, 
+					The MANTLE_LOG_LEVEL environment variable value (${MANTLE_LOG_LEVEL}) isn't valid, 
+					it should be ${joinWithConjunction(Object.values(LogLevel))}. Defaulting to ${this.level}`
+				)
+			)
+		}
 	}
-	debug(message: string) {
+
+	debug(message: string):void {
 		if (this.level === LogLevel.debug) {
-			console.debug(`${this.context ? `${this.context}: ` : ``}${message}`);
+			console.debug(`${chalk.bgCyan(`${this.context}\t`)} ${chalk.cyan(message)}`)
 		}
 	}
-	info(message: string) {
+
+	info(message: string):void {
 		if ([LogLevel.info, LogLevel.debug].includes(this.level)) {
-			console.info(`${this.context ? `${this.context}: ` : ``}${message}`);
+			console.info(`${chalk.bgWhite(`${this.context}\t`)} ${chalk.white(message)}`)
 		}
 	}
-	warn(message: string) {
+
+	warn(message: string):void {
 		if ([LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
-			console.warn(`${this.context ? `${this.context}: ` : ``}${message}`);
+			console.info(`${chalk.bgYellow(`${this.context}\t`)} ${chalk.yellow(message)}`)
 		}
 	}
-	error(message: string) {
+
+	error(message: string):void {
 		if ([LogLevel.error, LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
-			console.error(`${this.context ? `${this.context}: ` : ``}${message}`);
+			console.info(`${chalk.bgRed(`${this.context}\t`)} ${chalk.red(message)}`)
 		}
 	}
-	getErrorMessage(error: unknown) {
-		return toErrorWithMessage(error).message;
+
+	getErrorMessage(error: unknown):ErrorWithMessage['message'] {
+		return toErrorWithMessage(error).message
 	}
 }

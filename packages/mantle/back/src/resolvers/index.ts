@@ -1,6 +1,6 @@
-export * as Query from './Query';
-export * as Mutation from './Mutation';
-export * as Subscription from './Subscription';
-export * as SparkplugMetric from './SparkplugMetric';
-export * as RosterEntry from './RosterEntry';
-export * as Alarm from './Alarm';
+export * as Query from './Query/index.js'
+export * as Mutation from './Mutation/index.js'
+export * as Subscription from './Subscription/index.js'
+export * as SparkplugMetric from './SparkplugMetric.js'
+export * as RosterEntry from './RosterEntry.js'
+export * as Alarm from './Alarm.js'

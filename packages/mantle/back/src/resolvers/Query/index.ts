@@ -1,40 +1,40 @@
-import { prisma } from '../../prisma';
-import { spdata } from '../../mqtt';
-import { alarmHandler } from '../../alarm';
-import { Alarm, HistoryEntry } from '../types';
-import { rosterHandler } from '../../roster';
-import { userHandler } from '../../user';
-import { History } from '../../history';
+import { prisma } from '../../prisma.js'
+import { type SparkplugGroup, spdata } from '../../mqtt.js'
+import { alarmHandler } from '../../alarm.js'
+import { type Alarm, type HistoryEntry, type User, type Roster, type MetricHistoryEntry } from '../types.js'
+import { rosterHandler } from '../../roster.js'
+import { userHandler } from '../../user.js'
+import { History } from '../../history.js'
 
-export function info() {
-	return 'Sparkplug B Historian and Alarm Notifier';
+export function info(): string {
+	return 'Sparkplug B Historian and Alarm Notifier'
 }
 
-export function groups(_root: unknown, args: { historyDuration: number }) {
-	return spdata.groups;
+export function groups(): SparkplugGroup[] {
+	return spdata.groups
 }
 
-export function alarms(): Promise<Alarm[]> {
-	return alarmHandler.getAll();
+export async function alarms(): Promise<Alarm[]> {
+	return await alarmHandler.getAll()
 }
 
-export function users() {
-	return userHandler.getAll();
+export async function users(): Promise<User[]> {
+	return await userHandler.getAll()
 }
 
-export function rosters() {
-	return rosterHandler.getAll();
+export async function rosters(): Promise<Roster[]> {
+	return await rosterHandler.getAll()
 }
 
-export async function history(_root: unknown, args: { input: HistoryEntry }) {
-	const history = new History(prisma);
-	const { metrics, start, end, interval, samples, raw } = args.input;
-	return history.getHistoryBucketed({
+export async function history(_root: unknown, args: { input: HistoryEntry }):Promise<MetricHistoryEntry[]> {
+	const history = new History(prisma)
+	const { metrics, start, end, interval, samples, raw } = args.input
+	return await history.getHistoryBucketed({
 		metrics,
 		start,
 		end,
 		interval,
 		samples,
 		raw
-	});
+	})
 }

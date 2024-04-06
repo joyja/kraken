@@ -397,5 +397,5 @@ type Mutation {
 }
 
 type Subscription {
-	metricUpdate: [SparkplugMetricUpdate!]!
+	metricUpdate(paths: [String!]): [SparkplugMetricUpdate!]!
 }

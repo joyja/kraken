@@ -1,10 +1,10 @@
-import { RosterEntry } from '@prisma/client';
-import { prisma } from '../prisma';
+import { type User, type RosterEntry, type Roster } from '@prisma/client'
+import { prisma } from '../prisma.js'
 
-export function user(parent: RosterEntry) {
-	return prisma.user.findUnique({ where: { id: parent.userId } });
+export async function user(parent: RosterEntry):Promise<User | null> {
+	return await prisma.user.findUnique({ where: { id: parent.userId } })
 }
 
-export function roster(parent: RosterEntry) {
-	return prisma.roster.findUnique({ where: { id: parent.rosterId } });
+export async function roster(parent: RosterEntry):Promise<Roster | null> {
+	return await prisma.roster.findUnique({ where: { id: parent.rosterId } })
 }

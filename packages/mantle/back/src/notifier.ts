@@ -1,18 +1,18 @@
-import { Roster, RosterEntry, User } from '@prisma/client';
-import { alarmHandler } from './alarm';
-import { prisma } from './prisma';
-import { rosterHandler } from './roster';
+import { type Roster, type RosterEntry, type User } from '@prisma/client'
+import { alarmHandler } from './alarm.js'
+import { prisma } from './prisma.js'
+import { rosterHandler } from './roster.js'
 
 export async function voiceCall({
 	message,
 	to,
 	rosterId
 }: {
-	message: string;
-	to: string;
-	rosterId: string;
-}) {
-	const seagullUrl = process.env.MANTLE_SEAGULL_URL;
+	message: string
+	to: string
+	rosterId: string
+}): Promise<void> {
+	const seagullUrl = process.env.MANTLE_SEAGULL_URL
 	const res = await fetch(`${seagullUrl}/make-call`, {
 		method: 'POST',
 		headers: {
@@ -21,13 +21,13 @@ export async function voiceCall({
 		body: JSON.stringify({
 			to,
 			message,
-			mantleId: process.env.MANTLE_ID || 'dev',
+			mantleId: process.env.MANTLE_ID !== null && process.env.MANTLE_ID !== undefined || 'dev',
 			rosterId
 		})
-	});
+	})
 	if (!res.ok) {
-		const errorText = await res.text();
-		console.error('Error from server:', errorText);
+		const errorText = await res.text()
+		console.error('Error from server:', errorText)
 		// Handle error, maybe show a notification to the user
 	}
 }
@@ -37,11 +37,11 @@ export async function sendSMS({
 	to,
 	rosterId
 }: {
-	message: string;
-	to: string;
-	rosterId: string;
-}) {
-	const seagullUrl = process.env.MANTLE_SEAGULL_URL;
+	message: string
+	to: string
+	rosterId: string
+}): Promise<void> {
+	const seagullUrl = process.env.MANTLE_SEAGULL_URL
 	const res = await fetch(`${seagullUrl}/send-sms`, {
 		method: 'POST',
 		headers: {
@@ -50,27 +50,28 @@ export async function sendSMS({
 		body: JSON.stringify({
 			to,
 			message,
-			mantleId: process.env.MANTLE_ID || 'dev',
+			mantleId: process.env.MANTLE_ID !== null && process.env.MANTLE_ID !== undefined || 'dev',
 			rosterId
 		})
-	});
+	})
 	if (!res.ok) {
-		const errorText = await res.text();
-		console.error('Error from server:', errorText);
+		const errorText = await res.text()
+		console.error('Error from server:', errorText)
 		// Handle error, maybe show a notification to the user
 	}
 }
 
 class Notifier {
-	public rosterId: string;
-	private entry = 0;
-	private roster?: Roster & { users: Partial<RosterEntry & { user: User }>[] };
-	private terminated = false;
+	public rosterId: string
+	private entry = 0
+	private roster?: Roster & { users: Array<Partial<RosterEntry & { user: User }>> }
+	private terminated = false
 	constructor(rosterId: string) {
-		this.rosterId = rosterId;
-		this.start();
+		this.rosterId = rosterId
+		void this.start()
 	}
-	async start() {
+
+	async start(): Promise<void> {
 		const roster = await prisma.roster.findUnique({
 			where: { id: this.rosterId },
 			include: {
@@ -80,84 +81,91 @@ class Notifier {
 					}
 				}
 			}
-		});
-		if (roster) {
-			this.roster = roster;
+		})
+		if (roster !== null && roster !== undefined) {
+			this.roster = roster
 		} else {
-			throw Error(`Roster with id ${this.rosterId} not found`);
+			throw Error(`Roster with id ${this.rosterId} not found`)
 		}
-		this.next();
+		void this.next()
 	}
-	async notify() {
-		const entry = this.roster!.users[this.entry];
-		const alarms = await alarmHandler.getUnack();
+
+	async notify():Promise<void> {
+		const entry = this.roster?.users[this.entry]
+		const alarms = await alarmHandler.getUnack()
 		const message = alarms.reduce((acc, alarm) => {
-			return `${acc} ${alarm.name} is ${alarm.active ? 'active' : 'cleared'} and ${alarm.acknowledged ? 'acknowledged' : 'unacknowledged'}.`;
-		}, '');
-		if (entry) {
-			const { user } = entry;
-			if (user) {
-				if (entry.sms && user.phone) {
+			return `${acc} ${alarm.name} is ${alarm.active ? 'active' : 'cleared'} and ${alarm.acknowledged ? 'acknowledged' : 'unacknowledged'}.`
+		}, '')
+		if (entry !== undefined && entry !== null) {
+			const { user } = entry
+			if (user !== undefined && user !== null) {
+				if (entry.sms !== undefined && entry.sms && user.phone !== null && user.phone !== undefined) {
 					await sendSMS({
-						message: message,
+						message,
 						to: user.phone,
 						rosterId: this.rosterId
-					});
+					})
 				}
-				if (entry.phone && user.phone) {
+				if (entry.phone !== undefined && user.phone !== null) {
 					await voiceCall({
 						message,
 						to: user.phone,
 						rosterId: this.rosterId
-					});
+					})
 				}
-				if (entry.email && user.email) {
+				if (entry.email !== null && entry.email !== undefined && user.email !== undefined) {
 					// TODO
 				}
 			}
 		}
-		setTimeout(async () => {
+		setTimeout(() => {
 			if (!this.terminated) {
-				await this.next();
+				void this.next()
 			}
-		}, this.roster!.timeBetweenRetries);
+		}, this.roster?.timeBetweenRetries != null ? this.roster.timeBetweenRetries : 10000)
 	}
-	async next() {
-		if (this.entry >= this.roster!.users.length) {
-			this.entry = 0;
+
+	async next(): Promise<void> {
+		if (this.roster != null && this.entry >= this.roster?.users.length) {
+			this.entry = 0
 		}
 
-		await this.notify();
+		await this.notify()
 
-		this.entry++;
+		this.entry++
 	}
-	terminate() {
-		this.terminated = true;
+
+	terminate():void {
+		this.terminated = true
 	}
 }
 
 export class NotificationHandler {
-	private interval: NodeJS.Timeout;
-	private notifiers: Notifier[] = [];
+	private readonly interval: NodeJS.Timeout
+	private notifiers: Notifier[] = []
 	constructor() {
-		this.interval = setInterval(async () => {
-			const active = await rosterHandler.getActiveRosters();
-			active.forEach((roster) => {
-				const notifier = this.notifiers.find((notifier) => notifier.rosterId === roster!.id);
-				if (!notifier) {
-					this.notifiers.push(new Notifier(roster!.id));
-				}
-			});
-			this.notifiers.forEach((notifier) => {
-				const roster = active.find((roster) => roster!.id === notifier.rosterId);
-				if (!roster) {
-					notifier.terminate();
-				}
-			});
-			this.notifiers = this.notifiers.filter((notifier) => {
-				const roster = active.find((roster) => roster!.id === notifier.rosterId);
-				return roster !== undefined;
-			});
-		}, 2500);
+		this.interval = setInterval(() => {
+			void (async () => {
+				const active = await rosterHandler.getActiveRosters()
+				active.forEach((roster) => {
+					const notifier = this.notifiers.find((notifier) => notifier.rosterId === roster?.id)
+					if (notifier == null && roster?.id != null) {
+						this.notifiers.push(new Notifier(roster.id))
+					}
+				})
+				this.notifiers.forEach((notifier) => {
+					const roster = active.find((roster) => roster?.id === notifier.rosterId)
+					if (roster == null) {
+						notifier.terminate()
+					}
+				})
+				this.notifiers = this.notifiers.filter((notifier) => {
+					const roster = active.find((roster) => roster?.id === notifier.rosterId)
+					return roster !== undefined
+				})
+			})()
+		}, 2500)
 	}
 }
+
+export const notificationHandler = new NotificationHandler()

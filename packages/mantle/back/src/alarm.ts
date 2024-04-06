@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { prisma } from './prisma.js'
 import {
 	AlarmCondition,
 	AlarmConditionMode,
@@ -6,122 +6,122 @@ import {
 	UpdateAlarm as ResolverUpdateAlarm,
 	Alarm as ResolverAlarm,
 	Scalars
-} from './resolvers/types';
-import { Alarm as PrismaAlarm } from '@prisma/client';
-import { Log } from './log';
-import { SparkplugMetric } from './mqtt';
+} from './resolvers/types.js'
+import { Alarm as PrismaAlarm } from '@prisma/client'
+import { Log } from './log/index.js'
+import { SparkplugMetric } from './mqtt.js'
 
-const log = new Log('Alarm');
+const log = new Log('alarm')
 
 function parseAlarmCondition(data: any): AlarmCondition | null {
 	if (!data) {
-		return null;
+		return null
 	}
 
 	const isBooleanOutput = (value: any): value is Scalars['Boolean']['output'] =>
-		typeof value === 'boolean';
+		typeof value === 'boolean'
 
 	const isFloatOutput = (value: any): value is Scalars['Float']['output'] =>
-		typeof value === 'number';
+		typeof value === 'number'
 
 	const isValidMode = (value: any): value is AlarmConditionMode =>
-		Object.values(AlarmConditionMode).includes(value as AlarmConditionMode);
+		Object.values(AlarmConditionMode).includes(value as AlarmConditionMode)
 
 	if (isValidMode(data.mode)) {
 		const parsed: AlarmCondition = {
 			__typename: data.__typename === 'AlarmCondition' ? data.__typename : undefined,
 			mode: data.mode
-		};
+		}
 
 		if (data.inclusive !== undefined && isBooleanOutput(data.inclusive)) {
-			parsed.inclusive = data.inclusive;
+			parsed.inclusive = data.inclusive
 		}
 
 		if (data.inclusiveHigh !== undefined && isBooleanOutput(data.inclusiveHigh)) {
-			parsed.inclusiveHigh = data.inclusiveHigh;
+			parsed.inclusiveHigh = data.inclusiveHigh
 		}
 
 		if (data.inclusiveLow !== undefined && isBooleanOutput(data.inclusiveLow)) {
-			parsed.inclusiveLow = data.inclusiveLow;
+			parsed.inclusiveLow = data.inclusiveLow
 		}
 
 		if (data.setpoint !== undefined && isFloatOutput(data.setpoint)) {
-			parsed.setpoint = data.setpoint;
+			parsed.setpoint = data.setpoint
 		}
 
 		if (data.setpointHigh !== undefined && isFloatOutput(data.setpointHigh)) {
-			parsed.setpointHigh = data.setpointHigh;
+			parsed.setpointHigh = data.setpointHigh
 		}
 
 		if (data.setpointLow !== undefined && isFloatOutput(data.setpointLow)) {
-			parsed.setpointLow = data.setpointLow;
+			parsed.setpointLow = data.setpointLow
 		}
 
-		return parsed;
+		return parsed
 	}
 
-	return null;
+	return null
 }
 
 function prismaToResolver(prismaAlarm: PrismaAlarm): ResolverAlarm {
-	const condition = parseAlarmCondition(prismaAlarm.condition);
+	const condition = parseAlarmCondition(prismaAlarm.condition)
 	if (condition) {
 		// @ts-ignore
 		return {
 			...prismaAlarm,
 			condition
-		};
+		}
 	} else {
-		throw Error(`Failed to parse condition for alarm ${prismaAlarm.id}`);
+		throw Error(`Failed to parse condition for alarm ${prismaAlarm.id}`)
 	}
 }
 
 function evaluate(alarm: PrismaAlarm, metric: SparkplugMetric) {
-	const condition = parseAlarmCondition(alarm.condition);
-	const value = metric.value?.toString() ? parseFloat(metric.value?.toString()) : metric.value;
+	const condition = parseAlarmCondition(alarm.condition)
+	const value = metric.value?.toString() ? parseFloat(metric.value?.toString()) : metric.value
 	if (condition) {
 		if (condition.mode === 'EQUAL') {
-			return value === condition.setpoint;
+			return value === condition.setpoint
 		} else if (condition.mode === 'NOT_EQUAL') {
-			return value !== condition.setpoint;
+			return value !== condition.setpoint
 		} else if (condition.mode === 'ABOVE_SETPOINT') {
 			if (typeof value === 'number') {
-				return condition.inclusive ? value >= condition.setpoint! : value > condition.setpoint!;
+				return condition.inclusive ? value >= condition.setpoint! : value > condition.setpoint!
 			} else {
-				throw Error('Cannot evaluate Above Setpoint condition on non-numeric value');
+				throw Error('Cannot evaluate Above Setpoint condition on non-numeric value')
 			}
 		} else if (condition.mode === 'BELOW_SETPOINT') {
 			if (typeof value === 'number') {
-				return condition.inclusive ? value <= condition.setpoint! : value < condition.setpoint!;
+				return condition.inclusive ? value <= condition.setpoint! : value < condition.setpoint!
 			} else {
-				throw Error('Cannot evaluate Below Setpoint condition on non-numeric value');
+				throw Error('Cannot evaluate Below Setpoint condition on non-numeric value')
 			}
 		} else if (condition.mode === 'BETWEEN_SETPOINTS') {
 			if (typeof value === 'number') {
 				const low = condition.inclusiveLow
 					? value <= condition.setpointLow!
-					: value < condition.setpointLow!;
+					: value < condition.setpointLow!
 				const high = condition.inclusiveHigh
 					? value >= condition.setpointHigh!
-					: value > condition.setpointHigh!;
-				return !low && !high;
+					: value > condition.setpointHigh!
+				return !low && !high
 			} else {
-				throw Error('Cannot evaluate Between Setpoints condition on non-numeric value');
+				throw Error('Cannot evaluate Between Setpoints condition on non-numeric value')
 			}
 		} else if (condition.mode === 'OUTSIDE_SETPOINTS') {
 			if (typeof value === 'number') {
 				const low = condition.inclusiveLow
 					? value <= condition.setpointLow!
-					: value < condition.setpointLow!;
+					: value < condition.setpointLow!
 				const high = condition.inclusiveHigh
 					? value >= condition.setpointHigh!
-					: value > condition.setpointHigh!;
-				return low || high;
+					: value > condition.setpointHigh!
+				return low || high
 			} else {
-				throw Error('Cannot evaluate Outside Setpoints condition on non-numeric value');
+				throw Error('Cannot evaluate Outside Setpoints condition on non-numeric value')
 			}
 		} else {
-			throw Error('Unknown condition mode');
+			throw Error('Unknown condition mode')
 		}
 	}
 }
@@ -134,64 +134,64 @@ async function historize(alarm: PrismaAlarm, active: boolean) {
 			active,
 			acknowledged: alarm.acknowledged
 		}
-	});
+	})
 }
 
 class AlarmHandler {
 	create({ input }: { input: ResolverCreateAlarm }): Promise<ResolverAlarm> {
-		return prisma.alarm.create({ data: input }).then(prismaToResolver);
+		return prisma.alarm.create({ data: input }).then(prismaToResolver)
 	}
 	update({ input }: { input: ResolverUpdateAlarm }): Promise<ResolverAlarm> {
-		const { id, ...updateFields }: { id: string; [key: string]: any } = input;
-		const data: { [key: string]: any } = {};
+		const { id, ...updateFields }: { id: string; [key: string]: any } = input
+		const data: { [key: string]: any } = {}
 		// Filter out null values
 		Object.keys(updateFields).forEach((key: string) => {
-			if (updateFields[key]) data[key] = updateFields[key];
-		});
-		return prisma.alarm.update({ where: { id }, data }).then(prismaToResolver);
+			if (updateFields[key]) data[key] = updateFields[key]
+		})
+		return prisma.alarm.update({ where: { id }, data }).then(prismaToResolver)
 	}
 	delete(id: string): Promise<ResolverAlarm> {
-		return prisma.alarm.delete({ where: { id } }).then(prismaToResolver);
+		return prisma.alarm.delete({ where: { id } }).then(prismaToResolver)
 	}
 	getAll(): Promise<ResolverAlarm[]> {
 		return prisma.alarm
 			.findMany()
-			.then((alarms) => alarms.map(prismaToResolver).sort((a, b) => a.name.localeCompare(b.name)));
+			.then((alarms) => alarms.map(prismaToResolver).sort((a, b) => a.name.localeCompare(b.name)))
 	}
 	getActive(): Promise<ResolverAlarm[]> {
 		return prisma.alarm
 			.findMany({ where: { active: true }, include: { roster: true } })
-			.then((alarms) => alarms.map(prismaToResolver));
+			.then((alarms) => alarms.map(prismaToResolver))
 	}
 	getUnack(): Promise<ResolverAlarm[]> {
 		return prisma.alarm
 			.findMany({ where: { acknowledged: false }, include: { roster: true } })
-			.then((alarms) => alarms.map(prismaToResolver));
+			.then((alarms) => alarms.map(prismaToResolver))
 	}
 	getOne(id: string): Promise<ResolverAlarm | void> {
 		return prisma.alarm.findUnique({ where: { id } }).then((alarm) => {
 			if (alarm) {
-				prismaToResolver(alarm);
+				prismaToResolver(alarm)
 			} else {
-				throw Error(`Alarm with id ${id} not found`);
+				throw Error(`Alarm with id ${id} not found`)
 			}
-		});
+		})
 	}
 	async acknowledge(id: string): Promise<ResolverAlarm> {
-		const alarm = await prisma.alarm.findUnique({ where: { id } });
+		const alarm = await prisma.alarm.findUnique({ where: { id } })
 		if (alarm) {
 			if (!alarm.acknowledged) {
 				const updated = await prisma.alarm.update({
 					where: { id: alarm.id },
 					data: { acknowledged: true }
-				});
-				await historize(updated, true);
-				return prismaToResolver(updated);
+				})
+				await historize(updated, true)
+				return prismaToResolver(updated)
 			} else {
-				return prismaToResolver(alarm);
+				return prismaToResolver(alarm)
 			}
 		} else {
-			throw Error(`Alarm with id ${id} not found`);
+			throw Error(`Alarm with id ${id} not found`)
 		}
 	}
 	async evaluateMetricAlarms(metric: SparkplugMetric) {
@@ -202,29 +202,29 @@ class AlarmHandler {
 				deviceId: metric.deviceId,
 				metricId: metric.id
 			}
-		});
+		})
 		await Promise.all(
 			alarms.map(async (alarm) => {
-				const result = evaluate(alarm, metric);
+				const result = evaluate(alarm, metric)
 				if (result && !alarm.active) {
-					log.info(`Alarm ${alarm.id}:${alarm.name} active`);
+					log.info(`Alarm ${alarm.id}:${alarm.name} active`)
 					await prisma.alarm.update({
 						where: { id: alarm.id },
 						data: { active: true, acknowledged: false }
-					});
-					historize(alarm, true);
+					})
+					historize(alarm, true)
 				} else if (!result && alarm.active) {
-					log.info(`Alarm ${alarm.id}:${alarm.name} cleared`);
+					log.info(`Alarm ${alarm.id}:${alarm.name} cleared`)
 					await prisma.alarm.update({
 						where: { id: alarm.id },
 						data: { active: false }
-					});
-					historize(alarm, false);
+					})
+					historize(alarm, false)
 				}
 			})
-		);
-		return alarms;
+		)
+		return alarms
 	}
 }
 
-export const alarmHandler = new AlarmHandler();
+export const alarmHandler = new AlarmHandler()
