@@ -2,9 +2,9 @@
   "name": "seagull",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "exports": "./index.js",
   "scripts": {
-    "dev": "SEAGULL_LOGLEVEL=DEBUG NODE_ENV=development env $(cat .env | grep -v \"#\" | xargs) ts-node-dev --exit-child --respawn index.ts",
+    "dev": "tsx watch index.ts --env-file=.env",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "build": "tsc"
@@ -18,15 +18,14 @@
     "express": "^4.18.2",
     "twilio": "^4.18.1"
   },
+  "type": "module",
   "devDependencies": {
     "@types/body-parser": "^1.19.3",
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.19",
     "@types/node": "^20.8.4",
     "@types/twilio": "^3.19.3",
-    "eslint": "^8.51.0",
-    "eslint-config-prettier": "^9.0.0",
-    "prettier": "^3.0.3",
-    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.7.2",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6"
   }

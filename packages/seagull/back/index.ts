@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express'
 import twilio, { twiml } from 'twilio'
-const cors = require('cors');
-import * as bodyParser from 'body-parser';
+import cors from 'cors';
 
 const app = express()
 
@@ -11,7 +10,7 @@ app.use(cors());
 app.use(express.json())
 
 // For parsing application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 const VoiceResponse = twilio.twiml.VoiceResponse
 

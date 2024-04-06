@@ -21,7 +21,7 @@ export async function voiceCall({
 		body: JSON.stringify({
 			to,
 			message,
-			mantleId: process.env.MANTLE_ID !== null && process.env.MANTLE_ID !== undefined || 'dev',
+			mantleId: process.env.MANTLE_ID ?? 'dev',
 			rosterId
 		})
 	})
@@ -50,7 +50,7 @@ export async function sendSMS({
 		body: JSON.stringify({
 			to,
 			message,
-			mantleId: process.env.MANTLE_ID !== null && process.env.MANTLE_ID !== undefined || 'dev',
+			mantleId: process.env.MANTLE_ID !== null ?? 'dev',
 			rosterId
 		})
 	})
