@@ -51,7 +51,7 @@ enum AlarmConditionMode {
   ABOVE_SETPOINT
   BETWEEN_SETPOINTS
   OUTSIDE_SETPOINTS
-  NO_UPDATES
+  NO_UPDATE
 }
 
 enum AlarmPriority {

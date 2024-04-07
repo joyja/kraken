@@ -1,4 +1,7 @@
 import { prisma } from './prisma.js'
+import { type Prisma } from '@prisma/client'
+import { spdata } from './mqtt.js'
+
 import {
 	AlarmCondition,
 	AlarmConditionMode,
@@ -10,8 +13,11 @@ import {
 import { Alarm as PrismaAlarm } from '@prisma/client'
 import { Log } from './log/index.js'
 import { SparkplugMetric } from './mqtt.js'
+import { differenceInMilliseconds } from 'date-fns'
 
 const log = new Log('alarm')
+
+type ArgumentType<T> = T extends (arg: infer U) => any ? U : never;
 
 function parseAlarmCondition(data: any): AlarmCondition | null {
 	if (!data) {
@@ -76,11 +82,11 @@ function prismaToResolver(prismaAlarm: PrismaAlarm): ResolverAlarm {
 	}
 }
 
-function evaluate(alarm: PrismaAlarm, metric: SparkplugMetric) {
+function evaluate(alarm: PrismaAlarm, metric?: SparkplugMetric) {
 	const condition = parseAlarmCondition(alarm.condition)
-	const value = metric.value?.toString() ? parseFloat(metric.value?.toString()) : metric.value
+	const value = metric?.value?.toString() ? parseFloat(metric.value?.toString()) : metric?.value
 	if (condition) {
-		if (condition.mode === 'EQUAL') {
+		if (condition.mode === 'EQUAL' && value) {
 			return value === condition.setpoint
 		} else if (condition.mode === 'NOT_EQUAL') {
 			return value !== condition.setpoint
@@ -96,7 +102,7 @@ function evaluate(alarm: PrismaAlarm, metric: SparkplugMetric) {
 			} else {
 				throw Error('Cannot evaluate Below Setpoint condition on non-numeric value')
 			}
-		} else if (condition.mode === 'BETWEEN_SETPOINTS') {
+		} else if (condition.mode === 'BETWEEN_SETPOINTS' && value) {
 			if (typeof value === 'number') {
 				const low = condition.inclusiveLow
 					? value <= condition.setpointLow!
@@ -108,7 +114,7 @@ function evaluate(alarm: PrismaAlarm, metric: SparkplugMetric) {
 			} else {
 				throw Error('Cannot evaluate Between Setpoints condition on non-numeric value')
 			}
-		} else if (condition.mode === 'OUTSIDE_SETPOINTS') {
+		} else if (condition.mode === 'OUTSIDE_SETPOINTS' && value) {
 			if (typeof value === 'number') {
 				const low = condition.inclusiveLow
 					? value <= condition.setpointLow!
@@ -120,6 +126,10 @@ function evaluate(alarm: PrismaAlarm, metric: SparkplugMetric) {
 			} else {
 				throw Error('Cannot evaluate Outside Setpoints condition on non-numeric value')
 			}
+		} else if (condition.mode === 'NO_UPDATE') {
+			log.debug(`${'NO UPDATE evaluated to:'}${metric?.updatedOn ? differenceInMilliseconds(new Date(), metric?.updatedOn) : false}`)
+			log.debug(`Setpoint is ${condition.setpoint}`)
+			return metric?.updatedOn && condition.setpoint ? differenceInMilliseconds(new Date(), metric?.updatedOn) > condition.setpoint : false
 		} else {
 			throw Error('Unknown condition mode')
 		}
@@ -138,6 +148,13 @@ async function historize(alarm: PrismaAlarm, active: boolean) {
 }
 
 class AlarmHandler {
+	NoUpdateAlarmsInterval: ReturnType<typeof setInterval>
+	constructor() {
+		this.NoUpdateAlarmsInterval = setInterval(() => {
+			const condition:AlarmConditionMode = AlarmConditionMode.NoUpdate
+			this.evaluateMetricAlarms({condition})
+		}, 1000)
+	}
 	create({ input }: { input: ResolverCreateAlarm }): Promise<ResolverAlarm> {
 		return prisma.alarm.create({ data: input }).then(prismaToResolver)
 	}
@@ -194,17 +211,44 @@ class AlarmHandler {
 			throw Error(`Alarm with id ${id} not found`)
 		}
 	}
-	async evaluateMetricAlarms(metric: SparkplugMetric) {
-		const alarms = await prisma.alarm.findMany({
+	async evaluateMetricAlarms({ path, condition }:{ path?:{ groupId:string, nodeId:string, deviceId?:string, metricId:string }, condition?: AlarmConditionMode}): Promise<PrismaAlarm[]> {
+		let metric: SparkplugMetric | undefined
+		if (path != null) {
+			const { groupId, nodeId, deviceId, metricId } = path
+			metric = spdata.getMetric({
+				groupId,
+				nodeId,
+				deviceId,
+				metricId,
+			})
+		}
+		const query:Prisma.AlarmFindManyArgs = {
 			where: {
-				groupId: metric.groupId,
-				nodeId: metric.nodeId,
-				deviceId: metric.deviceId,
-				metricId: metric.id
+				groupId: metric?.groupId,
+				nodeId: metric?.nodeId,
+				deviceId: metric?.deviceId,
+				metricId: metric?.id,
+				condition: condition ? {
+					path: ['mode'],
+					equals: condition
+				} as Prisma.JsonFilter<'Alarm'> : undefined
 			}
-		})
+		}
+		const alarms = await prisma.alarm.findMany(query)
 		await Promise.all(
 			alarms.map(async (alarm) => {
+				if (metric == null) {
+					metric = await spdata.getMetric({
+						groupId: alarm.groupId,
+						nodeId: alarm.nodeId,
+						deviceId: alarm.deviceId,
+						metricId: alarm.metricId
+					})
+				}
+				if (metric == null) {
+					log.warn(`Could not find metric ${alarm.groupId}/${alarm.nodeId}/${alarm.deviceId}/${alarm.metricId} for alarm ${alarm.id}:${alarm.name}.`)
+					return
+				}
 				const result = evaluate(alarm, metric)
 				if (result && !alarm.active) {
 					log.info(`Alarm ${alarm.id}:${alarm.name} active`)

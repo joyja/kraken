@@ -14,6 +14,7 @@ type Unpacked<T> = T extends Array<infer U> ? U : T
 interface SparkplugBasicInit {
 	id: string
 	timestamp?: Unpacked<UPayload>['timestamp']
+	unborn?: boolean
 }
 
 // Contains data that all sparkplug classes should have
@@ -35,9 +36,11 @@ class SparkplugBasic {
 // For any sparkplug classes that have metrics
 class SparkplugBasicMetrics extends SparkplugBasic {
 	metrics: SparkplugMetric[]
+	unborn = false
 	constructor(init: SparkplugBasicInit) {
 		super(init)
 		this.metrics = []
+		this.unborn = init.unborn ?? false
 	}
 
 	updateMetrics(
@@ -83,8 +86,13 @@ class SparkplugBasicMetrics extends SparkplugBasic {
 							throw error
 						}
 					})
-					if (alarmHandler != null) {
-						void alarmHandler.evaluateMetricAlarms(metric)
+					if (alarmHandler != null && this.unborn !== true) {
+						void alarmHandler.evaluateMetricAlarms({ path: {
+							groupId,
+							nodeId,
+							deviceId,
+							metricId: payloadMetric.name
+						} })
 					}
 					log.debug(
 						`Metric ${metric.id} updated to value ${JSON.stringify(payloadMetric.value, null, 4)}`
@@ -336,12 +344,14 @@ class SparkplugData extends events.EventEmitter {
 					} else {
 						node = new SparkplugNode({
 							id: nodeId,
-							timestamp: payload.timestamp
+							timestamp: payload.timestamp,
+							unborn: true
 						})
 						group.unbornNodes.push(node)
 						const device = new SparkplugDevice({
 							id: deviceId,
-							timestamp: payload.timestamp
+							timestamp: payload.timestamp,
+							unborn: true
 						})
 						node.devices.push(device)
 						device.updateMetrics({ groupId, nodeId, deviceId }, this.history, payload)
@@ -356,7 +366,8 @@ class SparkplugData extends events.EventEmitter {
 				this.groups.push(group)
 				const node = new SparkplugNode({
 					id: nodeId,
-					timestamp: payload.timestamp
+					timestamp: payload.timestamp,
+					unborn: true
 				})
 				group.unbornNodes.push(node)
 				const device = new SparkplugDevice({
@@ -384,7 +395,8 @@ class SparkplugData extends events.EventEmitter {
 					} else {
 						device = new SparkplugDevice({
 							id: deviceId,
-							timestamp: payload.timestamp
+							timestamp: payload.timestamp,
+							unborn: true
 						})
 						node.unbornDevices.push(device)
 						device.updateMetrics({ groupId, nodeId, deviceId }, this.history, payload)
@@ -406,7 +418,8 @@ class SparkplugData extends events.EventEmitter {
 							} else {
 								device = new SparkplugDevice({
 									id: deviceId,
-									timestamp: payload.timestamp
+									timestamp: payload.timestamp,
+									unborn: true
 								})
 								node.unbornDevices.push(device)
 								device.updateMetrics({ groupId, nodeId, deviceId }, this.history, payload)
@@ -418,12 +431,14 @@ class SparkplugData extends events.EventEmitter {
 					} else {
 						node = new SparkplugNode({
 							id: nodeId,
-							timestamp: payload.timestamp
+							timestamp: payload.timestamp,
+							unborn: true
 						})
 						group.unbornNodes.push(node)
 						const device = new SparkplugDevice({
 							id: deviceId,
-							timestamp: payload.timestamp
+							timestamp: payload.timestamp,
+							unborn: true
 						})
 						node.unbornDevices.push(device)
 						device.updateMetrics({ groupId, nodeId, deviceId }, this.history, payload)
@@ -440,12 +455,14 @@ class SparkplugData extends events.EventEmitter {
 				this.groups.push(group)
 				const node = new SparkplugNode({
 					id: nodeId,
-					timestamp: payload.timestamp
+					timestamp: payload.timestamp,
+					unborn: true
 				})
 				group.unbornNodes.push(node)
 				const device = new SparkplugDevice({
 					id: deviceId,
-					timestamp: payload.timestamp
+					timestamp: payload.timestamp,
+					unborn: true
 				})
 				node.unbornDevices.push(device)
 				device.updateMetrics({ groupId, nodeId, deviceId }, this.history, payload)
@@ -502,6 +519,14 @@ class SparkplugData extends events.EventEmitter {
 
 	getGroup(id: string): SparkplugGroup | undefined {
 		return this.groups.find((group) => id === group.id)
+	}
+
+	getMetric({ groupId, nodeId, deviceId, metricId }:{groupId: string, nodeId: string, deviceId?: string | null, metricId: string}): SparkplugMetric | undefined {
+		if (deviceId != null ) {
+			return this.getGroup(groupId)?.getNode(nodeId)?.getDevice(deviceId)?.getMetric(metricId)
+		} else {
+			return this.getGroup(groupId)?.getNode(nodeId)?.getMetric(metricId)
+		}
 	}
 
 	requestRebirth({ groupId, nodeId }: { groupId: string; nodeId: string }): void {
