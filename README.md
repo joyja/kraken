@@ -4,8 +4,8 @@
 
 Kraken is the Joy Automation monorepo for all of our SCADA tools. Here's a list:
 
-- [Mantle](/mantle/) - MQTT Data Aggregator & Historian
-- [Tentacle PLC](/tentacle/) - Soft PLC & MQTT Publisher
-- [Cuttlefish](/cuttlefish/) - Desktop MQTT Sparkplug B Client
-- [Seagull](/seagull/) - Alarm Notification Server.
-- [Squid](/squid/) - Edge Monitor and Orchestrator
+- [Mantle](/packages/mantle/) - MQTT Data Aggregator & Historian
+- [Tentacle PLC](/packages/tentacle/) - Soft PLC & MQTT Publisher
+- [Cuttlefish](/packages/cuttlefish/) - Desktop MQTT Sparkplug B Client
+- [Seagull](/packages/seagull/) - Alarm Notification Server.
+- [Squid](/packages/squid/) - Edge Monitor and Orchestrator
