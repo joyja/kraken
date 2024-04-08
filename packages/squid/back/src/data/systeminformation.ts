@@ -1,5 +1,5 @@
 import si from 'systeminformation'
-import { mqtt, MQTTData, type MqttDataMetric } from '../mqtt'
+import { MQTTData, type MqttDataMetric } from '../mqtt/index.js'
 
 export class System extends MQTTData {
   constructor() {

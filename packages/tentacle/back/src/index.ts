@@ -19,7 +19,7 @@ const yoga = createYoga<ServerContext>({
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 const server = createServer(yoga)
-const PORT = 4000
+const PORT = process.env.TENTACLE_PORT ?? 4000
 
 server.listen(PORT, () => {
 	plc.transpile()

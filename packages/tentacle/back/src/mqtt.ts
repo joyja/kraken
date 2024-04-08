@@ -1,7 +1,7 @@
 import { type UPayload, newClient } from 'kraken-sparkplug-client'
 import { getUnixTime } from 'date-fns'
 import _, { countBy } from 'lodash'
-import { denormalize } from './denormalize'
+import { denormalize } from './denormalize.js'
 
 const getDatatype = function(value: any):string {
   if (typeof value === 'boolean') {
@@ -166,7 +166,7 @@ export class Mqtt {
       this.client.on('ncmd', async (payload: UPayload) => {
         if (payload.metrics !== null && payload.metrics !== undefined) {
           const rebirth = payload.metrics.find(
-            (metric) => metric.name === `Node Control/Rebirth`,
+            (metric:{name:string}) => metric.name === `Node Control/Rebirth`,
           )
           if (rebirth?.value !== null && rebirth?.value !== undefined) {
             console.log(`Rebirth request detected. Reinitializing...`)
@@ -194,7 +194,7 @@ export class Mqtt {
   onDcmd(payload: UPayload):void {
     const { metrics } = payload
     if (metrics != null) {
-      metrics.forEach((metric) => {
+      metrics.forEach((metric: { name: string; value: string }) => {
         if (metric.name !== null && metric.name !== undefined) {
           const variablePath = metric.name
             .replace('functions/', '')

@@ -1,17 +1,19 @@
-import { Modbus } from './modbus'
-import { Opcua } from './opcua'
-import { Mqtt } from './mqtt'
+import { Modbus } from './modbus.js'
+import { Opcua } from './opcua.js'
+import { Mqtt } from './mqtt.js'
 import path from 'path'
 import fs from 'fs'
-import { Persistence } from './persistence'
+import { Persistence } from './persistence.js'
 import chokidar from 'chokidar'
 import { differenceInMilliseconds, getUnixTime } from 'date-fns'
 import ts from 'typescript'
-import { EventTracker } from './eventTracker'
-import { type MemoryUsage, type VariableValue } from './generated/graphql'
+import { EventTracker } from './eventTracker.js'
+import { type MemoryUsage, type VariableValue } from './generated/graphql.js'
 import { writeHeapSnapshot } from 'v8'
-import { pubsub } from './pubsub'
+import { pubsub } from './pubsub.js'
 import { getVariableValues } from 'graphql'
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 function getDatatype (value:any):string {
   if (typeof value === 'boolean') {

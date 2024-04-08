@@ -1,1 +1,1 @@
-export * from './nebula'
+export * from './nebula.js'
