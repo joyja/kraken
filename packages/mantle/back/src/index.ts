@@ -5,7 +5,8 @@ import path from 'path'
 import * as resolvers from './resolvers/index.js'
 import { spdata } from './mqtt.js'
 import './notifier.js'
-import { Log } from './log/index.js'
+import { Log, LogLevel } from 'coral'
+Log.defaultLogLevel = process.env.MANTLE_LOGLEVEL ? process.env.MANTLE_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.debug : LogLevel.info
 
 const log = new Log('index')
 
@@ -23,7 +24,7 @@ const yoga = createYoga<ServerContext>({
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 const server = createServer(yoga)
-const PORT = 4000
+const PORT = process.env.MANTLE_PORT ?? 4000
 
 server.listen(PORT, () => {
 	if (

@@ -2,9 +2,9 @@
   "name": "squid-back",
   "version": "0.0.0",
   "description": "Edge Infrastructure Management for Kraken",
-  "main": "src/index.js",
+  "exports": "./src/index.js",
   "scripts": {
-    "dev": "SQUID_LOGLEVEL=DEBUG NODE_ENV=development env $(cat .env | grep -v \"#\" | xargs) pnpm ts-node-dev --exit-child --respawn src/index.ts",
+    "dev": "tsx watch src --env-file=.env",
     "codegen": "graphql-codegen --config codegen.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
@@ -23,14 +23,16 @@
     "sparkplug-client": "^3.2.3",
     "systeminformation": "^5.21.4",
     "tar-fs": "^3.0.4",
-    "vitest": "^0.32.2"
+    "vitest": "^0.32.2",
+    "coral": "^0.0.1"
   },
+  "type": "module",
   "devDependencies": {
     "@types/gunzip-maybe": "^1.4.0",
     "@types/js-yaml": "^4.0.5",
     "@types/tar-fs": "^2.0.1",
     "ts-node": "^10.9.1",
-    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.7.2",
     "typescript": "^5.1.3"
   }
 }

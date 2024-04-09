@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-enum LogLevel {
+export enum LogLevel {
 	debug = 'DEBUG',
 	info = 'INFO',
 	warn = 'WARN',
@@ -44,25 +44,12 @@ function joinWithConjunction(arr: string[], conjunction: 'and' | 'or' = 'or'): s
 }
 
 export class Log {
+  static defaultLogLevel: LogLevel = LogLevel.info
 	public level: LogLevel
 	public context?: string
 	constructor(context?: string) {
 		this.context = context
-		const { MANTLE_LOG_LEVEL } = process.env
-		const isValidLogLevel = Object.values(LogLevel).includes(MANTLE_LOG_LEVEL as LogLevel)
-
-		if (isValidLogLevel) {
-			this.level = MANTLE_LOG_LEVEL as LogLevel
-		} else {
-			this.level = process.env.NODE_ENV === 'development' ? LogLevel.debug : LogLevel.info
-			console.log(
-				chalk.yellow(
-					`While creating log for context ${context}, 
-					The MANTLE_LOG_LEVEL environment variable value (${MANTLE_LOG_LEVEL}) isn't valid, 
-					it should be ${joinWithConjunction(Object.values(LogLevel))}. Defaulting to ${this.level}`
-				)
-			)
-		}
+    this.level = Log.defaultLogLevel
 	}
 
 	debug(message: string):void {

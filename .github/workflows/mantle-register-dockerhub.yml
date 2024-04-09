@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./packages/mantle/back
+        working-directory: .
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
-          context: ./packages/mantle/back
+          context: .
           file: ./packages/mantle/back/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}

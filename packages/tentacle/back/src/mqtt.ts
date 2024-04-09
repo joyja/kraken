@@ -1,7 +1,7 @@
 import { type UPayload, newClient } from 'kraken-sparkplug-client'
 import { getUnixTime } from 'date-fns'
 import _, { countBy } from 'lodash'
-import { denormalize } from './denormalize'
+import { denormalize } from './denormalize.js'
 
 const getDatatype = function(value: any):string {
   if (typeof value === 'boolean') {

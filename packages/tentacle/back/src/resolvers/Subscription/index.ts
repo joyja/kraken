@@ -1,5 +1,5 @@
-import { pubsub } from '../../pubsub'
-import type { TaskMetric, VariableValue } from '../../generated/graphql'
+import { pubsub } from '../../pubsub.js'
+import type { TaskMetric, VariableValue } from '../../generated/graphql.js'
 
 export const countdown = {
   // This will return the value on every 1 sec until it reaches 0
@@ -24,4 +24,9 @@ export const taskMetrics = {
 export const changes = {
   subscribe: () => pubsub.subscribe('fileChanges'),
   resolve: (payload:TaskMetric) => payload
+}
+
+export const plc = {
+  subscribe: () => pubsub.subscribe('plc'),
+  resolve: (payload:boolean) => payload
 }

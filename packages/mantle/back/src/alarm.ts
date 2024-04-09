@@ -11,7 +11,7 @@ import {
 	Scalars
 } from './resolvers/types.js'
 import { Alarm as PrismaAlarm } from '@prisma/client'
-import { Log } from './log/index.js'
+import { Log } from 'coral'
 import { SparkplugMetric } from './mqtt.js'
 import { differenceInMilliseconds } from 'date-fns'
 

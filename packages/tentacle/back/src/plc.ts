@@ -1,17 +1,19 @@
-import { Modbus } from './modbus'
-import { Opcua } from './opcua'
-import { Mqtt } from './mqtt'
+import { Modbus } from './modbus.js'
+import { Opcua } from './opcua.js'
+import { Mqtt } from './mqtt.js'
 import path from 'path'
 import fs from 'fs'
-import { Persistence } from './persistence'
+import { Persistence } from './persistence.js'
 import chokidar from 'chokidar'
 import { differenceInMilliseconds, getUnixTime } from 'date-fns'
 import ts from 'typescript'
-import { EventTracker } from './eventTracker'
-import { type MemoryUsage, type VariableValue } from './generated/graphql'
+import { EventTracker } from './eventTracker.js'
+import { type MemoryUsage, type VariableValue } from './generated/graphql.js'
 import { writeHeapSnapshot } from 'v8'
-import { pubsub } from './pubsub'
+import { pubsub } from './pubsub.js'
 import { getVariableValues } from 'graphql'
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 function getDatatype (value:any):string {
   if (typeof value === 'boolean') {
@@ -84,13 +86,13 @@ function removeDir(dir: string, excludeFiles: string[]): void {
 // Function to dynamically import a module and invalidate the cache
 async function importFresh(modulePath:string) {
   // Resolve the full path of the module
-  const resolvedPath = require.resolve(modulePath);
+  // const resolvedPath = require.resolve(modulePath);
 
   // Delete the module from the cache
-  delete require.cache[resolvedPath];
+  // delete require.cache[resolvedPath];
 
   // Dynamically import the module, which should now bypass the cache
-  return require(resolvedPath);
+  return import(`${modulePath}?update=${Date.now()}`);
 }
 
 export class PLC {
@@ -519,6 +521,9 @@ export class PLC {
         })
       }
       this.running = true
+      pubsub.publish('plc', {
+        running:this.running
+      })
     } else {
       throw Error('The PLC is already running.')
     }
@@ -539,6 +544,9 @@ export class PLC {
         }
       })
       this.running = false
+      pubsub.publish('plc', {
+        running:this.running
+      })
     } else {
       throw Error('The PLC is already stopped.')
     }

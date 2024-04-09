@@ -13,7 +13,7 @@ import * as mqtt from 'mqtt';
 import type { IClientOptions, MqttClient } from 'mqtt';
 import events from 'events';
 import * as sparkplug from 'sparkplug-payload';
-import type { UPayload, UTemplate, UDataSet, UMetric } from 'sparkplug-payload/lib/sparkplugbpayload';
+import type { UPayload, UTemplate, UDataSet, UMetric } from 'sparkplug-payload/lib/sparkplugbpayload.js';
 import type { Reader } from 'protobufjs';
 import pako from 'pako';
 import createDebug from 'debug';

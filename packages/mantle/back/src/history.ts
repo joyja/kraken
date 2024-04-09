@@ -1,6 +1,6 @@
 import { type PrismaClient } from '@prisma/client'
 import { type SparkplugMetric } from './mqtt.js'
-import { Log } from './log/index.js'
+import { Log } from 'coral'
 import { differenceInMinutes } from 'date-fns'
 import { type MetricHistoryEntry } from './resolvers/types.js'
 

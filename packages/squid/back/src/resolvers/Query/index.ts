@@ -1,3 +1,3 @@
 export const info = () => 'Squid'
 
-export * from './nebula'
+export * from './nebula.js'

@@ -1,0 +1,39 @@
+{
+  "name": "coral",
+  "version": "0.0.1",
+  "description": "A client module for MQTT communication using the Sparkplug specification from Cirrus Link Solutions, forked and updated by JAR Automation",
+  "exports": "./index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "prepack": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joyja/kraken.git"
+  },
+  "keywords": [
+    "tahu",
+    "mqtt",
+    "sparkplug",
+    "kraken"
+  ],
+  "author": "James Joy <joyja@jarautomation.io> (https://jarautomation.io)",
+  "license": "EPL-2.0",
+  "bugs": {
+    "url": "https://github.com/eclipse/tahu/issues"
+  },
+  "homepage": "https://github.com/eclipse/tahu",
+  "files": [
+    "index.js",
+    "index.js.map",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "typescript": "^5.4.4"
+  }
+}

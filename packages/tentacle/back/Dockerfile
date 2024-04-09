@@ -1,33 +1,58 @@
-FROM node:20.6.0-bookworm AS base
+FROM node:20.11.0-bookworm AS base
 
 RUN npm i -g pnpm
 
+FROM base AS structure
+WORKDIR /app
+COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./
+RUN mkdir packages
+RUN mkdir packages/coral
+RUN mkdir packages/tentacle
+RUN mkdir packages/tentacle/back
+
 FROM base AS dependencies
 
-# Bundle APP files
+# Get the workspace files
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
+COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./
+
+# Build the coral dependency
+COPY ./packages/coral ./packages/coral/
+
+WORKDIR /app/packages/coral
+RUN pnpm install
+RUN pnpm build
+
+WORKDIR /app
+#build the other dependencies
+COPY ./packages/tentacle/back/package.json ./packages/tentacle/back/
 RUN pnpm install
 
-FROM base AS build
+FROM structure AS build
 
 WORKDIR /app
-COPY . .
-COPY --from=dependencies /app/node_modules ./node_modules
+COPY ./packages/tentacle/back ./packages/tentacle/back
+COPY --from=dependencies /app/node_modules/ ./node_modules
+COPY --from=dependencies /app/packages/coral ./packages/coral/
+COPY --from=dependencies /app/packages/tentacle/back/node_modules/ ./packages/tentacle/back/node_modules
 
-# Install app dependencies
+WORKDIR /app/packages/tentacle/back
 RUN pnpm build
 RUN pnpm prune --prod
 
-FROM base AS deploy
+FROM structure AS deploy
 
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-COPY --from=build /app/build ./build/
-COPY --from=build /app/src/schema.graphql ./src/schema.graphql
-COPY --from=build /app/node_modules ./node_modules
+COPY ./packages/tentacle/back/package.json ./
+COPY --from=build /app/node_modules/ ./node_modules
+COPY --from=build /app/packages/coral ./packages/coral/
+COPY --from=build /app/packages/tentacle/back/build ./packages/tentacle/back/build/
+COPY --from=build /app/packages/tentacle/back/src/schema.graphql ./packages/tentacle/back/src/
+COPY --from=build /app/packages/tentacle/back/node_modules ./packages/tentacle/back/node_modules/
 
-# Expose the listening port of your app
+WORKDIR /app/packages/tentacle/back
+
+# # Expose the listening port of your app
 EXPOSE 4000
 
 # Show current folder structure in logs

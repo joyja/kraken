@@ -1,10 +1,10 @@
-import { denormalize } from "../../denormalize"
-import { type MemoryUsage, type Config, type TaskMetric } from "../../generated/graphql"
-import { type PLC, plc } from "../../plc"
+import { denormalize } from "../../denormalize.js"
+import { type MemoryUsage, type Config, type TaskMetric } from "../../generated/graphql.js"
+import { type PLC, plc } from "../../plc.js"
 import _ from 'lodash'
 import fs from 'fs'
 import path from 'path'
-import { getAllFiles } from "../../recursiveReaddr"
+import { getAllFiles } from "../../recursiveReaddr.js"
 import { constructSimpleBrowsePath } from "node-opcua"
 
 export function info ():string { 

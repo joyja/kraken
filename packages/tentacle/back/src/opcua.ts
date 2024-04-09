@@ -10,7 +10,7 @@ import {
 
 import { NodeCrawler } from 'node-opcua-client-crawler'
 
-import { Log } from './log'
+import { Log } from 'coral'
 
 const log = new Log('OPCUA')
 
