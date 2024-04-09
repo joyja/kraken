@@ -1,4 +1,4 @@
-import ModbusClient from 'modbus-serial'
+import ModbusRTU from 'modbus-serial'
 
 interface ConstructorOptions {
   unitId?: number
@@ -44,7 +44,7 @@ export class Modbus {
 
   retryInterval?: NodeJS.Timeout
 
-  client: ModbusClient
+  client: ModbusRTU.default
 
   constructor({
     host,
@@ -63,7 +63,7 @@ export class Modbus {
     this.connected = false
     this.error = null
     this.retryCount = 0
-    this.client = new ModbusClient()
+    this.client = new ModbusRTU.default()
   }
 
   formatValue(data: number[], format: string): any {

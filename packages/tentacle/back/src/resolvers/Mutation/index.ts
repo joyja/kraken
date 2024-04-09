@@ -1,4 +1,4 @@
-import { plc, type PLC } from "../../plc"
+import { plc, type PLC } from "../../plc.js"
 import _ from 'lodash'
 
 export function setValue(root:unknown, args:{value:string, variablePath:string}):{path:string, value:string, datatype:string} {

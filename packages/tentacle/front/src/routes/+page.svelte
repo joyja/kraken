@@ -148,7 +148,11 @@
 		<ul class="card__content">
 			{#if data?.modbus && data.modbus.length > 0}
 				{#each data?.modbus || [] as modbus}
-					<li>{modbus}</li>
+				<li>
+					<div>{modbus.name}</div>
+					<div class="subtext">{modbus.description}</div>
+					<div class="subtext">{modbus.config.serverUrl}</div>
+				</li>
 				{/each}
 			{:else}
 				There are no Modbus connections configured.
@@ -160,7 +164,11 @@
 		<ul class="card__content">
 			{#if data?.opcua && data.opcua.length > 0}
 				{#each data?.opcua || [] as opcua}
-					<li>{opcua}</li>
+				<li>
+					<div>{opcua.name}</div>
+					<div class="subtext">{opcua.description}</div>
+					<div class="subtext">{opcua.config.serverUrl}</div>
+				</li>
 				{/each}
 			{:else}
 				There are no OPCUA connections configured.

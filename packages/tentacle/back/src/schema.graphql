@@ -277,4 +277,5 @@ type Subscription {
   values: [VariableValue!]!
   taskMetrics: [taskMetric!]!
   changes: [change!]!
+  plc: Plc!
 }

@@ -106,8 +106,11 @@ export type QueryValueArgs = {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  changes: Array<Change>;
   countdown: Scalars['Int']['output'];
-  value: VariableValue;
+  runtimeUpdated: Scalars['Boolean']['output'];
+  taskMetrics: Array<TaskMetric>;
+  values: Array<VariableValue>;
 };
 
 
@@ -269,6 +272,11 @@ export type TaskMetric = {
   __typename?: 'taskMetric';
   functionExecutionTime: Scalars['Float']['output'];
   intervalExecutionTime: Scalars['Float']['output'];
+  modbusExecutionTime: Scalars['Float']['output'];
+  mqttExecutionTime: Scalars['Float']['output'];
+  opcuaExecutionTime: Scalars['Float']['output'];
+  overheadExecutionTime: Scalars['Float']['output'];
+  persistenceExecutionTime: Scalars['Float']['output'];
   task: Scalars['String']['output'];
   totalScanTime: Scalars['Float']['output'];
 };
@@ -436,8 +444,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
+  changes?: SubscriptionResolver<Array<ResolversTypes['change']>, "changes", ParentType, ContextType>;
   countdown?: SubscriptionResolver<ResolversTypes['Int'], "countdown", ParentType, ContextType, RequireFields<SubscriptionCountdownArgs, 'from'>>;
-  value?: SubscriptionResolver<ResolversTypes['VariableValue'], "value", ParentType, ContextType>;
+  runtimeUpdated?: SubscriptionResolver<ResolversTypes['Boolean'], "runtimeUpdated", ParentType, ContextType>;
+  taskMetrics?: SubscriptionResolver<Array<ResolversTypes['taskMetric']>, "taskMetrics", ParentType, ContextType>;
+  values?: SubscriptionResolver<Array<ResolversTypes['VariableValue']>, "values", ParentType, ContextType>;
 };
 
 export type VariableResolvers<ContextType = any, ParentType extends ResolversParentTypes['Variable'] = ResolversParentTypes['Variable']> = {
@@ -576,6 +587,11 @@ export type MemoryUsageResolvers<ContextType = any, ParentType extends Resolvers
 export type TaskMetricResolvers<ContextType = any, ParentType extends ResolversParentTypes['taskMetric'] = ResolversParentTypes['taskMetric']> = {
   functionExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   intervalExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  modbusExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  mqttExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  opcuaExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  overheadExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  persistenceExecutionTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   task?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   totalScanTime?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

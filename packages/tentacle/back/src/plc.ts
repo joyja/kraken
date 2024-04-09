@@ -86,13 +86,13 @@ function removeDir(dir: string, excludeFiles: string[]): void {
 // Function to dynamically import a module and invalidate the cache
 async function importFresh(modulePath:string) {
   // Resolve the full path of the module
-  const resolvedPath = require.resolve(modulePath);
+  // const resolvedPath = require.resolve(modulePath);
 
   // Delete the module from the cache
-  delete require.cache[resolvedPath];
+  // delete require.cache[resolvedPath];
 
   // Dynamically import the module, which should now bypass the cache
-  return require(resolvedPath);
+  return import(`${modulePath}?update=${Date.now()}`);
 }
 
 export class PLC {
@@ -521,6 +521,9 @@ export class PLC {
         })
       }
       this.running = true
+      pubsub.publish('plc', {
+        running:this.running
+      })
     } else {
       throw Error('The PLC is already running.')
     }
@@ -541,6 +544,9 @@ export class PLC {
         }
       })
       this.running = false
+      pubsub.publish('plc', {
+        running:this.running
+      })
     } else {
       throw Error('The PLC is already stopped.')
     }

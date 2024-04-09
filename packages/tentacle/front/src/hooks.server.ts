@@ -4,10 +4,6 @@ import type { Handle } from '@sveltejs/kit';
 import EventSource from 'eventsource';
 import { env } from '$env/dynamic/private';
 
-let variables:{name:string, value:string}[] = []
-let taskMetrics:{task:string, functionExecutionTime:number, intervalExecutionTime:number, totalScanTime:number}[] = []
-let changes:{timestamp:string, path:string, event:string}[] = []
-
 async function getVariables () {
   const varValues = await sendRequest({
     query: query.values
@@ -69,7 +65,9 @@ async function getVariables () {
   return variables
 }
 
-const variablesPromise = getVariables()
+let variables:{name:string, value:string}[] = await getVariables()
+let taskMetrics:{task:string, functionExecutionTime:number, intervalExecutionTime:number, totalScanTime:number}[] = []
+let changes:{timestamp:string, path:string, event:string}[] = []
 
 declare global {
   //eslint-disable-next-line no-var
@@ -127,6 +125,17 @@ function generateSources () {
     action: async ({ data }:{data:string}) => {
       changes= JSON.parse(data).data.changes
     }
+  },{
+    query: `subscription { 
+      plc {
+        running
+      } 
+    }`,
+    action: async ({ data }:{data:string}) => {
+      if (JSON.parse(data).data.plc.running) {
+        variables = await getVariables()
+      }
+    }
   }]
   globalThis.sources = subscriptions.map((subscription) => {
     const source = new EventSource(`${root}?query=${subscription.query}`)
@@ -146,11 +155,9 @@ if (globalThis.sources && globalThis.sources.length > 0) {
   globalThis.sources = []
 }
 
-getVariables()
 generateSources()
 
 export const handle:Handle = async ({ event, resolve }) => {
-  variables = await variablesPromise
   event.locals.variables = variables
   event.locals.metrics = taskMetrics
   event.locals.changes = changes
