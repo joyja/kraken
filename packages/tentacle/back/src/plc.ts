@@ -9,10 +9,12 @@ import { differenceInMilliseconds, getUnixTime } from 'date-fns'
 import ts from 'typescript'
 import { EventTracker } from './eventTracker.js'
 import { type MemoryUsage, type VariableValue } from './generated/graphql.js'
-import { writeHeapSnapshot } from 'v8'
 import { pubsub } from './pubsub.js'
-import { getVariableValues } from 'graphql'
 import { createRequire } from "module";
+import { Log } from 'coral';
+
+const log = new Log('plc')
+
 const require = createRequire(import.meta.url);
 
 function getDatatype (value:any):string {
@@ -23,7 +25,7 @@ function getDatatype (value:any):string {
   } else if (typeof value === 'number') {
     return 'FLOAT'
   } else {
-    console.error(`datatype of ${value} could not be determined.`)
+    log.warn(`datatype of ${value} could not be determined.`)
     return 'STRING'
   }
 }
@@ -289,7 +291,7 @@ export class PLC {
       });
     }
     this.programCacheId=Date.now()
-    console.log("Compilation and copying completed successfully.");
+    log.info("Compilation and copying completed successfully.");
   }
 
   async start():Promise<void> {
@@ -324,7 +326,7 @@ export class PLC {
           }
           this.global[variableKey].name = variableKey
         } else {
-          console.log(`the datatype for ${variableKey} is invalid`)
+          log.warn(`the datatype for ${variableKey} is invalid`)
         }
       })
       this.persistence.load()
@@ -364,28 +366,28 @@ export class PLC {
                   for (const variableKey of Object.keys(this.variables)) {
                     const variable = this.variables[variableKey]
                     if (variable.source !== undefined) {
-                      if (variable.source.type === 'modbus') {
-                        // await modbus[variable.source.name].write({
-                        //   value: [this.global[variableKey]],
-                        //   ...variable.source.params,
-                        // })
+                      if (variable.source.type === 'modbus' && variable.source.bidirectional) {
+                        await this.modbus[variable.source.name].write({
+                          value: [this.global[variableKey]],
+                          ...variable.source.params,
+                        })
                         if (this.modbus[variable.source.name].connected) {
                           void this.modbus[variable.source.name]
                             .read(variable.source.params)
                             .then((result) => (this.global[variableKey] = result))
                         }
                       }
-                      // if (variable.source.type === 'opcua') {
-                        // await opcua[variable.source.name].write({
-                        //   inputValue: this.global[variableKey],
-                        //   ...variable.source.params,
-                        // })
-                      //   if (this.opcua[variable.source.name].connected) {
-                      //     this.opcua[variable.source.name]
-                      //       .read(variable.source.params)
-                      //       .then((result) => (this.global[variableKey] = result))
-                      //   }
-                      // }
+                      if (variable.source.type === 'opcua' && variable.source.bidirectional) {
+                        await this.opcua[variable.source.name].write({
+                          inputValue: this.global[variableKey],
+                          ...variable.source.params,
+                        })
+                        if (this.opcua[variable.source.name].connected) {
+                          this.opcua[variable.source.name]
+                            .read(variable.source.params)
+                            .then((result) => (this.global[variableKey] = result))
+                        }
+                      }
                     }
                   }
                   const functionModbusStop = process.hrtime(functionModbusStart)
@@ -494,7 +496,7 @@ export class PLC {
                     return {task:key, ...metrics[key] }
                   }))
                 } catch (error) {
-                  console.log(error)
+                  log.error(`${error}`)
                 }
                 intervalStart = process.hrtime()
                 pubsub.publish('values', variableChanges)

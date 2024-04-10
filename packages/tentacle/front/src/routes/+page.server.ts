@@ -4,6 +4,45 @@ import * as mutation from "$lib/graphql/mutation"
 import type { Actions } from "@sveltejs/kit"
 
 export const actions:Actions = {
+  async setTheme({ request, cookies }) {
+    const data = await request.formData()
+    const theme = data.get("theme") as string
+    cookies.set(`theme`, theme, {
+      path: "/",
+      secure: false
+    })
+    return {
+      context: 'setTheme',
+      type: 'success',
+      message: `Theme set to ${theme}`,
+      theme
+    }
+  },
+  async setValue({ request }) {
+    const data = await request.formData()
+    const variablePath = data.get('variablePath') as string
+    const value = data.get('value') as string
+    const context = 'setValue'
+    let message = `${variablePath} set to ${value} !`
+    let messageType = 'success'
+    sendRequest({
+      query: mutation.setValue,
+      variables: {
+        variablePath,
+        value
+      }
+    })
+      .then(res => res.data?.setValue)
+      .catch(error => {
+        messageType = 'error'
+        message = error.message
+      })
+    return {
+      context,
+      message,
+      type: messageType
+    }
+  },
   stopPLC() {
     const context = 'stopPLC'
     let message = 'PLC Stopped!'

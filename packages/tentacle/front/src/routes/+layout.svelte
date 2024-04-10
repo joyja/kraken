@@ -77,9 +77,10 @@
 			<form method="POST" action="?/restartPLC" on:submit={() => {}} use:enhance>
 				<button class="button--icon button__dark-mode"><ArrowPath /></button>
 			</form>
-			<button type="button" class="button--icon button__dark-mode" on:click={toggleTheme}
-				>{#if theme === 'themeDark'}<Moon />{:else}<Sun />{/if}</button
-			>
+			<form method="POST" action="?/setTheme" use:enhance>
+				<input type="hidden" name="theme" value={data.theme === 'themeDark' ? 'themeLight' : 'themeDark'} />
+				<button class="button--icon button__dark-mode">{#if data.theme === 'themeDark'}<Moon />{:else}<Sun />{/if}</button>
+			</form>
 		</div>
 	</nav>
 </header>

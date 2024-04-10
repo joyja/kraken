@@ -158,8 +158,11 @@ if (globalThis.sources && globalThis.sources.length > 0) {
 generateSources()
 
 export const handle:Handle = async ({ event, resolve }) => {
+  const theme = event.cookies.get('theme') ?? 'themeLight';
   event.locals.variables = variables
   event.locals.metrics = taskMetrics
   event.locals.changes = changes
-  return resolve(event)
+  return resolve(event,{
+    transformPageChunk: ({ html }) => html.replace('%theme%', theme),
+  })
 }

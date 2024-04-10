@@ -1,4 +1,7 @@
 import ModbusRTU from 'modbus-serial'
+import { Log } from 'coral'
+
+const log = new Log('modbus')
 
 interface ConstructorOptions {
   unitId?: number
@@ -106,7 +109,7 @@ export class Modbus {
   async connect(): Promise<void> {
     if (!this.connected) {
       this.error = null
-      console.log(
+      log.info(
         `Connecting to modbus device, host: ${this.host}, port: ${this.port}.`,
       )
       await this.client
@@ -116,7 +119,7 @@ export class Modbus {
           this.connected = false
           if (this.retryInterval === null || this.retryInterval === undefined) {
             this.retryInterval = setInterval(() => {
-              console.log(
+              log.info(
                 `Retrying connection to modbus device, retry attempts: ${this.retryCount}.`,
               )
               this.retryCount += 1
@@ -127,13 +130,11 @@ export class Modbus {
       if (this.error === null || this.error === undefined) {
         this.retryCount = 0
         clearInterval(this.retryInterval)
-        console.log(
-          `Connected to modbus device, host: ${this.host}, port: ${this.port}.`,
-        )
+        log.info(`Connected to modbus device, host: ${this.host}, port: ${this.port}.`)
         this.connected = true
       } else {
         this.connected = false
-        console.log(
+        log.warn(
           `Connection failed to modbus device, host: ${this.host}, port: ${this.port}.`,
         )
       }
@@ -144,16 +145,16 @@ export class Modbus {
     await new Promise<void>((resolve) => {
       this.retryCount = 0
       clearInterval(this.retryInterval)
-      console.log(
+      log.info(
         `Disconnecting from modbus device, host: ${this.host}, port: ${this.port}.`,
       )
       const logText = `Closed connection to modbus device, host: ${this.host}, port: ${this.port}.`
       if (this.connected) {
         this.client.close(() => {})
-        console.log(logText)
+        log.info(logText)
         resolve()
       } else {
-        console.log(logText)
+        log.info(logText)
         resolve()
       }
     })
@@ -175,11 +176,11 @@ export class Modbus {
               error.name === 'TransactionTimedOutError' ||
               error.name === 'PortNotOpenError'
             ) {
-              console.log(`Connection Timed Out on device: ${error.name}`)
+              log.warn(`Connection Timed Out on device: ${error.name}`)
               await this.disconnect()
               await this.connect()
             } else {
-              console.error(error)
+              log.error(error)
             }
           })
       } else if (registerType === 'HOLDING_REGISTER') {
@@ -192,7 +193,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              console.error(error)
+              log.error(error)
             }
           })
       } else if (registerType === 'COIL') {
@@ -205,7 +206,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              console.error(error)
+              log.error(error)
             }
           })
       }

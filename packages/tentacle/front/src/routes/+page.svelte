@@ -12,6 +12,7 @@
 	import DocumentPlus from '$lib/components/icons/DocumentPlus.svelte';
 	import DocumentMinus from '$lib/components/icons/DocumentMinus.svelte';
 	import Pencil from '$lib/components/icons/Pencil.svelte';
+	import Toggle from '$lib/components/Toggle.svelte'
 
 	// Then register the languages you need
 	hljs.registerLanguage('javascript', javascript);
@@ -19,6 +20,15 @@
 
 	export let data: PageData;
 	export let form;
+	$: if (form?.context === 'setTheme') {
+		if (form?.theme === 'themeDark') {
+			document.body.classList.add('themeDark');
+			document.body.classList.remove('themeLight');
+		} else {
+			document.body.classList.remove('themeDark');
+			document.body.classList.add('themeLight');
+		}
+	}
 	let codes = [
 		...data.programs.map((program:Program) => {
 			return { name: program, type: 'program', visible: false, code: '' };
@@ -188,7 +198,13 @@
 							<div class="variable__attribute">{variable?.changeEvents?.inLastHour || 0} / Hr</div>
 						</div>
 						<div class="variable__description">{variable.description}</div>
-						<div class="variable__value"><span>{variable.decimals ? parseFloat(variable.value).toFixed(variable.decimals) : variable.value }</span></div>
+						{#if variable.datatype === 'boolean'}
+							<form class="variable__value flex justify-end" method="POST" action="?/setValue" use:enhance>
+								<Toggle id={variable.name} checked={variable.value === 'true'} name="value" selector={variable.path} selectorName="variablePath" buttonType="submit"/>
+							</form>
+						{:else}
+							<div class="variable__value"><span>{variable.decimals ? parseFloat(variable.value).toFixed(variable.decimals) : variable.value }</span></div>
+						{/if}
 					</li>
 				{/each}
 			{:else}

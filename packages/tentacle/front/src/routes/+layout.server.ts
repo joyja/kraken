@@ -1,7 +1,8 @@
 import { sendRequest } from "$lib/graphql/request"
 import * as query from "$lib/graphql/query"
 
-export async function load({ url }) {  
+export async function load({ url, cookies }) {
+  const theme = cookies.get('theme') || 'themeLight'
   let message
   const config = await sendRequest({
     query: query.config
@@ -38,6 +39,7 @@ export async function load({ url }) {
       message = error.message
     })
   return {
+    theme,
     running,
     message,
     config,
