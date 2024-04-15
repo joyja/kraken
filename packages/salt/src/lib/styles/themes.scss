@@ -28,6 +28,11 @@ $themes: (
       "light": 'var(--gray-400)',
       "medium": 'var(--gray-500)',
       "dark": 'var(--gray-600)',
+    ),
+    "theme-logo-accent": (
+      "light": 'var(--orange-300)',
+      "medium": 'var(--orange-500)',
+      "dark": 'var(--orange-700)',
     )
   ),
   "themeDark": (
@@ -58,6 +63,11 @@ $themes: (
       "light": 'var(--gray-400)',
       "medium": 'var(--gray-500)',
       "dark": 'var(--gray-600)',
+    ),
+    "theme-logo-accent": (
+      "light": 'var(--orange-300)',
+      "medium": 'var(--orange-500)',
+      "dark": 'var(--orange-700)',
     ))
 );
 

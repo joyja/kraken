@@ -5,7 +5,10 @@ interface ConstructorOptions {
   filepath?: string
   variables: Record<string, any>
   global: Record<string, any>
-  classes: Array<{ name: string, variables: Record<string, { persistent: boolean }> }>
+  classes: Array<{
+    name: string
+    variables: Record<string, { persistent: boolean }>
+  }>
 }
 
 export class Persistence {
@@ -25,7 +28,7 @@ export class Persistence {
     this.variables = variables
     this.classes = classes
     this.filepath = filepath
-    
+
     if (fs.existsSync(filepath)) {
       try {
         this.data = JSON.parse(fs.readFileSync(filepath, 'utf-8'))
@@ -58,7 +61,11 @@ export class Persistence {
             }
           })
       } else {
-        if ((this.variables[key]?.persistent !== null && this.variables[key]?.persistent !== undefined) && key in this.data) {
+        if (
+          this.variables[key]?.persistent !== null &&
+          this.variables[key]?.persistent !== undefined &&
+          key in this.data
+        ) {
           this.global[key] = this.data[key]
         }
       }
@@ -66,15 +73,15 @@ export class Persistence {
   }
 
   persist(): void {
-    const newData:Record<string, any> = {}
+    const newData: Record<string, any> = {}
     Object.keys(this.global).forEach((key) => {
       if (
-        (Boolean(this.global[key])) &&
+        Boolean(this.global[key]) &&
         this.classes
           .map((fb) => fb.name)
           .includes(this.global[key].constructor.name)
       ) {
-        const fbData:Record<string, any> = {}
+        const fbData: Record<string, any> = {}
         Object.keys(this.global[key].constructor.variables)
           .filter((variableName) => {
             return this.global[key].constructor.variables[variableName]
@@ -85,7 +92,10 @@ export class Persistence {
           })
         newData[key] = fbData
       } else {
-        if (this.variables[key]?.persistent !== null && this.variables[key]?.persistent !== undefined) {
+        if (
+          this.variables[key]?.persistent !== null &&
+          this.variables[key]?.persistent !== undefined
+        ) {
           newData[key] = this.global[key]
         }
       }
@@ -109,7 +119,7 @@ export class Persistence {
           } else {
             resolve()
           }
-        }
+        },
       )
     })
   }
