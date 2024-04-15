@@ -2,6 +2,7 @@
   "name": "kraken",
   "private": false,
   "workspaces": [
+    "docs",
     "packages/salt",
     "packages/coral",
     "packages/tentacle/back",
