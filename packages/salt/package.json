@@ -1,5 +1,5 @@
 {
-	"name": "salt",
+	"name": "kraken-salt",
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "vite dev",
@@ -16,7 +16,7 @@
 	"exports": {
 		"./types": "./dist/index.d.ts",
 		".": "./dist/index.js",
-		"./dist/styles/main.scss": "./dist/styles/main.scss"
+		"./styles.scss": "./dist/styles/main.scss"
 	},
 	"files": [
 		"dist",
@@ -44,6 +44,8 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
-		"@sveltejs/adapter-node": "^5.0.1"
+		"@sveltejs/adapter-node": "^5.0.1",
+		"nanoid": "^5.0.7",
+		"sass": "^1.75.0"
 	}
 }

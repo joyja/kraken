@@ -64,6 +64,14 @@ export enum AlarmConditionMode {
   OutsideSetpoints = 'OUTSIDE_SETPOINTS'
 }
 
+export type AlarmHistory = {
+  __typename?: 'AlarmHistory';
+  acknowledged: Scalars['Boolean']['output'];
+  active: Scalars['Boolean']['output'];
+  alarm: Alarm;
+  timestamp: Scalars['Date']['output'];
+};
+
 export enum AlarmPriority {
   Critical = 'CRITICAL',
   High = 'HIGH',
@@ -514,8 +522,10 @@ export type SparkplugMetric = {
   history: Array<SparkplugMetricHistory>;
   id: Scalars['String']['output'];
   type: Scalars['String']['output'];
-  updateCount: Scalars['Int']['output'];
   updatedOn: Scalars['Date']['output'];
+  updatesLastDay: Scalars['Int']['output'];
+  updatesLastHour: Scalars['Int']['output'];
+  updatesLastMinute: Scalars['Int']['output'];
   value?: Maybe<Scalars['String']['output']>;
 };
 
@@ -532,6 +542,9 @@ export type SparkplugMetricUpdate = {
   metricId: Scalars['String']['output'];
   nodeId: Scalars['String']['output'];
   timestamp: Scalars['Date']['output'];
+  updatesInLastDay?: Maybe<Scalars['Int']['output']>;
+  updatesInLastHour?: Maybe<Scalars['Int']['output']>;
+  updatesInLastMinute?: Maybe<Scalars['Int']['output']>;
   value?: Maybe<Scalars['String']['output']>;
 };
 
@@ -694,6 +707,7 @@ export type ResolversTypes = {
   AlarmCondition: ResolverTypeWrapper<AlarmCondition>;
   AlarmConditionInput: AlarmConditionInput;
   AlarmConditionMode: AlarmConditionMode;
+  AlarmHistory: ResolverTypeWrapper<AlarmHistory>;
   AlarmPriority: AlarmPriority;
   Axis: ResolverTypeWrapper<Axis>;
   AxisEntry: AxisEntry;
@@ -751,6 +765,7 @@ export type ResolversParentTypes = {
   Alarm: Alarm;
   AlarmCondition: AlarmCondition;
   AlarmConditionInput: AlarmConditionInput;
+  AlarmHistory: AlarmHistory;
   Axis: Axis;
   AxisEntry: AxisEntry;
   Boolean: Scalars['Boolean']['output'];
@@ -826,6 +841,14 @@ export type AlarmConditionResolvers<ContextType = any, ParentType extends Resolv
   setpoint?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   setpointHigh?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   setpointLow?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AlarmHistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AlarmHistory'] = ResolversParentTypes['AlarmHistory']> = {
+  acknowledged?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  alarm?: Resolver<ResolversTypes['Alarm'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -962,8 +985,10 @@ export type SparkplugMetricResolvers<ContextType = any, ParentType extends Resol
   history?: Resolver<Array<ResolversTypes['SparkplugMetricHistory']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  updateCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updatedOn?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  updatesLastDay?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatesLastHour?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatesLastMinute?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -980,6 +1005,9 @@ export type SparkplugMetricUpdateResolvers<ContextType = any, ParentType extends
   metricId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   nodeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  updatesInLastDay?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  updatesInLastHour?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  updatesInLastMinute?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -1009,6 +1037,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 export type Resolvers<ContextType = any> = {
   Alarm?: AlarmResolvers<ContextType>;
   AlarmCondition?: AlarmConditionResolvers<ContextType>;
+  AlarmHistory?: AlarmHistoryResolvers<ContextType>;
   Axis?: AxisResolvers<ContextType>;
   Chart?: ChartResolvers<ContextType>;
   ChartPage?: ChartPageResolvers<ContextType>;
