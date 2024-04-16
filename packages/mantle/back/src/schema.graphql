@@ -101,6 +101,11 @@ type Alarm {
   roster: Roster
 }
 
+input AlarmHistoryEntry {
+  start: Date
+  end: Date
+}
+
 type AlarmHistory {
   alarm: Alarm!
   timestamp: Date!
@@ -363,6 +368,7 @@ type Query {
   info: String!
   groups(historyDuration: Int): [SparkplugGroup!]!
   alarms: [Alarm!]!
+  alarmHistory(input: AlarmHistoryEntry!): [AlarmHistory!]!
   users: [User!]!
   rosters: [Roster!]!
   chartPages: [ChartPage!]!

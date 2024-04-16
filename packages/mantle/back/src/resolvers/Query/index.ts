@@ -11,6 +11,7 @@ import {
 import { rosterHandler } from '../../roster.js'
 import { userHandler } from '../../user.js'
 import { History } from '../../history.js'
+import { AlarmHistory } from '@prisma/client'
 
 export function info(): string {
   return 'Sparkplug B Historian and Alarm Notifier'
@@ -46,4 +47,12 @@ export async function history(
     samples,
     raw,
   })
+}
+
+export async function alarmHistory(
+  _root: unknown,
+  args: { input: { start: Date; end: Date } },
+): Promise<AlarmHistory[]> {
+  const { start, end } = args.input
+  return await alarmHandler.history({ start, end })
 }

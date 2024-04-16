@@ -118,3 +118,18 @@ export const history = `
     }
   }
 `
+
+export const alarmHistory = `
+query {
+  alarmHistory(input:{}) {
+    alarm {
+      id
+      name
+      priority
+    }
+    active
+    acknowledged
+    timestamp
+  }
+}
+`

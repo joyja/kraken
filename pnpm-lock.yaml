@@ -412,6 +412,9 @@ importers:
       '@types/eventsource':
         specifier: ^1.1.15
         version: 1.1.15
+      date-fns:
+        specifier: ^3.6.0
+        version: 3.6.0
       svelte:
         specifier: ^3.54.0
         version: 3.59.2
@@ -6930,7 +6933,6 @@ packages:
 
   /date-fns@3.6.0:
     resolution: {integrity: sha512-fRHTG8g/Gif+kSh50gaGEdToemgfj74aRX3swtiouboip5JDLAyDE9F11nHMIcvOaXeOC6D7SpNhi7uFyB7Uww==}
-    dev: false
 
   /dateformat@3.0.3:
     resolution: {integrity: sha512-jyCETtSl3VMZMWeRo7iY1FL19ges1t55hMo5yaam4Jrsm5EPL89UQkoQRyiI+Yf4k8r2ZpdngkV8hr1lIdjb3Q==}

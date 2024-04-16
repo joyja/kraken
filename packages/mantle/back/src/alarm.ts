@@ -13,11 +13,9 @@ import {
 import { Alarm as PrismaAlarm } from '@prisma/client'
 import { Log } from 'coral'
 import { SparkplugMetric } from './mqtt.js'
-import { differenceInMilliseconds } from 'date-fns'
+import { differenceInMilliseconds, subDays } from 'date-fns'
 
 const log = new Log('alarm')
-
-type ArgumentType<T> = T extends (arg: infer U) => any ? U : never
 
 function parseAlarmCondition(data: any): AlarmCondition | null {
   if (!data) {
@@ -313,6 +311,15 @@ class AlarmHandler {
     return alarms
   }
   history({ start, end }: { start: Date; end: Date }): Promise<AlarmHistory[]> {
+    if (start > end) {
+      throw Error('start must be before end')
+    }
+    if (start == null) {
+      start = new Date(0)
+    }
+    if (end == null) {
+      end = subDays(new Date(), 30)
+    }
     return prisma.alarmHistory
       .findMany({
         where: {
