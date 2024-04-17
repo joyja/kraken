@@ -404,7 +404,7 @@ export class PLC {
                         return this.variables[variableKey].source.params.nodeId
                       })
                     void this.opcua[opcuaKey]
-                      .read({ nodeIds: opcuaNodeIds })
+                      .readMany({ nodeIds: opcuaNodeIds })
                       .then((result) => {
                         if (result != null) {
                           for (let i = 0; i < result.length; i++) {
