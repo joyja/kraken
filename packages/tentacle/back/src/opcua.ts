@@ -5,7 +5,8 @@ import {
 	MessageSecurityMode,
 	SecurityPolicy,
 	AttributeIds,
-	type ClientSession
+	type ClientSession,
+	DataValue
 } from 'node-opcua'
 
 import { NodeCrawler } from 'node-opcua-client-crawler'
@@ -193,6 +194,45 @@ export class Opcua {
 			}
 		}
 	}
+
+	async readMany({ nodeIds }: ReadManyOptions): Promise<any[] | undefined>{
+    if (this.connected) {
+      try {
+        // Function to split array into chunks
+        const chunkArray = (arr:string[], chunkSize:number) => {
+          const chunks = [];
+          for (let i = 0; i < arr.length; i += chunkSize) {
+            chunks.push(arr.slice(i, i + chunkSize));
+          }
+          return chunks;
+        };
+  
+        // Splitting nodeIds into chunks of 50
+        const nodeIdChunks = chunkArray(nodeIds, 50);
+        let allResults:DataValue[] = [];
+  
+        // Processing each chunk
+        for (const chunk of nodeIdChunks) {
+          const results = await this.session
+            ?.read(chunk.map((nodeId) => {
+              return {
+                nodeId,
+                attributeId: AttributeIds.Value
+              };
+            }))
+            .catch((error) => console.error(error));
+  
+          if (results) {
+            allResults = allResults.concat(results.map((result) => result.value.value));
+          }
+        }
+  
+        return allResults;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
 
 	async write({ inputValue, nodeId, registerType }: WriteOptions): Promise<void> {
 		if (this.connected) {
