@@ -244,7 +244,7 @@ export class SparkplugGroup extends SparkplugBasic {
   }
 }
 
-class SparkplugData extends events.EventEmitter {
+export class SparkplugData extends events.EventEmitter {
   public history: History
   private client?: ReturnType<typeof newHost>
   groups: SparkplugGroup[]

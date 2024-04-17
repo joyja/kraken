@@ -53,10 +53,6 @@ model Alarm {
   history      AlarmHistory[]
 }
 
-model AlarmFunction {
-  id String @id @default(uuid())
-}
-
 model AlarmHistory {
   alarm        Alarm    @relation(fields: [alarmId], references: [id], onDelete: Cascade)
   alarmId      String

@@ -92,3 +92,5 @@ sw.*
 build/
 runtime/
 config/
+development/
+runtime/
