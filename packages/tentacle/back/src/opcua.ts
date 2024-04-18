@@ -209,8 +209,8 @@ export class Opcua {
   
         // Splitting nodeIds into chunks of 50
         const nodeIdChunks = chunkArray(nodeIds, 50);
-        let allResults:DataValue[] = [];
-  
+				let allResults:DataValue[] = [];
+				
         // Processing each chunk
         for (const chunk of nodeIdChunks) {
           const results = await this.session

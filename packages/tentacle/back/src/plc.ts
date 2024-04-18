@@ -17,7 +17,7 @@ const log = new Log('plc')
 
 const require = createRequire(import.meta.url);
 
-function getDatatype (value:any):string {
+function getDatatype (value:any, context:string):string {
   if (typeof value === 'boolean') {
     return 'BOOLEAN'
   } else if (typeof value === 'string') {
@@ -25,7 +25,7 @@ function getDatatype (value:any):string {
   } else if (typeof value === 'number') {
     return 'FLOAT'
   } else {
-    log.warn(`datatype of ${value} could not be determined.`)
+    log.warn(`datatype of ${value} of ${context} could not be determined.`)
     return 'STRING'
   }
 }
@@ -384,7 +384,7 @@ export class PLC {
                         })
                         if (this.opcua[variable.source.name].connected) {
                           this.opcua[variable.source.name]
-                            .read(variable.source.params)
+                            .readMany(variable.source.params)
                             .then((result) => (this.global[variableKey] = result))
                         }
                       }
@@ -436,7 +436,7 @@ export class PLC {
                         variableChanges.push({
                           name: key,
                           value: this.global[key],
-                          type: getDatatype(this.global[key]),
+                          type: getDatatype(this.global[key], key),
                           timestamp: getUnixTime(new Date()),
                         })
                         for (const mqttKey of Object.keys(this.mqtt)){
