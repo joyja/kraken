@@ -384,7 +384,7 @@ export class PLC {
                         })
                         if (this.opcua[variable.source.name].connected) {
                           this.opcua[variable.source.name]
-                            .readMany(variable.source.params)
+                            .readMany({ nodeIds: [variable.source.params.nodeId] })
                             .then((result) => (this.global[variableKey] = result))
                         }
                       }
@@ -443,7 +443,7 @@ export class PLC {
                           this.mqtt[mqttKey].queue.push({
                             name: key,
                             value: this.global[key],
-                            type: getDatatype(this.global[key]),
+                            type: getDatatype(this.global[key], key),
                             timestamp: getUnixTime(new Date()),
                           })
                         }
@@ -458,7 +458,7 @@ export class PLC {
                           this.mqtt[mqttKey].queue.push({
                             name: `memoryUsage.${key}`,
                             value: memoryUsage[key as keyof MemoryUsage],
-                            type: getDatatype(memoryUsage[key as keyof MemoryUsage]),
+                            type: getDatatype(memoryUsage[key as keyof MemoryUsage], key),
                             timestamp: getUnixTime(new Date()),
                           })
                         })

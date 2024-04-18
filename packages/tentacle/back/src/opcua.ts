@@ -175,25 +175,6 @@ export class Opcua {
 		}
 	}
 
-	async read({ nodeIds }: ReadManyOptions): Promise<any[] | undefined> {
-		if (this.connected) {
-			try {
-				const results = await this.session?.read(
-					nodeIds.map((nodeId) => {
-						return {
-							nodeId,
-							attributeId: AttributeIds.Value
-						}
-					})
-				).catch((error) => { console.error(error); })
-				return results?.map((result) => {
-					return result.value.value
-				})
-			} catch (error) {
-				console.error(error)
-			}
-		}
-	}
 
 	async readMany({ nodeIds }: ReadManyOptions): Promise<any[] | undefined>{
     if (this.connected) {
