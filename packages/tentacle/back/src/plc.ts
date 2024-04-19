@@ -382,11 +382,6 @@ export class PLC {
                           inputValue: this.global[variableKey],
                           ...variable.source.params,
                         })
-                        if (this.opcua[variable.source.name].connected) {
-                          this.opcua[variable.source.name]
-                            .readMany({ nodeIds: [variable.source.params.nodeId] })
-                            .then((result) => (this.global[variableKey] = result))
-                        }
                       }
                     }
                   }

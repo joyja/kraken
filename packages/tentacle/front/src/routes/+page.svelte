@@ -3,7 +3,7 @@
 	import Link from '$lib/components/icons/Link.svelte';
 	import { format } from 'date-fns';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
-	import { slide } from 'svelte/transition';
+	import { blur, slide } from 'svelte/transition';
 	import { enhance } from '$app/forms';
 	// Using ES6 import syntax
 	import hljs from 'highlight.js/lib/core';
@@ -13,6 +13,11 @@
 	import DocumentMinus from '$lib/components/icons/DocumentMinus.svelte';
 	import Pencil from '$lib/components/icons/Pencil.svelte';
 	import Toggle from '$lib/components/Toggle.svelte'
+	import Xmark from '$lib/components/icons/Xmark.svelte'
+	
+	let editVariable:string | null = null
+	let editVariableValue:string | null = null
+	let variableFilter:string | null = null
 
 	// Then register the languages you need
 	hljs.registerLanguage('javascript', javascript);
@@ -29,6 +34,15 @@
 			document.body.classList.add('themeLight');
 		}
 	}
+	$: if (form?.context === 'setValue') {
+		if (form?.type === 'success') {
+			editVariable = null
+			editVariableValue = null
+		}
+	}
+	$: filteredVariables = data?.variables.filter((variable:{name:string, description:string}) => {
+		return variable.name.toLowerCase().includes(variableFilter?.toLowerCase() || '') || variable.description.toLowerCase().includes(variableFilter?.toLowerCase() || '')
+	})
 	let codes = [
 		...data.programs.map((program:Program) => {
 			return { name: program, type: 'program', visible: false, code: '' };
@@ -186,11 +200,16 @@
 		</ul>
 	</div>
 	<div class="card variables">
-		<p class="card__header">Variables</p>
+		<div class="card__header">
+			<span>
+				Variables
+			</span>
+			<input type="text" placeholder="Filter" bind:value={variableFilter}/>
+		</div>
 		<ul class="card__content banded">
 			{#if data?.variables}
-				{#each data?.variables || [] as variable}
-					<li class="variable">
+				{#each filteredVariables || [] as variable}
+					<li class="variable" transition:slide>
 						<div class="flex variable__attributes">
 							{variable.name}
 							{#if variable.persistent}<div class="variable__attribute variable__attribute--icon">P</div>{/if}
@@ -199,11 +218,23 @@
 						</div>
 						<div class="variable__description">{variable.description}</div>
 						{#if variable.datatype === 'boolean'}
-							<form class="variable__value flex justify-end" method="POST" action="?/setValue" use:enhance>
+							<form class="variable__value flex justify-center" method="POST" action="?/setValue" use:enhance>
 								<Toggle id={variable.name} checked={variable.value === 'true'} name="value" selector={variable.path} selectorName="variablePath" buttonType="submit"/>
 							</form>
 						{:else}
-							<div class="variable__value"><span>{variable.decimals ? parseFloat(variable.value).toFixed(variable.decimals) : variable.value }</span></div>
+							<div class="variable__value">
+								<button on:click={() => { editVariable = variable.name; editVariableValue = variable.value }}>
+									{variable.decimals ? parseFloat(variable.value).toFixed(variable.decimals) : variable.value }
+								</button>
+								{#if editVariable === variable.name}
+									<form method="POST" action="?/setValue" use:enhance class="variable__editor space-x-1 align-center" transition:blur>
+										<input name="variablePath" type="hidden" value={variable.path}/> 
+										<input name="value"type="text" value={editVariableValue}/>
+										<button type="submit" class="button--icon"><Pencil /></button>
+										<button type="button" class="button--icon" on:click={() => {editVariable = null}}><Xmark /></button>
+									</form>
+								{/if}
+							</div>
 						{/if}
 					</li>
 				{/each}
@@ -322,7 +353,7 @@
 		grid-column: span 4;
 	}
 	.variables {
-		grid-row: span 5;
+		grid-row: span 6;
 		grid-column: span 8;
 	}
 	.codes {
@@ -363,8 +394,14 @@
 		border: solid 1px var(--theme-neutral-300);
 		border-radius: var(--rounded-md);
 		&__header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
 			padding: var(--spacing-unit);
 			background-color: var(--theme-neutral-300);
+			& > input {
+				width: 180px;
+			}
 		}
 		&__content {
 			font-size: var(--text-md);
@@ -407,13 +444,31 @@
 		text-overflow: ellipsis;
 	}
 	.variable__value {
+		position: relative;
 		display: flex;
 		align-items: center;
 		text-align: end;
 		grid-row-start: 1;
 		grid-row: span 2;
-		& > * {
+		& > button {
 			flex-grow: 1;
+			background-color: transparent;
+			transition: background-color 0.3s ease-out;
+			font-weight: var(--text-md);
+		}
+		& > button:hover {
+			background-color: var(--theme-primary);
+		}
+	}
+	.variable__editor {
+		position: absolute;
+		display: flex;
+		left: -150px;
+		right: calc(100% + 1*var(--spacing-unit)) ;
+		top: 0;
+		height: 100%;
+		& > input {
+			text-align: center;
 		}
 	}
 	.expand {

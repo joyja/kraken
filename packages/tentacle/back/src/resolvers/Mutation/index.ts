@@ -4,8 +4,12 @@ import _ from 'lodash'
 export function setValue(root:unknown, args:{value:string, variablePath:string}):{path:string, value:string, datatype:string} {
   const variable = _.get(plc.global, args.variablePath)
   if (variable !== undefined) {
-    if (typeof variable === 'boolean') {
+    if (variable.datatype == 'boolean') {
       _.set(plc.global, args.variablePath, args.value === 'true')
+    } else if (variable.datatype == 'number') {
+      _.set(plc.global, args.variablePath, parseFloat(args.value))
+    } else {
+      _.set(plc.global, args.variablePath, args.value)
     }
     return {
       path: args.variablePath,

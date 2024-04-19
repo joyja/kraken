@@ -248,7 +248,11 @@ export class Opcua {
 					}
 				}
 			}
-			await this.session?.write(nodeToWrite).catch((error) => { console.error(error); })
+			await this.session?.write(nodeToWrite).then((result) => { 
+				if (result.name !== 'Good') {
+					console.warn(result)
+				}
+			}).catch((error) => { console.error(error); })
 		}
 	}
 }
