@@ -80,7 +80,7 @@ export function values():Array<{path:string, value:string, datatype:string}> {
     return {
       path: key,
       // Should always be a primitive (no objects) so using toString to force convert to string type. May consider JSON.stringify if this is problem in the future.
-      value: values[key].toString(),
+      value: values[key]?.toString(),
       datatype: typeof values[key],
     }
   })
