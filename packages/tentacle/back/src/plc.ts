@@ -430,7 +430,7 @@ export class PLC {
                         this.variables[key].changeEvents.recordEvent()
                         variableChanges.push({
                           name: key,
-                          value: this.global[key]?.toString(),
+                          value: JSON.stringify(this.global[key]),
                           type: getDatatype(this.global[key], key),
                           timestamp: getUnixTime(new Date()),
                         })
