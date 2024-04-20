@@ -111,11 +111,20 @@ export class Opcua {
 				}
 			})
 			if (!this.error !== null) {
-				this.retryCount = 0
-				clearInterval(this.retryInterval)
-				log.info(`Connected to opcua device, host: ${this.host}, port: ${this.port}.`)
-				this.connected = true
 				this.session = await this.client.createSession()
+					.then((session) => {
+						this.retryCount = 0
+						log.info(`Connected to opcua device, host: ${this.host}, port: ${this.port}.`)
+						clearInterval(this.retryInterval)
+						this.connected = true
+						return session
+					})
+					.catch((error) => {
+						this.error = error.message
+						log.error(error.message)
+						this.connected = false
+						return undefined
+					})
 			} else {
 				this.connected = false
 				log.info(
