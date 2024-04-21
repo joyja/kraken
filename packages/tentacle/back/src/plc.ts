@@ -377,12 +377,6 @@ export class PLC {
                             .then((result) => (this.global[variableKey] = result))
                         }
                       }
-                      if (variable.source.type === 'opcua' && variable.source.bidirectional) {
-                        await this.opcua[variable.source.name].write({
-                          inputValue: this.global[variableKey],
-                          ...variable.source.params,
-                        })
-                      }
                     }
                   }
                   const functionModbusStop = process.hrtime(functionModbusStart)
@@ -395,8 +389,28 @@ export class PLC {
                       .filter((variableKey) => {
                         return this.variables[variableKey].source?.type === 'opcua'
                       })
+                    const opcuaNodeWriteVariables = opcuaNodeVariables.filter((variableKey) => {
+                      return this.variables[variableKey].source?.bidirectional
+                    })
                     const opcuaNodeIds = opcuaNodeVariables.map((variableKey) => {
-                        return this.variables[variableKey].source.params.nodeId
+                      return this.variables[variableKey].source.params.nodeId
+                    })
+                    const opcuaWriteNodes = opcuaNodeWriteVariables.map((variableKey) => {
+                      return {
+                        nodeId: this.variables[variableKey].source.params.nodeId,
+                        attributeId: this.variables[variableKey].source.params.attributeId,
+                        registerType: this.variables[variableKey].source.params.registerType,
+                        inputValue: this.global[variableKey],
+                      }
+                    })
+                    void await this.opcua[opcuaKey]
+                      .write(opcuaWriteNodes)
+                      .then((result) => {
+                        if (result != null) {
+                          for (let i = 0; i < result.length; i++) {
+                            this.global[opcuaNodeWriteVariables[i]] = result[i]
+                          }
+                        }
                       })
                     void this.opcua[opcuaKey]
                       .readMany({ nodeIds: opcuaNodeIds })
@@ -533,7 +547,7 @@ export class PLC {
       })
       this.intervals = []
       Object.keys(this.global).forEach((variableKey) => {
-        if (this.global[variableKey].intervals !== undefined) {
+        if (this.global[variableKey]?.intervals != null) {
           this.global[variableKey].intervals.forEach((interval:ReturnType<typeof setInterval>) => {
             clearInterval(interval)
           })

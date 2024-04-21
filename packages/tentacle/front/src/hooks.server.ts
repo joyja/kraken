@@ -30,7 +30,7 @@ async function getVariables () {
               contextParams.value = value.value
             }
           }
-          contextParams.path = value.path
+          contextParams.path = value?.path
         } else {
           const children = variable.children.map((child:{name:string, value:{path:string}, datatype?:string}) => {
             const value = varValues.find((value:{path:string}) => value.path === `${variable.name}.${child.name}`).value

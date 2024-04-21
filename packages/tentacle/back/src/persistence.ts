@@ -43,6 +43,7 @@ export class Persistence {
   load(): void {
     Object.keys(this.global).forEach((key) => {
       if (
+        this.global[key]?.constructor != null &&
         this.classes
           .map((fb) => fb.name)
           .includes(this.global[key].constructor.name)

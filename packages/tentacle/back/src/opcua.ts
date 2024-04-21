@@ -13,7 +13,7 @@ import { NodeCrawler } from 'node-opcua-client-crawler'
 
 import { Log } from 'coral'
 
-const log = new Log('OPCUA')
+const log = new Log('opcua')
 
 interface ConstructorOptions {
 	initialDelay?: number
@@ -224,44 +224,49 @@ export class Opcua {
     }
   }
 
-	async write({ inputValue, nodeId, registerType }: WriteOptions): Promise<void> {
+	async write(nodes: WriteOptions[]): Promise<any | undefined> {
 		if (this.connected) {
-			let dataType
-			let value
-			if (registerType === 'BOOLEAN') {
-				dataType = DataType.Boolean
-				value = inputValue + '' === 'true'
-			} else if (registerType === 'FLOAT') {
-				dataType = DataType.Float
-				value = parseFloat(inputValue)
-			} else if (registerType === 'DOUBLE') {
-				dataType = DataType.Double
-				value = parseFloat(inputValue)
-			} else if (registerType === 'INT16') {
-				dataType = DataType.Int16
-				value = parseInt(inputValue)
-			} else if (registerType === 'INT32') {
-				dataType = DataType.Int32
-				value = parseInt(inputValue)
-			} else {
-				dataType = DataType.String
-				value = inputValue
-			}
-			const nodeToWrite = {
-				nodeId,
-				attributeId: AttributeIds.Value,
-				value: {
-					value: {
-						dataType,
-						value
+			const nodesToWrite = nodes.map((node) => {
+				const { nodeId, registerType, inputValue } = node
+					let dataType
+					let value
+					if (registerType === 'BOOLEAN') {
+						dataType = DataType.Boolean
+						value = inputValue + '' === 'true'
+					} else if (registerType === 'FLOAT') {
+						dataType = DataType.Float
+						value = parseFloat(inputValue)
+					} else if (registerType === 'DOUBLE') {
+						dataType = DataType.Double
+						value = parseFloat(inputValue)
+					} else if (registerType === 'INT16') {
+						dataType = DataType.Int16
+						value = parseInt(inputValue)
+					} else if (registerType === 'INT32') {
+						dataType = DataType.Int32
+						value = parseInt(inputValue)
+					} else {
+						dataType = DataType.String
+						value = inputValue
 					}
+					return {
+						nodeId,
+						attributeId: AttributeIds.Value,
+						value: {
+							value: {
+								dataType,
+								value
+							}
+						}
+					}
+			})
+			const results = await this.session?.write(nodesToWrite).then((result) => {
+				if (result.some((r) => r.name !== 'Good')) {
+					log.error(`Write failed: ${JSON.stringify(result.filter((r) => r.name !== 'Good'))}`)
 				}
-			}
-			await this.session?.write(nodeToWrite).then((result) => { 
-				if (result.name !== 'Good') {
-					console.warn(result)
-				}
+				return result
 			}).catch((error) => { console.error(error); })
+			return results;
 		}
 	}
 }
