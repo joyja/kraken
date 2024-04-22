@@ -20,12 +20,12 @@ const require = createRequire(import.meta.url);
 function getDatatype (value:any, context:string):string {
   if (typeof value === 'boolean') {
     return 'BOOLEAN'
-  } else if (typeof value === 'string') {
+  } else if (typeof value === 'string' || value == null) {
     return 'STRING'
   } else if (typeof value === 'number') {
     return 'FLOAT'
   } else {
-    log.warn(`datatype of ${value} of ${context} could not be determined.`)
+    log.warn(`datatype of ${JSON.stringify(value)} of ${context} could not be determined.`)
     return 'STRING'
   }
 }
@@ -360,7 +360,7 @@ export class PLC {
                   : 0
                 const functionStart = process.hrtime()
                 try {
-                  program({ global })
+                  await program({ global })
                   const functionStop = process.hrtime(functionStart)
                   const functionModbusStart = process.hrtime()
                   for (const variableKey of Object.keys(this.variables)) {
@@ -404,14 +404,7 @@ export class PLC {
                       }
                     })
                     void await this.opcua[opcuaKey]
-                      .write(opcuaWriteNodes)
-                      .then((result) => {
-                        if (result != null) {
-                          for (let i = 0; i < result.length; i++) {
-                            this.global[opcuaNodeWriteVariables[i]] = result[i]
-                          }
-                        }
-                      })
+                    .write(opcuaWriteNodes)
                     void this.opcua[opcuaKey]
                       .readMany({ nodeIds: opcuaNodeIds })
                       .then((result) => {
@@ -422,6 +415,7 @@ export class PLC {
                         }
                       })
                   }
+                  
                   const functionOpcuaStop = process.hrtime(functionOpcuaStart)
                   const functionMqttStart = process.hrtime()
                   Promise.resolve().then(() => {

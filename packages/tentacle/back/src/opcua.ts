@@ -213,13 +213,13 @@ export class Opcua {
             .catch((error) => console.error(error));
   
           if (results) {
-            allResults = allResults.concat(results.map((result) => result.value.value));
+						allResults = allResults.concat(results.map((result) => result.value.value));
           }
         }
-  
+				const index = nodeIds.findIndex((nodeId) => nodeId.includes('Tentacle_Watchdog'))
         return allResults;
       } catch (error) {
-        console.error(error);
+        log.error(JSON.stringify(error));
       }
     }
   }
