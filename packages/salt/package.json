@@ -1,6 +1,6 @@
 {
 	"name": "kraken-salt",
-	"version": "0.0.17",
+	"version": "0.0.18",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
@@ -14,8 +14,10 @@
 		"test:unit": "vitest"
 	},
 	"exports": {
-		"./types": "./dist/index.d.ts",
-		".": "./dist/index.js",
+		".": [
+			"./dist/index.js",
+			{ "types":"./dist/index.d.ts" }
+		],
 		"./styles.scss": "./dist/styles/main.scss"
 	},
 	"files": [
@@ -24,12 +26,12 @@
 		"!dist/**/*.spec.*"
 	],
 	"peerDependencies": {
-		"svelte": "^4.0.0"
+		"svelte": "^4.0.0",
+		"@sveltejs/kit": "^2.5.5"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^3.0.0",
-		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/package": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"publint": "^0.1.9",
