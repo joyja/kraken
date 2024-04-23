@@ -14,7 +14,7 @@ interface ConstructorOptions {
 }
 
 interface ReadOptions {
-  registerType: 'INPUT_REGISTER' | 'HOLDING_REGISTER' | 'COIL'
+  registerType: 'INPUT_REGISTER' | 'HOLDING_REGISTER' | 'COIL' | 'INPUT'
   register: number
   format: 'FLOAT' | 'INT32' | 'INT16' | 'OTHER'
 }
@@ -130,7 +130,9 @@ export class Modbus {
       if (this.error === null || this.error === undefined) {
         this.retryCount = 0
         clearInterval(this.retryInterval)
-        log.info(`Connected to modbus device, host: ${this.host}, port: ${this.port}.`)
+        log.info(
+          `Connected to modbus device, host: ${this.host}, port: ${this.port}.`,
+        )
         this.connected = true
       } else {
         this.connected = false
@@ -196,11 +198,24 @@ export class Modbus {
               log.error(error)
             }
           })
+      } else if (registerType === 'INPUT') {
+        const quantity = 1
+        return await this.client
+          .readDiscreteInputs(register, quantity)
+          .then((data) => data.data[0])
+          .catch(async (error) => {
+            if (error.name === 'TransactionTimedOutError') {
+              await this.disconnect()
+              await this.connect()
+            } else {
+              log.error(error)
+            }
+          })
       } else if (registerType === 'COIL') {
         const quantity = 1
         return await this.client
           .readCoils(register, quantity)
-          .then((data) => (data.data[0]))
+          .then((data) => data.data[0])
           .catch(async (error) => {
             if (error.name === 'TransactionTimedOutError') {
               await this.disconnect()
