@@ -7,12 +7,13 @@ import type { SparkplugGroup, SparkplugMetricUpdate } from '$lib/types'
 async function getGroups(): Promise<SparkplugGroup[]> {
   return await sendRequest({
     query: query.groups,
-  }).then((res: { groups: SparkplugGroup[] }) => res.groups)
+  }).then((res: { groups: SparkplugGroup[] }) => {
+    console.log(res)
+    return res.groups
+  })
 }
 
-const groupsPromise = getGroups()
-
-let groups: SparkplugGroup[]
+const groups: SparkplugGroup[] = await getGroups()
 
 const subscriptions = [
   {
@@ -68,7 +69,6 @@ generateSources({ subscriptions })
 
 export const handle: Handle = async ({ event, resolve }) => {
   const theme = event.cookies.get('theme') ?? 'themeLight'
-  groups = await groupsPromise
   event.locals.groups = groups
   return resolve(event, {
     transformPageChunk: ({ html }) => html.replace('%theme%', theme),

@@ -1,6 +1,62 @@
 import type { SparkplugGroup } from '$lib/types'
 import { writable, derived } from 'svelte/store'
 
+type Group = {
+  id: string
+  nodes: Node[]
+}
+
+type Node = {
+  id: string
+  devices: Device[]
+}
+
+type Device = {
+  id: string
+  metrics: Metric[]
+}
+
+type Metric = {
+  id: string
+  value: string
+  type: string
+}
+
+type RestructuredNode = {
+  name: string
+  nodeType?: 'group' | 'node' | 'device' | 'metric'
+  value?: string | number
+  children?: RestructuredNode[]
+}
+
+function restructureData(
+  input: Group | Node | Device | Metric | (Group | Node | Device | Metric)[],
+): RestructuredNode | RestructuredNode[] {
+  if (Array.isArray(input)) {
+    return input.map(restructureData) as RestructuredNode[]
+  }
+
+  const result: RestructuredNode = {
+    name: input.id,
+  }
+
+  if ('nodes' in input) {
+    result.nodeType = 'group'
+    result.children = restructureData(input.nodes) as RestructuredNode[]
+  } else if ('devices' in input) {
+    result.nodeType = 'node'
+    result.children = restructureData(input.devices) as RestructuredNode[]
+  } else if ('metrics' in input) {
+    result.nodeType = 'device'
+    result.children = restructureData(input.metrics) as RestructuredNode[]
+  } else if (!['Node Control', 'Device Control'].includes(input.type)) {
+    result.nodeType = 'metric'
+    result.value = 1
+  }
+
+  return result
+}
+
 function calculateTotalMetricsPerGroup(group: SparkplugGroup): number {
   let totalMetrics = 0
 

@@ -1,5 +1,5 @@
 import { sendRequest } from '$lib/graphql/request.js'
-import { actions as saltActions } from 'kraken-salt'
+import { actions as saltActions } from '@joyautomation/salt'
 import * as query from '$lib/graphql/query'
 const { setTheme } = saltActions
 

@@ -1,5 +1,7 @@
 <script lang="ts">
-  import 'salt/dist/styles/main.scss'
+  import Group from '$lib/components/spb/Group.svelte'
+  import Legend from '$lib/components/spb/Legend.svelte'
+  export let data
 </script>
 
 <div class="flex justify-center">
@@ -8,7 +10,7 @@
     style="flex-basis: 1200px;"
   >
     <div class="flex"><Legend /></div>
-    {#each $groups as group}
+    {#each data.groups as group}
       <div><Group {group} /></div>
     {/each}
   </div>

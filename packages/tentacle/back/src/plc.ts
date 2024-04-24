@@ -14,9 +14,7 @@ import { Log } from 'coral'
 
 const log = new Log('plc')
 
-const require = createRequire(import.meta.url);
-
-function getDatatype (value:any, context:string):string {
+function getDatatype(value: any, context: string): string {
   if (typeof value === 'boolean') {
     return 'BOOLEAN'
   } else if (typeof value === 'string' || value == null) {
@@ -24,7 +22,9 @@ function getDatatype (value:any, context:string):string {
   } else if (typeof value === 'number') {
     return 'FLOAT'
   } else {
-    log.warn(`datatype of ${JSON.stringify(value)} of ${context} could not be determined.`)
+    log.warn(
+      `datatype of ${JSON.stringify(value)} of ${context} could not be determined.`,
+    )
     return 'STRING'
   }
 }
@@ -402,7 +402,7 @@ export class PLC {
                           void this.modbus[variable.source.name]
                             .read(variable.source.params)
                             .then((result) => {
-                              return this.global[variableKey] = result
+                              return (this.global[variableKey] = result)
                             })
                         }
                       }
@@ -418,24 +418,36 @@ export class PLC {
                         )
                       })
                       .filter((variableKey) => {
-                        return this.variables[variableKey].source?.type === 'opcua'
+                        return (
+                          this.variables[variableKey].source?.type === 'opcua'
+                        )
                       })
-                    const opcuaNodeWriteVariables = opcuaNodeVariables.filter((variableKey) => {
-                      return this.variables[variableKey].source?.bidirectional
-                    })
-                    const opcuaNodeIds = opcuaNodeVariables.map((variableKey) => {
-                      return this.variables[variableKey].source.params.nodeId
-                    })
-                    const opcuaWriteNodes = opcuaNodeWriteVariables.map((variableKey) => {
-                      return {
-                        nodeId: this.variables[variableKey].source.params.nodeId,
-                        attributeId: this.variables[variableKey].source.params.attributeId,
-                        registerType: this.variables[variableKey].source.params.registerType,
-                        inputValue: this.global[variableKey],
-                      }
-                    })
-                    void await this.opcua[opcuaKey]
-                    .write(opcuaWriteNodes)
+                    const opcuaNodeWriteVariables = opcuaNodeVariables.filter(
+                      (variableKey) => {
+                        return this.variables[variableKey].source?.bidirectional
+                      },
+                    )
+                    const opcuaNodeIds = opcuaNodeVariables.map(
+                      (variableKey) => {
+                        return this.variables[variableKey].source.params.nodeId
+                      },
+                    )
+                    const opcuaWriteNodes = opcuaNodeWriteVariables.map(
+                      (variableKey) => {
+                        return {
+                          nodeId:
+                            this.variables[variableKey].source.params.nodeId,
+                          attributeId:
+                            this.variables[variableKey].source.params
+                              .attributeId,
+                          registerType:
+                            this.variables[variableKey].source.params
+                              .registerType,
+                          inputValue: this.global[variableKey],
+                        }
+                      },
+                    )
+                    void (await this.opcua[opcuaKey].write(opcuaWriteNodes))
                     void this.opcua[opcuaKey]
                       .readMany({ nodeIds: opcuaNodeIds })
                       .then((result) => {
@@ -446,7 +458,7 @@ export class PLC {
                         }
                       })
                   }
-                  
+
                   const functionOpcuaStop = process.hrtime(functionOpcuaStart)
                   const functionMqttStart = process.hrtime()
                   Promise.resolve().then(() => {
@@ -506,7 +518,10 @@ export class PLC {
                           this.mqtt[mqttKey].queue.push({
                             name: `memoryUsage.${key}`,
                             value: memoryUsage[key as keyof MemoryUsage],
-                            type: getDatatype(memoryUsage[key as keyof MemoryUsage], key),
+                            type: getDatatype(
+                              memoryUsage[key as keyof MemoryUsage],
+                              key,
+                            ),
                             timestamp: getUnixTime(new Date()),
                           })
                         })
@@ -594,9 +609,11 @@ export class PLC {
       this.intervals = []
       Object.keys(this.global).forEach((variableKey) => {
         if (this.global[variableKey]?.intervals != null) {
-          this.global[variableKey].intervals.forEach((interval:ReturnType<typeof setInterval>) => {
-            clearInterval(interval)
-          })
+          this.global[variableKey].intervals.forEach(
+            (interval: ReturnType<typeof setInterval>) => {
+              clearInterval(interval)
+            },
+          )
           this.global[variableKey].intervals = []
         }
       })

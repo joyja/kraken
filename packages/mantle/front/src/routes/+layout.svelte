@@ -6,8 +6,8 @@
   import Chart from '$lib/components/icons/Chart.svelte'
   import ChevronRight from '$lib/components/icons/ChevronRight.svelte'
   import Squares from '$lib/components/icons/Squares.svelte'
-  import { ThemeButton, Toast, client } from 'kraken-salt'
-  import 'kraken-salt/styles.scss'
+  import { ThemeButton, Toast, client } from '@joyautomation/salt'
+  import '@joyautomation/salt/styles.scss'
   export let data
   const { setTheme } = client
 
@@ -33,7 +33,7 @@
       showMenu = !showMenu
     }}
   >
-    <ChevronRight size="2rem" />
+    <ChevronRight size="1rem" />
   </button>
   <ul>
     <li>
