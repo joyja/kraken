@@ -366,15 +366,19 @@ export class PLC {
                   for (const variableKey of Object.keys(this.variables)) {
                     const variable = this.variables[variableKey]
                     if (variable.source !== undefined) {
-                      if (variable.source.type === 'modbus' && variable.source.bidirectional) {
-                        await this.modbus[variable.source.name].write({
-                          value: [this.global[variableKey]],
-                          ...variable.source.params,
-                        })
+                      if (variable.source.type === 'modbus') {
+                        if (variable.source.bidirectional) {
+                          await this.modbus[variable.source.name].write({
+                            value: [this.global[variableKey]],
+                            ...variable.source.params,
+                          })
+                        }
                         if (this.modbus[variable.source.name].connected) {
                           void this.modbus[variable.source.name]
                             .read(variable.source.params)
-                            .then((result) => (this.global[variableKey] = result))
+                            .then((result) => {
+                              return this.global[variableKey] = result
+                            })
                         }
                       }
                     }

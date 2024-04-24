@@ -451,10 +451,10 @@
 		grid-row-start: 1;
 		grid-row: span 2;
 		& > button {
+			color: var(--theme-neutral-950);
 			flex-grow: 1;
 			background-color: transparent;
 			transition: background-color 0.3s ease-out;
-			font-weight: var(--text-md);
 		}
 		& > button:hover {
 			background-color: var(--theme-primary);
