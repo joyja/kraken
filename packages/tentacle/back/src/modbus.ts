@@ -14,7 +14,7 @@ interface ConstructorOptions {
 }
 
 interface ReadOptions {
-  registerType: 'INPUT_REGISTER' | 'HOLDING_REGISTER' | 'COIL'
+  registerType: 'INPUT_REGISTER' | 'HOLDING_REGISTER' | 'COIL' | 'INPUT'
   register: number
   format: 'FLOAT' | 'INT32' | 'INT16' | 'OTHER'
 }
@@ -190,6 +190,19 @@ export class Modbus {
         return await this.client
           .readHoldingRegisters(register, quantity)
           .then((data) => this.formatValue(data.data, format))
+          .catch(async (error) => {
+            if (error.name === 'TransactionTimedOutError') {
+              await this.disconnect()
+              await this.connect()
+            } else {
+              log.error(error)
+            }
+          })
+      } else if (registerType === 'INPUT') {
+        const quantity = 1
+        return await this.client
+          .readDiscreteInputs(register, quantity)
+          .then((data) => data.data[0])
           .catch(async (error) => {
             if (error.name === 'TransactionTimedOutError') {
               await this.disconnect()

@@ -1,17 +1,18 @@
 import {
-  DataType,
-  OPCUAClient,
-  MessageSecurityMode,
-  SecurityPolicy,
-  AttributeIds,
-  type ClientSession,
+	DataType,
+	OPCUAClient,
+	MessageSecurityMode,
+	SecurityPolicy,
+	AttributeIds,
+	type ClientSession,
+	DataValue
 } from 'node-opcua'
 
 import { NodeCrawler } from 'node-opcua-client-crawler'
 
 import { Log } from 'coral'
 
-const log = new Log('OPCUA')
+const log = new Log('opcua')
 
 interface ConstructorOptions {
   initialDelay?: number
@@ -93,43 +94,44 @@ export class Opcua {
     })
   }
 
-  async connect(): Promise<void> {
-    if (!this.connected) {
-      this.error = null
-      log.info(
-        `Connecting to opcua device, host: ${this.host}, port: ${this.port}.`,
-      )
-      await this.client
-        .connect(`opc.tcp://${this.host}:${this.port}`)
-        .catch((error) => {
-          this.error = error.message
-          this.connected = false
-          if (!this.retryInterval) {
-            this.retryInterval = setInterval(() => {
-              log.info(
-                `Retrying connection to opcua device, retry attempts: ${this.retryCount}.`,
-              )
-              this.retryCount += 1
-              void this.connect()
-            }, this.retryRate)
-          }
-        })
-      if (!this.error !== null) {
-        this.retryCount = 0
-        clearInterval(this.retryInterval)
-        log.info(
-          `Connected to opcua device, host: ${this.host}, port: ${this.port}.`,
-        )
-        this.connected = true
-        this.session = await this.client.createSession()
-      } else {
-        this.connected = false
-        log.info(
-          `Connection failed to opcua device, host: ${this.host}, port: ${this.port}, with error: ${this.error}.`,
-        )
-      }
-    }
-  }
+	async connect(): Promise<void> {
+		if (!this.connected) {
+			this.error = null
+			log.info(`Connecting to opcua device, host: ${this.host}, port: ${this.port}.`)
+			await this.client.connect(`opc.tcp://${this.host}:${this.port}`).catch((error) => {
+				this.error = error.message
+				this.connected = false
+				if (!this.retryInterval) {
+					this.retryInterval = setInterval(() => {
+						log.info(`Retrying connection to opcua device, retry attempts: ${this.retryCount}.`)
+						this.retryCount += 1
+						void this.connect()
+					}, this.retryRate)
+				}
+			})
+			if (!this.error !== null) {
+				this.session = await this.client.createSession()
+					.then((session) => {
+						this.retryCount = 0
+						log.info(`Connected to opcua device, host: ${this.host}, port: ${this.port}.`)
+						clearInterval(this.retryInterval)
+						this.connected = true
+						return session
+					})
+					.catch((error) => {
+						this.error = error.message
+						log.error(error.message)
+						this.connected = false
+						return undefined
+					})
+			} else {
+				this.connected = false
+				log.info(
+					`Connection failed to opcua device, host: ${this.host}, port: ${this.port}, with error: ${this.error}.`
+				)
+			}
+		}
+	}
 
   async disconnect(): Promise<void> {
     this.retryCount = 0
@@ -181,70 +183,89 @@ export class Opcua {
     }
   }
 
-  async read({ nodeIds }: ReadManyOptions): Promise<any[] | undefined> {
+
+	async readMany({ nodeIds }: ReadManyOptions): Promise<any[] | undefined>{
     if (this.connected) {
       try {
-        const results = await this.session
-          ?.read(
-            nodeIds.map((nodeId) => {
+        // Function to split array into chunks
+        const chunkArray = (arr:string[], chunkSize:number) => {
+          const chunks = [];
+          for (let i = 0; i < arr.length; i += chunkSize) {
+            chunks.push(arr.slice(i, i + chunkSize));
+          }
+          return chunks;
+        };
+  
+        // Splitting nodeIds into chunks of 50
+        const nodeIdChunks = chunkArray(nodeIds, 50);
+				let allResults:DataValue[] = [];
+				
+        // Processing each chunk
+        for (const chunk of nodeIdChunks) {
+          const results = await this.session
+            ?.read(chunk.map((nodeId) => {
               return {
                 nodeId,
-                attributeId: AttributeIds.Value,
-              }
-            }),
-          )
-          .catch((error) => {
-            console.error(error)
-          })
-        return results?.map((result) => {
-          return result.value.value
-        })
+                attributeId: AttributeIds.Value
+              };
+            }))
+            .catch((error) => console.error(error));
+  
+          if (results) {
+						allResults = allResults.concat(results.map((result) => result.value.value));
+          }
+        }
+				const index = nodeIds.findIndex((nodeId) => nodeId.includes('Tentacle_Watchdog'))
+        return allResults;
       } catch (error) {
-        console.error(error)
+        log.error(JSON.stringify(error));
       }
     }
   }
 
-  async write({
-    inputValue,
-    nodeId,
-    registerType,
-  }: WriteOptions): Promise<void> {
-    if (this.connected) {
-      let dataType
-      let value
-      if (registerType === 'BOOLEAN') {
-        dataType = DataType.Boolean
-        value = inputValue + '' === 'true'
-      } else if (registerType === 'FLOAT') {
-        dataType = DataType.Float
-        value = parseFloat(inputValue)
-      } else if (registerType === 'DOUBLE') {
-        dataType = DataType.Double
-        value = parseFloat(inputValue)
-      } else if (registerType === 'INT16') {
-        dataType = DataType.Int16
-        value = parseInt(inputValue)
-      } else if (registerType === 'INT32') {
-        dataType = DataType.Int32
-        value = parseInt(inputValue)
-      } else {
-        dataType = DataType.String
-        value = inputValue
-      }
-      const nodeToWrite = {
-        nodeId,
-        attributeId: AttributeIds.Value,
-        value: {
-          value: {
-            dataType,
-            value,
-          },
-        },
-      }
-      await this.session?.write(nodeToWrite).catch((error) => {
-        console.error(error)
-      })
-    }
-  }
+	async write(nodes: WriteOptions[]): Promise<any | undefined> {
+		if (this.connected) {
+			const nodesToWrite = nodes.map((node) => {
+				const { nodeId, registerType, inputValue } = node
+					let dataType
+					let value
+					if (registerType === 'BOOLEAN') {
+						dataType = DataType.Boolean
+						value = inputValue + '' === 'true'
+					} else if (registerType === 'FLOAT') {
+						dataType = DataType.Float
+						value = parseFloat(inputValue)
+					} else if (registerType === 'DOUBLE') {
+						dataType = DataType.Double
+						value = parseFloat(inputValue)
+					} else if (registerType === 'INT16') {
+						dataType = DataType.Int16
+						value = parseInt(inputValue)
+					} else if (registerType === 'INT32') {
+						dataType = DataType.Int32
+						value = parseInt(inputValue)
+					} else {
+						dataType = DataType.String
+						value = inputValue
+					}
+					return {
+						nodeId,
+						attributeId: AttributeIds.Value,
+						value: {
+							value: {
+								dataType,
+								value
+							}
+						}
+					}
+			})
+			const results = await this.session?.write(nodesToWrite).then((result) => {
+				if (result.some((r) => r.name !== 'Good')) {
+					log.error(`Write failed: ${JSON.stringify(result.filter((r) => r.name !== 'Good'))}`)
+				}
+				return result
+			}).catch((error) => { console.error(error); })
+			return results;
+		}
+	}
 }

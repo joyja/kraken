@@ -97,7 +97,7 @@ export function values(): Array<{
   return Object.keys(values).map((key) => {
     return {
       path: key,
-      value: values[key],
+      value: JSON.stringify(values[key]),
       datatype: typeof values[key],
     }
   })

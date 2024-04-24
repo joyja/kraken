@@ -35,7 +35,7 @@ async function getVariables() {
 								contextParams.value = value.value
 							}
 						}
-						contextParams.path = value.path
+						contextParams.path = value?.path
 					} else {
 						const children = variable.children.map(
 							(child: { name: string; value: { path: string }; datatype?: string }) => {

@@ -43,7 +43,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background-color: #ccc;
+		background-color: var(--theme-neutral-400);
 		-webkit-transition: 0.4s;
 		transition: 0.4s;
 		border-radius: calc(var(--toggle-size) * 0.6); /* 60% of the width */
@@ -61,6 +61,10 @@
 		-webkit-transition: 0.4s;
 		transition: 0.4s;
 		border-radius: 50%;
+	}
+
+	.toggle-switch {
+		background-color: transparent;
 	}
 
 	.toggle-switch--active > .slider {

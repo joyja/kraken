@@ -2,12 +2,15 @@ import { type UPayload, newClient } from 'kraken-sparkplug-client'
 import { getUnixTime } from 'date-fns'
 import _ from 'lodash'
 import { denormalize } from './denormalize.js'
+import { Log } from 'coral'
+
+const log = new Log('mqtt')
 
 const getDatatype = function (value: any): string {
   if (typeof value === 'boolean') {
     return 'BOOLEAN'
   }
-  if (typeof value === 'string') {
+  if (typeof value === 'string' || value == null) {
     return 'STRING'
   }
   if (typeof value === 'number') {
@@ -16,7 +19,7 @@ const getDatatype = function (value: any): string {
     }
     return 'FLOAT'
   }
-  console.error(`datatype of ${value} could not be determined.`)
+  log.warn(`datatype of ${value} could not be determined.`)
   return 'STRING'
 }
 
@@ -147,19 +150,28 @@ export class Mqtt {
     if (this.client === null || this.client === undefined) {
       this.client = newClient(this.config)
       this.client.on('reconnect', () => {
+        log.info('client reconnected')
         void this.onReconnect()
       })
-      // this.client.on('error',this.onError)
-      // this.client.on('offline',this.onOffline)
+      this.client.on('error', (message:string) => {
+        log.error(message)
+      })
+      this.client.on('offline', () => {
+        log.info('client offline')
+      })
+      this.client.on('connect', () => {
+        log.info('client connected')
+      })
       this.client.on('birth', () => {
+        log.info('client born')
         void this.onBirth()
       })
       this.client.on('dcmd', (deviceId: string, payload: UPayload) => {
-        console.log(`Mqtt service received a dcmd for ${deviceId}.`)
+        log.info(`Received a dcmd for ${deviceId}.`)
         try {
           this.onDcmd(payload)
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
       })
       this.client.on('ncmd', async (payload: UPayload) => {
@@ -168,7 +180,7 @@ export class Mqtt {
             (metric) => metric.name === `Node Control/Rebirth`,
           )
           if (rebirth?.value !== null && rebirth?.value !== undefined) {
-            console.log(`Rebirth request detected. Reinitializing...`)
+            log.info(`Rebirth request detected. Reinitializing...`)
             await this.disconnect()
             this.connect()
           }
@@ -179,7 +191,7 @@ export class Mqtt {
 
   async disconnect(): Promise<void> {
     if (this.client !== null && this.client !== undefined) {
-      console.log(`Mqtt service is disconnecting.`)
+      log.info(`Mqtt service is disconnecting.`)
       this.stopPublishing()
       const payload = {
         timestamp: getUnixTime(new Date()),
@@ -270,7 +282,7 @@ export class Mqtt {
         }
       }
       return {
-        name: key.replaceAll('.', '/'),
+        name: key,
         value: global[key],
         type: getDatatype(global[key]),
         timestamp: getUnixTime(new Date()),
