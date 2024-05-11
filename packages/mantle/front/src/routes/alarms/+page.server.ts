@@ -4,14 +4,14 @@ import * as query from '$lib/graphql/query'
 const { setTheme } = saltActions
 
 export const actions = {
-  setTheme,
+	setTheme
 }
 
 export const load = async () => {
-  const alarmHistory = await sendRequest({ query: query.alarmHistory }).then(
-    (res) => res.alarmHistory,
-  )
-  return {
-    alarmHistory,
-  }
+	const alarmHistory = await sendRequest({ query: query.alarmHistory }).then(
+		(res) => res.alarmHistory
+	)
+	return {
+		alarmHistory
+	}
 }

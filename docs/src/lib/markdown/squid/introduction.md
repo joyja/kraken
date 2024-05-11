@@ -1,0 +1,3 @@
+# Introduction
+
+Squid is an edge compute orchestrator, designed to automatically publish system metrics to MQTT sparkplug B and also allow for easy setup of common edge architectures, including Secure Remote Access (SRA), Docker, Incus, and Microk8s. Squid has Sparkplug B Node Control endpoints allowing for cloud systems (like mantle) to publish commands that will tell Squid to setup edge software, deploy workloads, and make configuration changes.

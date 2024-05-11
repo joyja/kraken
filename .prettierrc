@@ -1,5 +1,10 @@
 {
-  "semi": false,
-  "singleQuote": true,
-  "endOfLine": "auto"
+	"semi": false,
+	"useTabs": true,
+	"singleQuote": true,
+	"trailingComma": "none",
+	"endOfLine": "auto",
+	"plugins": ["prettier-plugin-svelte"],
+	"pluginSearchDirs": ["."],
+	"overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
 }

@@ -19,7 +19,11 @@
 		"@sveltejs/kit": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^3.1.0",
 		"@types/d3": "^7.4.3",
+		"@types/eslint": "^8.56.0",
 		"@types/eventsource": "^1.1.15",
+		"@types/ramda": "^0.29.12",
+		"@typescript-eslint/eslint-plugin": "^7.0.0",
+		"@typescript-eslint/parser": "^7.0.0",
 		"date-fns": "^3.6.0",
 		"svelte": "^4.2.15",
 		"svelte-check": "^3.6.9",
@@ -30,10 +34,12 @@
 	},
 	"dependencies": {
 		"@fontsource/oswald": "^5.0.20",
-		"@joyautomation/salt": "^0.0.2",
+		"@joyautomation/salt": "^0.0.4",
 		"@sveltejs/adapter-node": "^5.0.1",
 		"d3": "^7.9.0",
 		"eventsource": "^2.0.2",
+		"long": "^5.2.3",
+		"ramda": "^0.29.1",
 		"sass": "^1.75.0"
 	},
 	"type": "module"
