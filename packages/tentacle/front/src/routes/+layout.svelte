@@ -41,9 +41,9 @@
 	let interval: ReturnType<typeof setInterval>;
 	onMount(() => {
 		// Initialize Prism.js
-		interval = setInterval(() => {
-			invalidate('/api/values');
-		}, 2500);
+		// interval = setInterval(() => {
+		// 	invalidate('/api/values');
+		// }, 2500);
 	});
 	onDestroy(() => {
 		clearInterval(interval);

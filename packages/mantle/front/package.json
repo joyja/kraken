@@ -32,7 +32,7 @@
 		"vitest": "^0.25.3"
 	},
 	"dependencies": {
-		"kraken-salt": "^0.0.1",
+		"kraken-salt": "^0.0.18",
 		"sass": "^1.74.1"
 	},
 	"type": "module"
