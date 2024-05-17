@@ -1,17 +1,17 @@
-import { variableEvents } from '$lib/sse.js'
+import { metricEvents } from '$lib/sse.js'
 
 export function GET({ locals }) {
 	/** @type {ReturnType<typeof setInterval> | undefined} */
-	let onChange:() => void
+	let onChange:(metrics:any) => void
 	const stream = new ReadableStream({
 		start(controller) {
-			onChange = () => {
-				controller.enqueue('event:message\ndata: ' + JSON.stringify({ variables: locals.variables }) + '\n\n');
+			onChange = (metrics) => {
+				controller.enqueue('event:message\ndata: ' + JSON.stringify({ metrics }) + '\n\n');
 			}
-			variableEvents.on('change', onChange)		
+			metricEvents.on('change', onChange)		
 		},
 		cancel() {
-			variableEvents.off('change', onChange)
+			metricEvents.off('change', onChange)
 		}
 	});
 	return new Response(stream, {

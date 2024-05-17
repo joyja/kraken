@@ -407,8 +407,10 @@ export class PLC {
                         inputValue: this.global[variableKey],
                       }
                     })
-                    void await this.opcua[opcuaKey]
-                    .write(opcuaWriteNodes)
+                    if (opcuaWriteNodes.length > 0) {
+                      void await this.opcua[opcuaKey]
+                        .write(opcuaWriteNodes)
+                    }
                     void this.opcua[opcuaKey]
                       .readMany({ nodeIds: opcuaNodeIds })
                       .then((result) => {

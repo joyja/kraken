@@ -26,6 +26,9 @@
 	
 	export let data: PageData;
 	let variables = data?.variables
+	let metrics = data?.metrics
+	let changes = data?.changes
+
 	export let form;
 	$: if (form?.context === 'setTheme') {
 		if (form?.theme === 'themeDark') {
@@ -42,7 +45,7 @@
 			editVariableValue = null
 		}
 	}
-	$: filteredVariables = variables.filter((variable:{name:string, description:string}) => {
+	$: filteredVariables = variables?.filter((variable:{name:string, description:string}) => {
 		return variable.name.toLowerCase().includes(variableFilter?.toLowerCase() || '') || variable.description.toLowerCase().includes(variableFilter?.toLowerCase() || '')
 	})
 	let codes = [
@@ -67,17 +70,29 @@
 	$: tasks = data?.config?.tasks?.map((task:Task) => {
 		return {
 			...task,
-			...data?.metrics?.find((metric:Metric) => {
+			...metrics?.find((metric:Metric) => {
 				return task.name === metric.task;
 			})
 		};
 	});
 	function subscribe() {
-		const sse = new EventSource('/api/sse/values');
-		sse.onmessage = (e) => {
+		const sseValues = new EventSource('/api/sse/values');
+		sseValues.onmessage = (e) => {
 			variables = JSON.parse(e.data).variables
 		}
-		return () => sse.close();
+		const sseMetrics = new EventSource('/api/sse/metrics');
+		sseMetrics.onmessage = (e) => {
+			metrics = JSON.parse(e.data).metrics
+		}
+		const sseChanges = new EventSource('/api/sse/changes');
+		sseChanges.onmessage = (e) => {
+			changes = JSON.parse(e.data).changes
+		}
+		return () => {
+			sseValues.close()
+			sseMetrics.close()
+			sseChanges.close()
+		};
 	}
 	onMount(subscribe)
 </script>
@@ -99,8 +114,8 @@
 	<div class="card changes">
 		<p class="card__header">Changes</p>
 		<ul class="card__content space-y-3">
-			{#if data?.changes && data.changes.length > 0}
-				{#each data?.changes || [] as change}
+			{#if changes && changes.length > 0}
+				{#each changes || [] as change}
 					<li class="flex align-center space-x-1">
 						<div>
 							{#if change.event === 'add'}

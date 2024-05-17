@@ -201,7 +201,7 @@ importers:
         version: 5.4.4
       vite:
         specifier: ^4.3.6
-        version: 4.5.3(@types/node@18.19.30)(sass@1.74.1)
+        version: 4.5.3(@types/node@20.12.5)(sass@1.74.1)
       vitest:
         specifier: ^0.32.2
         version: 0.32.4(sass@1.74.1)
@@ -366,7 +366,7 @@ importers:
         version: 5.4.4
       vite:
         specifier: ^4.3.0
-        version: 4.5.3(@types/node@18.19.30)(sass@1.74.1)
+        version: 4.5.3(@types/node@20.12.5)(sass@1.74.1)
       vitest:
         specifier: ^0.25.3
         version: 0.25.8(sass@1.74.1)
@@ -593,7 +593,7 @@ importers:
         version: 5.4.4
       vite:
         specifier: ^4.3.0
-        version: 4.5.3(@types/node@18.19.30)(sass@1.74.1)
+        version: 4.5.3(@types/node@20.12.5)(sass@1.74.1)
       vitest:
         specifier: ^0.25.3
         version: 0.25.8(sass@1.74.1)
@@ -642,6 +642,9 @@ importers:
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
+      ramda:
+        specifier: ^0.30.0
+        version: 0.30.0
       typescript:
         specifier: ^5.4.4
         version: 5.4.4
@@ -658,6 +661,9 @@ importers:
       '@types/lodash':
         specifier: ^4.17.0
         version: 4.17.0
+      '@types/ramda':
+        specifier: ^0.30.0
+        version: 0.30.0
       nodemon:
         specifier: ^3.1.0
         version: 3.1.0
@@ -772,7 +778,7 @@ importers:
         version: 5.4.4
       vite:
         specifier: ^4.4.2
-        version: 4.5.3(@types/node@18.19.30)(sass@1.74.1)
+        version: 4.5.3(@types/node@20.12.5)(sass@1.74.1)
       vitest:
         specifier: ^0.32.2
         version: 0.32.4(sass@1.74.1)
@@ -4032,7 +4038,7 @@ packages:
       svelte: 3.59.2
       tiny-glob: 0.2.9
       undici: 5.28.4
-      vite: 4.5.3(@types/node@18.19.30)(sass@1.74.1)
+      vite: 4.5.3(@types/node@20.12.5)(sass@1.74.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -4059,7 +4065,7 @@ packages:
       svelte: 4.2.12
       tiny-glob: 0.2.9
       undici: 5.28.4
-      vite: 4.5.3(@types/node@18.19.30)(sass@1.74.1)
+      vite: 4.5.3(@types/node@20.12.5)(sass@1.74.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -4132,7 +4138,7 @@ packages:
       '@sveltejs/vite-plugin-svelte': 2.5.3(svelte@4.2.12)(vite@4.5.3)
       debug: 4.3.4(supports-color@5.5.0)
       svelte: 4.2.12
-      vite: 4.5.3(@types/node@18.19.30)(sass@1.74.1)
+      vite: 4.5.3(@types/node@20.12.5)(sass@1.74.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -4184,7 +4190,7 @@ packages:
       magic-string: 0.30.9
       svelte: 4.2.12
       svelte-hmr: 0.15.3(svelte@4.2.12)
-      vite: 4.5.3(@types/node@18.19.30)(sass@1.74.1)
+      vite: 4.5.3(@types/node@20.12.5)(sass@1.74.1)
       vitefu: 0.2.5(vite@4.5.3)
     transitivePeerDependencies:
       - supports-color
@@ -4512,6 +4518,12 @@ packages:
 
   /@types/qs@6.9.14:
     resolution: {integrity: sha512-5khscbd3SwWMhFqylJBLQ0zIu7c1K6Vz0uBIt915BI3zV0q1nfjRQD3RqSBcPaO6PHEF4ov/t9y89fSiyThlPA==}
+    dev: true
+
+  /@types/ramda@0.30.0:
+    resolution: {integrity: sha512-DQtfqUbSB18iM9NHbQ++kVUDuBWHMr6T2FpW1XTiksYRGjq4WnNPZLt712OEHEBJs7aMyJ68Mf2kGMOP1srVVw==}
+    dependencies:
+      types-ramda: 0.30.0
     dev: true
 
   /@types/range-parser@1.2.7:
@@ -7336,7 +7348,7 @@ packages:
       eslint-plugin-promise: ^6.0.0
     dependencies:
       eslint: 8.57.0
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.6.0)(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@6.21.0)(eslint@8.57.0)
       eslint-plugin-n: 16.6.2(eslint@8.57.0)
       eslint-plugin-promise: 6.1.1(eslint@8.57.0)
     dev: true
@@ -11605,6 +11617,10 @@ packages:
     resolution: {integrity: sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==}
     engines: {node: '>=10'}
 
+  /ramda@0.30.0:
+    resolution: {integrity: sha512-13Y0iMhIQuAm/wNGBL/9HEqIfRGmNmjKnTPlKWfA9f7dnDkr8d45wQ+S7+ZLh/Pq9PdcGxkqKUEA7ySu1QSd9Q==}
+    dev: false
+
   /range-parser@1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
@@ -12966,6 +12982,10 @@ packages:
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
+  /ts-toolbelt@9.6.0:
+    resolution: {integrity: sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==}
+    dev: true
+
   /tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
     dependencies:
@@ -13121,6 +13141,12 @@ packages:
 
   /typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
+
+  /types-ramda@0.30.0:
+    resolution: {integrity: sha512-oVPw/KHB5M0Du0txTEKKM8xZOG9cZBRdCVXvwHYuNJUVkAiJ9oWyqkA+9Bj2gjMsHgkkhsYevobQBWs8I2/Xvw==}
+    dependencies:
+      ts-toolbelt: 9.6.0
+    dev: true
 
   /typescript@4.9.5:
     resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}

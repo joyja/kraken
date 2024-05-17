@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+import * as R from 'ramda';
+/* eslint-disable @typescript-eslint/strict-boolean-exressions */
 import {
 	DataType,
 	OPCUAClient,
@@ -230,24 +231,14 @@ export class Opcua {
 				const { nodeId, registerType, inputValue } = node
 					let dataType
 					let value
-					if (registerType === 'BOOLEAN') {
+					if (registerType === 'Boolean') {
 						dataType = DataType.Boolean
 						value = inputValue + '' === 'true'
-					} else if (registerType === 'FLOAT') {
-						dataType = DataType.Float
-						value = parseFloat(inputValue)
-					} else if (registerType === 'DOUBLE') {
-						dataType = DataType.Double
-						value = parseFloat(inputValue)
-					} else if (registerType === 'INT16') {
-						dataType = DataType.Int16
-						value = parseInt(inputValue)
-					} else if (registerType === 'INT32') {
-						dataType = DataType.Int32
-						value = parseInt(inputValue)
-					} else {
-						dataType = DataType.String
+					} else if (R.includes(registerType, R.keys(DataType))) {
+						dataType = DataType[registerType as keyof typeof DataType]
 						value = inputValue
+					} else {	
+						throw Error(`Register type ${registerType} not supported. Must be one of ${R.keys(DataType).join(', ')}`)
 					}
 					return {
 						nodeId,

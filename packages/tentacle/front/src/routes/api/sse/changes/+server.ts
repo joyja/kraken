@@ -1,17 +1,17 @@
-import { variableEvents } from '$lib/sse.js'
+import { changeEvents } from '$lib/sse.js'
 
 export function GET({ locals }) {
 	/** @type {ReturnType<typeof setInterval> | undefined} */
-	let onChange:() => void
+	let onChange:(changes:any) => void
 	const stream = new ReadableStream({
 		start(controller) {
-			onChange = () => {
-				controller.enqueue('event:message\ndata: ' + JSON.stringify({ variables: locals.variables }) + '\n\n');
+			onChange = (changes) => {
+				controller.enqueue('event:message\ndata: ' + JSON.stringify({ changes }) + '\n\n');
 			}
-			variableEvents.on('change', onChange)		
+			changeEvents.on('change', onChange)		
 		},
 		cancel() {
-			variableEvents.off('change', onChange)
+			changeEvents.off('change', onChange)
 		}
 	});
 	return new Response(stream, {

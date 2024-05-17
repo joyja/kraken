@@ -4,7 +4,7 @@ import type { Handle } from '@sveltejs/kit';
 import EventSource from 'eventsource';
 import { env } from '$env/dynamic/private';
 import { Effect, Schedule, pipe } from 'effect';
-import { variableEvents } from '$lib/variables';
+import { changeEvents, metricEvents, variableEvents } from '$lib/sse';
 
 const policy = Schedule.fixed("1000 millis")
 
@@ -105,14 +105,16 @@ function generateSources () {
     action: async ({ data }:{data:string}) => {
       if (variablesResolved) {
         const variablesResult = await variables
-        const values = JSON.parse(data).data.values
-        variablesResult.forEach((variable:{name: string, value:string}) => {
-          values.forEach((value:{name:string, value:string}) => {
-            if (variable.name === value.name) {
-              variable.value = value.value
-            }
+        const values = JSON.parse(data).data?.values
+        if (values) {
+          variablesResult.forEach((variable:{name: string, value:string}) => {
+            values.forEach((value:{name:string, value:string}) => {
+              if (variable.name === value.name) {
+                variable.value = value.value
+              }
+            })
           })
-        })
+        }
       }
       tentacleStatus.connected = true
       variableEvents.emit('change')
@@ -129,6 +131,7 @@ function generateSources () {
     }`,
     action: async ({ data }:{data:string}) => {
       taskMetrics = JSON.parse(data).data.taskMetrics
+      metricEvents.emit('change', taskMetrics)
     }
   },{
     query: `subscription { 
@@ -140,6 +143,7 @@ function generateSources () {
     }`,
     action: async ({ data }:{data:string}) => {
       changes = JSON.parse(data).data.changes
+      changeEvents.emit('change', changes)
     }
   },{
     query: `subscription { 
