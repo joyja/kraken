@@ -10,6 +10,7 @@ export async function load({ url, cookies }) {
     .then(res => res.data?.configuration)
     .catch(error => {
       message = error.message
+      return []
   })
   const programs = await sendRequest({
     query: query.programs
@@ -17,6 +18,7 @@ export async function load({ url, cookies }) {
     .then((res) => res.data?.programs)
     .catch(error => {
       message = error.message
+      return []
     })
   const classes = await sendRequest({
     query: query.classes
@@ -24,6 +26,7 @@ export async function load({ url, cookies }) {
     .then(res => res.data?.tClasses)
     .catch(error => {
       message = error.message
+      return []
     })
 
   const codeserverHost = process.env.TENTACLE_CODESERVER_HOST || url.hostname
@@ -37,6 +40,7 @@ export async function load({ url, cookies }) {
     .then(res => res.data?.tPlc.running)
     .catch(error => {
       message = error.message
+      return []
     })
   return {
     theme,
@@ -45,9 +49,9 @@ export async function load({ url, cookies }) {
     config,
     programs,
     classes,
-    mqtt: config.mqtt || [],
-    opcua: config.opcua || [],
-    modbus: config.modbus || [],
+    mqtt: config?.mqtt || [],
+    opcua: config?.opcua || [],
+    modbus: config?.modbus || [],
     codeserverEndpoint
   }
 }

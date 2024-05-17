@@ -14,16 +14,21 @@
 	import Pencil from '$lib/components/icons/Pencil.svelte';
 	import Toggle from '$lib/components/Toggle.svelte'
 	import Xmark from '$lib/components/icons/Xmark.svelte'
+	import { onMount } from 'svelte'
 	
 	let editVariable:string | null = null
 	let editVariableValue:string | null = null
 	let variableFilter:string | null = null
-
+	
 	// Then register the languages you need
 	hljs.registerLanguage('javascript', javascript);
 	hljs.registerLanguage('typescript', typescript);
-
+	
 	export let data: PageData;
+	let variables = data?.variables
+	let metrics = data?.metrics
+	let changes = data?.changes
+
 	export let form;
 	$: if (form?.context === 'setTheme') {
 		if (form?.theme === 'themeDark') {
@@ -40,7 +45,7 @@
 			editVariableValue = null
 		}
 	}
-	$: filteredVariables = data?.variables.filter((variable:{name:string, description:string}) => {
+	$: filteredVariables = variables?.filter((variable:{name:string, description:string}) => {
 		return variable.name.toLowerCase().includes(variableFilter?.toLowerCase() || '') || variable.description.toLowerCase().includes(variableFilter?.toLowerCase() || '')
 	})
 	let codes = [
@@ -65,20 +70,52 @@
 	$: tasks = data?.config?.tasks?.map((task:Task) => {
 		return {
 			...task,
-			...data?.metrics?.find((metric:Metric) => {
+			...metrics?.find((metric:Metric) => {
 				return task.name === metric.task;
 			})
 		};
 	});
+	function subscribe() {
+		const sseValues = new EventSource('/api/sse/values');
+		sseValues.onmessage = (e) => {
+			variables = JSON.parse(e.data).variables
+		}
+		const sseMetrics = new EventSource('/api/sse/metrics');
+		sseMetrics.onmessage = (e) => {
+			metrics = JSON.parse(e.data).metrics
+		}
+		const sseChanges = new EventSource('/api/sse/changes');
+		sseChanges.onmessage = (e) => {
+			changes = JSON.parse(e.data).changes
+		}
+		return () => {
+			sseValues.close()
+			sseMetrics.close()
+			sseChanges.close()
+		};
+	}
+	onMount(subscribe)
 </script>
 
 <!-- <pre>{JSON.stringify(data, null, 2)}</pre> -->
+{#if !data.tentacleStatus.connected}
+	<div class="overlay" transition:blur>
+		<div class="overlay__content">
+			<div class="overlay__header">
+				Cannot connect to Tentacle PLC
+			</div>
+			<div class="overlay__body">
+				please check your network connection and that Tentacle PLC is running.
+			</div>
+		</div>
+	</div>
+{/if}
 <main>
 	<div class="card changes">
 		<p class="card__header">Changes</p>
 		<ul class="card__content space-y-3">
-			{#if data?.changes && data.changes.length > 0}
-				{#each data?.changes || [] as change}
+			{#if changes && changes.length > 0}
+				{#each changes || [] as change}
 					<li class="flex align-center space-x-1">
 						<div>
 							{#if change.event === 'add'}
@@ -207,7 +244,7 @@
 			<input type="text" placeholder="Filter" bind:value={variableFilter}/>
 		</div>
 		<ul class="card__content banded">
-			{#if data?.variables}
+			{#if variables}
 				{#each filteredVariables || [] as variable}
 					<li class="variable" transition:slide>
 						<div class="flex variable__attributes">
@@ -244,7 +281,7 @@
 		</ul>
 	</div>
 	{#if codes && codes.length > 0}
-		<div class="codes">
+		<div class="codes space-y-1">
 			{#each codes || [] as code}
 				<div class="card code">
 					<div class="card__header flex align-center justify-between">
@@ -272,6 +309,32 @@
 </main>
 
 <style lang="scss">
+	.overlay {
+		z-index: 5;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: rgba(128, 128, 128, 0.5);
+		&__content {
+			text-align: center;
+			background-color: var(--red-100);
+			color: var(--red-500);
+			padding: calc(var(--spacing-unit)*2);
+			border-radius: var(--rounded-md);
+			border: var(--red-500);
+		}
+		&__header {
+			font-size:var(--text-xl);
+		}
+		&__body {
+			font-size:var(--text-md);
+		}
+	}
 	.button--icon {
 		color: var(--theme-neutral-900);
 		border-radius: var(--rounded-full);
