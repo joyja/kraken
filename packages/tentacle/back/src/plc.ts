@@ -147,21 +147,21 @@ export class PLC {
       null,
       2,
     )
-    this.runtimeConfigFile = path.resolve(this.runtimeDir, 'config.json')
+    this.runtimeConfigFile = path.resolve(this.runtimeDir, 'config.js')
     // createFileIfNotExists(this.runtimeConfigFile, configInit)
     this.developmentConfigFile = path.resolve(
       this.developmentDir,
-      'config.json',
+      'config.ts',
     )
     createFileIfNotExists(this.developmentConfigFile, configInit)
 
     // Handle variables
     const variableInit = JSON.stringify({}, null, 2)
-    this.runtimeVariableFile = path.resolve(this.runtimeDir, 'variables.json')
+    this.runtimeVariableFile = path.resolve(this.runtimeDir, 'variables.js')
     // createFileIfNotExists(this.runtimeVariableFile, variableInit)
     this.developmentVariableFile = path.resolve(
       this.developmentDir,
-      'variables.json',
+      'variables.ts',
     )
     createFileIfNotExists(this.developmentVariableFile, variableInit)
 
@@ -179,10 +179,10 @@ export class PLC {
   }
 
   async getConfig(): Promise<void> {
-    this.config = JSON.parse(fs.readFileSync(this.runtimeConfigFile, 'utf8'))
-    this.variables = JSON.parse(
-      fs.readFileSync(this.runtimeVariableFile, 'utf8'),
-    )
+    const { config } = await import(this.runtimeConfigFile)
+    this.config = config
+    const { variables } = await import(this.runtimeVariableFile)
+    this.variables = variables
     Object.keys(this.variables).forEach((key) => {
       this.variables[key].changeEvents = new EventTracker()
     })
