@@ -140,17 +140,27 @@ export class PLC {
     createDirIfNotExists(this.developmentDir)
     
     // Handle config
-    const configInit = JSON.stringify({ tasks: {}, mqtt: {}, modbus: {}, opcua: {} }, null, 2)
-    this.runtimeConfigFile = path.resolve(this.runtimeDir, 'config.json')
+    const configInit = JSON.stringify(
+      { tasks: {}, mqtt: {}, modbus: {}, opcua: {} },
+      null,
+      2,
+    )
+    this.runtimeConfigFile = path.resolve(this.runtimeDir, 'config.js')
     // createFileIfNotExists(this.runtimeConfigFile, configInit)
-    this.developmentConfigFile = path.resolve(this.developmentDir, 'config.json')
+    this.developmentConfigFile = path.resolve(
+      this.developmentDir,
+      'config.ts',
+    )
     createFileIfNotExists(this.developmentConfigFile, configInit)
 
     // Handle variables
     const variableInit = JSON.stringify({}, null, 2)
-    this.runtimeVariableFile = path.resolve(this.runtimeDir, 'variables.json')
+    this.runtimeVariableFile = path.resolve(this.runtimeDir, 'variables.js')
     // createFileIfNotExists(this.runtimeVariableFile, variableInit)
-    this.developmentVariableFile = path.resolve(this.developmentDir, 'variables.json')
+    this.developmentVariableFile = path.resolve(
+      this.developmentDir,
+      'variables.ts',
+    )
     createFileIfNotExists(this.developmentVariableFile, variableInit)
     
     // Handle classes dir
@@ -166,9 +176,11 @@ export class PLC {
     createDirIfNotExists(this.developmentProgramsDir)
   }
 
-  async getConfig():Promise<void> {
-    this.config = JSON.parse(fs.readFileSync(this.runtimeConfigFile, 'utf8'))
-    this.variables = JSON.parse(fs.readFileSync(this.runtimeVariableFile, 'utf8'))
+  async getConfig(): Promise<void> {
+    const { config } = await import(this.runtimeConfigFile)
+    this.config = config
+    const { variables } = await import(this.runtimeVariableFile)
+    this.variables = variables
     Object.keys(this.variables).forEach((key) => {
       this.variables[key].changeEvents = new EventTracker()
     })
