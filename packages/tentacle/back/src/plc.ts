@@ -177,9 +177,9 @@ export class PLC {
   }
 
   async getConfig(): Promise<void> {
-    const { config } = await import(this.runtimeConfigFile)
+    const { config } = await importFresh(this.runtimeConfigFile)
     this.config = config
-    const { variables } = await import(this.runtimeVariableFile)
+    const { variables } = await importFresh(this.runtimeVariableFile)
     this.variables = variables
     Object.keys(this.variables).forEach((key) => {
       this.variables[key].changeEvents = new EventTracker()
