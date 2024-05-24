@@ -13,21 +13,26 @@
   "author": "James A. Joy",
   "license": "GPL-3.0",
   "dependencies": {
+    "coral": "^0.0.1",
     "date-fns": "^2.30.0",
+    "effect": "^3.1.3",
     "graphql": "^16.7.1",
     "graphql-yoga": "^4.0.2",
     "gunzip-maybe": "^1.4.2",
     "js-yaml": "^4.1.0",
     "kraken-sparkplug-client": "^0.0.13",
     "octokit": "^3.0.0",
+    "ramda": "^0.30.0",
     "sparkplug-client": "^3.2.3",
     "systeminformation": "^5.21.4",
     "tar-fs": "^3.0.4",
-    "vitest": "^0.32.2",
-    "coral": "^0.0.1"
+    "vitest": "^0.32.2"
   },
   "type": "module",
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/typescript": "^4.0.7",
+    "@graphql-codegen/typescript-resolvers": "^4.1.0",
     "@types/gunzip-maybe": "^1.4.0",
     "@types/js-yaml": "^4.0.5",
     "@types/tar-fs": "^2.0.1",
