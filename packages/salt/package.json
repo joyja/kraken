@@ -14,9 +14,11 @@
 		"test:unit": "vitest"
 	},
 	"exports": {
-		"./types": "./dist/index.d.ts",
-		".": "./dist/index.js",
-		"./dist/styles/main.scss": "./dist/styles/main.scss"
+		".": [
+			"./dist/index.js",
+			{ "types":"./dist/index.d.ts" }
+		],
+		"./styles.scss": "./dist/styles/main.scss"
 	},
 	"files": [
 		"dist",
@@ -24,12 +26,12 @@
 		"!dist/**/*.spec.*"
 	],
 	"peerDependencies": {
-		"svelte": "^4.0.0"
+		"svelte": "^4.0.0",
+		"@sveltejs/kit": "^2.5.5"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^3.0.0",
-		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/package": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"publint": "^0.1.9",
@@ -44,6 +46,8 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
-		"@sveltejs/adapter-node": "^5.0.1"
+		"@sveltejs/adapter-node": "^5.0.1",
+		"nanoid": "^5.0.7",
+		"sass": "^1.75.0"
 	}
 }

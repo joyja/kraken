@@ -1,4 +1,4 @@
-import type { PageLoad } from "./$types"
+import type { PageLoad } from './$types'
 
 export const load:PageLoad = async ({ fetch }) => {
   const variables = await fetch('/api/values').then((res) => res.json())

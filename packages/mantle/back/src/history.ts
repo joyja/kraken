@@ -3,6 +3,7 @@ import { type SparkplugMetric } from './mqtt.js'
 import { Log } from 'coral'
 import { differenceInMinutes } from 'date-fns'
 import { type MetricHistoryEntry } from './resolvers/types.js'
+import { prisma } from './prisma.js'
 
 const log = new Log('history')
 
@@ -62,7 +63,15 @@ export class History {
 		}
 	}
 
-	async getHistory({ metric, start, end }: { metric: SparkplugMetric; start: Date; end: Date }): Promise<MetricHistoryEntry[]> {
+	async getHistory({
+		metric,
+		start,
+		end
+	}: {
+		metric: SparkplugMetric
+		start: Date
+		end: Date
+	}): Promise<MetricHistoryEntry[]> {
 		return await this.prisma.history.findMany({
 			where: {
 				groupId: metric.groupId,
@@ -96,7 +105,9 @@ export class History {
 		raw?: null | boolean
 	}): Promise<MetricHistoryEntry[]> {
 		if (interval != null && !isValidTimeBucketInterval(interval)) {
-			throw Error('Invalid interval format. Please use a format like "1 day", "2 weeks", etc.')
+			throw Error(
+				'Invalid interval format. Please use a format like "1 day", "2 weeks", etc.'
+			)
 		}
 		// raw superseded interval and samples, but if not raw and both interval and samples are provided, use interval
 		const autoInterval = `${Math.floor((differenceInMinutes(new Date(end), new Date(start)) * 60.0) / (samples ?? 300.0))} seconds`
@@ -132,7 +143,8 @@ export class History {
 					.map((h: any) => {
 						return {
 							timestamp: h.time,
-							value: h.data[`${m.groupId}/${m.nodeId}/${m.deviceId}/${m.metricId}`]
+							value:
+								h.data[`${m.groupId}/${m.nodeId}/${m.deviceId}/${m.metricId}`]
 						}
 					})
 					.filter((h: any) => h.value !== null && h.value !== undefined)

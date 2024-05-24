@@ -83,18 +83,19 @@ let taskMetrics:{task:string, functionExecutionTime:number, intervalExecutionTim
 let changes:{timestamp:string, path:string, event:string}[] = []
 
 declare global {
-  //eslint-disable-next-line no-var
-  var sources: EventSource[]
+	//eslint-disable-next-line no-var
+	var sources: EventSource[]
 }
 
-function generateSources () {
-  const protocol = env.TENTACLE_PROTOCOL || 'http'
-  const host = env.TENTACLE_HOST || 'localhost'
-  const port = env.TENTACLE_PORT || '4000'
-  const end = env.TENTACLE_URL || '/graphql'
-  const root = `${protocol}://${host}:${port}${end}`
-  const subscriptions = [{
-    query: `subscription { 
+function generateSources() {
+	const protocol = env.TENTACLE_PROTOCOL || 'http'
+	const host = env.TENTACLE_HOST || 'localhost'
+	const port = env.TENTACLE_PORT || '4000'
+	const end = env.TENTACLE_URL || '/graphql'
+	const root = `${protocol}://${host}:${port}${end}`
+	const subscriptions = [
+		{
+			query: `subscription { 
       values { 
         name
         value
@@ -170,10 +171,10 @@ function generateSources () {
 }
 
 if (globalThis.sources && globalThis.sources.length > 0) {
-  globalThis.sources.forEach((source) => {
-    source.close()
-  })
-  globalThis.sources = []
+	globalThis.sources.forEach((source) => {
+		source.close()
+	})
+	globalThis.sources = []
 }
 
 generateSources()

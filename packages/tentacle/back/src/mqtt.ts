@@ -1,12 +1,12 @@
 import { type UPayload, newClient } from 'kraken-sparkplug-client'
 import { getUnixTime } from 'date-fns'
-import _, { countBy } from 'lodash'
+import _ from 'lodash'
 import { denormalize } from './denormalize.js'
 import { Log } from 'coral'
 
 const log = new Log('mqtt')
 
-const getDatatype = function(value: any):string {
+const getDatatype = function (value: any): string {
   if (typeof value === 'boolean') {
     return 'BOOLEAN'
   }
@@ -56,7 +56,7 @@ export class Mqtt {
   primaryHosts: any[]
 
   maxHistoryToPublish: number
-  
+
   public config: {
     serverUrl: string
     username: string
@@ -106,12 +106,11 @@ export class Mqtt {
     this.maxHistoryToPublish = maxHistoryToPublish
   }
 
-  get denormalizedGlobal():any {
+  get denormalizedGlobal(): any {
     return denormalize(this.global)
   }
 
-
-  async publish():Promise<void> {
+  async publish(): Promise<void> {
     if (this.queue.length > 0) {
       const record = {
         timestamp: getUnixTime(new Date()),
@@ -135,18 +134,18 @@ export class Mqtt {
     }
   }
 
-  startPublishing():void {
+  startPublishing(): void {
     clearInterval(this.interval)
     this.interval = setInterval(() => {
       void this.publish()
     }, this.rate)
   }
 
-  stopPublishing():void {
+  stopPublishing(): void {
     clearInterval(this.interval)
   }
 
-  connect():void {
+  connect(): void {
     this.stopPublishing()
     if (this.client === null || this.client === undefined) {
       this.client = newClient(this.config)
@@ -190,7 +189,7 @@ export class Mqtt {
     }
   }
 
-  async disconnect():Promise<void> {
+  async disconnect(): Promise<void> {
     if (this.client !== null && this.client !== undefined) {
       log.info(`Mqtt service is disconnecting.`)
       this.stopPublishing()
@@ -203,7 +202,7 @@ export class Mqtt {
     }
   }
 
-  onDcmd(payload: UPayload):void {
+  onDcmd(payload: UPayload): void {
     const { metrics } = payload
     if (metrics != null) {
       metrics.forEach((metric) => {
@@ -226,9 +225,17 @@ export class Mqtt {
               const variablePathParts = variablePath.split('.')
               const functionName = variablePathParts.pop()
               const parent = _.get(this.global, variablePathParts.join('.'))
-              if (variable.length === 0 && (functionName !== null && functionName !== undefined)) {
+              if (
+                variable.length === 0 &&
+                functionName !== null &&
+                functionName !== undefined
+              ) {
                 parent[functionName]()
-              } else if ((functionName !== null && functionName !== undefined) && typeof metric.value === 'string') {
+              } else if (
+                functionName !== null &&
+                functionName !== undefined &&
+                typeof metric.value === 'string'
+              ) {
                 parent[functionName](...JSON.parse(metric.value))
               } else {
                 console.log('Invalid function call.')
@@ -242,7 +249,7 @@ export class Mqtt {
     }
   }
 
-  async onBirth():Promise<void> {
+  async onBirth(): Promise<void> {
     const payload = {
       timestamp: getUnixTime(new Date()),
       metrics: [
@@ -257,7 +264,11 @@ export class Mqtt {
     await this.client.publishNodeBirth(payload)
     const global = this.denormalizedGlobal
     const metrics = Object.keys(global).map((key) => {
-      if (typeof global[key] === 'string' && (global[key]?.includes('function') !== null || global[key]?.includes('function') !== undefined)) {
+      if (
+        typeof global[key] === 'string' &&
+        (global[key]?.includes('function') !== null ||
+          global[key]?.includes('function') !== undefined)
+      ) {
         const keyParts = key.split('.')
         keyParts.splice(keyParts.length - 1, 0, 'functions')
         return {
@@ -309,7 +320,7 @@ export class Mqtt {
     this.startPublishing()
   }
 
-  async onReconnect():Promise<void> {
+  async onReconnect(): Promise<void> {
     this.stopPublishing()
     this.startPublishing()
   }

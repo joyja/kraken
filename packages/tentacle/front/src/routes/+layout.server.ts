@@ -1,5 +1,5 @@
-import { sendRequest } from "$lib/graphql/request"
-import * as query from "$lib/graphql/query"
+import { sendRequest } from '$lib/graphql/request'
+import * as query from '$lib/graphql/query'
 
 export async function load({ url, cookies }) {
   const theme = cookies.get('theme') || 'themeLight'

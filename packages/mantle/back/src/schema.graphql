@@ -7,7 +7,9 @@ type SparkplugMetricHistory {
 
 type SparkplugMetric {
   id: String!
-  updateCount: Int!
+  updatesLastMinute: Int!
+  updatesLastHour: Int!
+  updatesLastDay: Int!
   updatedOn: Date!
   type: String!
   value: String
@@ -42,6 +44,9 @@ type SparkplugMetricUpdate {
   metricId: String!
   value: String
   timestamp: Date!
+  updatesInLastMinute: Int
+  updatesInLastHour: Int
+  updatesInLastDay: Int
 }
 
 enum AlarmConditionMode {
@@ -94,6 +99,18 @@ type Alarm {
   acknowledged: Boolean!
   active: Boolean!
   roster: Roster
+}
+
+input AlarmHistoryEntry {
+  start: Date
+  end: Date
+}
+
+type AlarmHistory {
+  alarm: Alarm!
+  timestamp: Date!
+  active: Boolean!
+  acknowledged: Boolean!
 }
 
 input CreateAlarm {
@@ -351,6 +368,7 @@ type Query {
   info: String!
   groups(historyDuration: Int): [SparkplugGroup!]!
   alarms: [Alarm!]!
+  alarmHistory(input: AlarmHistoryEntry!): [AlarmHistory!]!
   users: [User!]!
   rosters: [Roster!]!
   chartPages: [ChartPage!]!
