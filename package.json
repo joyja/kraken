@@ -19,7 +19,7 @@
   ],
   "license": "GPL-3.0",
   "type": "module",
-  "devDependencies": {
+  "dependencies": {
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",

@@ -4,6 +4,7 @@ import fs from "fs"
 import path from "path"
 import resolvers from "./resolvers/index.js"
 import { System } from './data/systeminformation.js'
+console.log(process.env)
 import { mqtt } from './mqtt/index.js'
 import { nebula } from './nebula/index.js'
 import { Log, LogLevel } from 'coral'

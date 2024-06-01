@@ -4,7 +4,7 @@
   "description": "Edge Infrastructure Management for Kraken",
   "exports": "./src/index.js",
   "scripts": {
-    "dev": "tsx watch src --env-file=.env",
+    "dev": "tsx watch --env-file=./.env src ",
     "codegen": "graphql-codegen --config codegen.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",

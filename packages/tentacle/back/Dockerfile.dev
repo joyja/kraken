@@ -35,10 +35,10 @@ COPY ./packages/tentacle/back ./packages/tentacle/back
 COPY --from=dependencies /app/node_modules/ ./node_modules
 COPY --from=dependencies /app/packages/coral ./packages/coral/
 COPY --from=dependencies /app/packages/tentacle/back/node_modules/ ./packages/tentacle/back/node_modules
+COPY --from=dependencies /app/packages/tentacle/back/tsconfig.json ./packages/tentacle/back/tsconfig.json
 
 WORKDIR /app/packages/tentacle/back
 RUN pnpm build
-RUN pnpm prune --prod
 
 FROM structure AS deploy
 
@@ -46,11 +46,10 @@ WORKDIR /app
 COPY ./packages/tentacle/back/package.json ./
 COPY --from=build /app/node_modules/ ./node_modules
 COPY --from=build /app/packages/coral ./packages/coral/
-COPY --from=build /app/packages/.prettierrc ./packages/.prettierrc
-COPY --from=build /app/packages/eslint.config.js ./packages/eslint.config.js
 COPY --from=build /app/packages/tentacle/back/build ./packages/tentacle/back/build/
 COPY --from=build /app/packages/tentacle/back/src/schema.graphql ./packages/tentacle/back/src/
 COPY --from=build /app/packages/tentacle/back/node_modules ./packages/tentacle/back/node_modules/
+COPY --from=build /app/packages/tentacle/back/tsconfig.json ./packages/tentacle/back/tsconfig.json
 
 WORKDIR /app/packages/tentacle/back
 

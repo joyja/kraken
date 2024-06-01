@@ -1,5 +1,6 @@
 import { Modbus } from './modbus.js'
 import { Opcua } from './opcua.js'
+import { get } from './rest.js'
 import { Mqtt } from './mqtt.js'
 import path from 'path'
 import fs from 'fs'
@@ -11,6 +12,7 @@ import { EventTracker } from './eventTracker.js'
 import { type MemoryUsage, type VariableValue } from './generated/graphql.js'
 import { pubsub } from './pubsub.js'
 import { Log } from 'coral'
+import { VariableHistorian } from 'node-opcua'
 
 const log = new Log('plc')
 
@@ -137,41 +139,38 @@ export class PLC {
 		this.metrics = {}
 		this.running = false
 
-    // Handle runtime dir
-    this.runtimeDir = path.resolve(process.cwd(), 'runtime')
-    // createDirIfNotExists(this.runtimeDir)
-    this.developmentDir = path.resolve(process.cwd(), 'development')
-    createDirIfNotExists(this.developmentDir)
-    
-    // Handle config
-    const configInit = JSON.stringify(
-      { tasks: {}, mqtt: {}, modbus: {}, opcua: {} },
-      null,
-      2,
-    )
-    this.runtimeConfigFile = path.resolve(this.runtimeDir, 'config.js')
-    // createFileIfNotExists(this.runtimeConfigFile, configInit)
-    this.developmentConfigFile = path.resolve(
-      this.developmentDir,
-      'config.ts',
-    )
-    createFileIfNotExists(this.developmentConfigFile, configInit)
+		// Handle runtime dir
+		this.runtimeDir = path.resolve(process.cwd(), 'runtime')
+		// createDirIfNotExists(this.runtimeDir)
+		this.developmentDir = path.resolve(process.cwd(), 'development')
+		createDirIfNotExists(this.developmentDir)
 
-    // Handle variables
-    const variableInit = JSON.stringify({}, null, 2)
-    this.runtimeVariableFile = path.resolve(this.runtimeDir, 'variables.js')
-    // createFileIfNotExists(this.runtimeVariableFile, variableInit)
-    this.developmentVariableFile = path.resolve(
-      this.developmentDir,
-      'variables.ts',
-    )
-    createFileIfNotExists(this.developmentVariableFile, variableInit)
-    
-    // Handle classes dir
-    this.runtimeClassesDir = path.resolve(this.runtimeDir, 'classes')
-    // createDirIfNotExists(this.runtimeClassesDir)
-    this.developmentClassesDir = path.resolve(this.developmentDir, 'classes')
-    createDirIfNotExists(this.developmentClassesDir)
+		// Handle config
+		const configInit = JSON.stringify(
+			{ tasks: {}, mqtt: {}, modbus: {}, opcua: {} },
+			null,
+			2
+		)
+		this.runtimeConfigFile = path.resolve(this.runtimeDir, 'config.js')
+		// createFileIfNotExists(this.runtimeConfigFile, configInit)
+		this.developmentConfigFile = path.resolve(this.developmentDir, 'config.ts')
+		createFileIfNotExists(this.developmentConfigFile, configInit)
+
+		// Handle variables
+		const variableInit = JSON.stringify({}, null, 2)
+		this.runtimeVariableFile = path.resolve(this.runtimeDir, 'variables.js')
+		// createFileIfNotExists(this.runtimeVariableFile, variableInit)
+		this.developmentVariableFile = path.resolve(
+			this.developmentDir,
+			'variables.ts'
+		)
+		createFileIfNotExists(this.developmentVariableFile, variableInit)
+
+		// Handle classes dir
+		this.runtimeClassesDir = path.resolve(this.runtimeDir, 'classes')
+		// createDirIfNotExists(this.runtimeClassesDir)
+		this.developmentClassesDir = path.resolve(this.developmentDir, 'classes')
+		createDirIfNotExists(this.developmentClassesDir)
 
 		// Handle programs dir
 		this.runtimeProgramsDir = path.resolve(this.runtimeDir, 'programs')
@@ -180,25 +179,29 @@ export class PLC {
 		createDirIfNotExists(this.developmentProgramsDir)
 	}
 
-  async getConfig(): Promise<void> {
-    const { config } = await importFresh(this.runtimeConfigFile)
-    this.config = config
-    const { variables } = await importFresh(this.runtimeVariableFile)
-    this.variables = variables
-    Object.keys(this.variables).forEach((key) => {
-      this.variables[key].changeEvents = new EventTracker()
-    })
-    
-    if (fs.existsSync(this.runtimeClassesDir)) {
-      const classImports = await Promise.all(fs
-        .readdirSync(path.resolve(this.runtimeClassesDir))
-        .map(async (filename) => {
-          const classes = import(path.resolve(
-            this.runtimeClassesDir,
-            `${filename}?update=${this.programCacheId}`
-          ))
-          return await classes
-        }))
+	async getConfig(): Promise<void> {
+		const { config } = await importFresh(this.runtimeConfigFile)
+		this.config = config
+		const { variables } = await importFresh(this.runtimeVariableFile)
+		this.variables = variables
+		Object.keys(this.variables).forEach((key) => {
+			this.variables[key].changeEvents = new EventTracker()
+		})
+
+		if (fs.existsSync(this.runtimeClassesDir)) {
+			const classImports = await Promise.all(
+				fs
+					.readdirSync(path.resolve(this.runtimeClassesDir))
+					.map(async (filename) => {
+						const classes = import(
+							path.resolve(
+								this.runtimeClassesDir,
+								`${filename}?update=${this.programCacheId}`
+							)
+						)
+						return await classes
+					})
+			)
 
 			this.classes = classImports.reduce((acc, current) => {
 				return [...acc, ...current]
@@ -313,196 +316,252 @@ export class PLC {
 		log.info('Compilation and copying completed successfully.')
 	}
 
-  async start():Promise<void> {
-    if (!this.running) {
-      await this.getConfig()
-      Object.keys(this.variables).forEach((variableKey) => {
-        const variable = this.variables[variableKey]
-        if (
-          variable.datatype === 'number' ||
-          variable.datatype === 'boolean' ||
-          variable.datatype === 'string'
-        ) {
-          this.global[variableKey] = variable.initialValue
-        } else if (
-          ![null, undefined].includes(this.classes.map((item:{name:string}) => item.name).includes(variable.datatype))
-        ) {
-          const VariableClass = this.classes.find(
-            (item:{name:string}) => item.name === variable.datatype
-          )
-          this.global[variableKey] = new VariableClass({
-            global: this.global,
-            ...variable.config,
-          })
-          // check for class tasks and run intervals for them
-          if (VariableClass.tasks !== undefined) {
-            this.global[variableKey].intervals = []
-            Object.keys(VariableClass.tasks).forEach((taskKey) => {
-              this.global[variableKey].intervals.push(setInterval(() => {
-                this.global[variableKey][VariableClass.tasks[taskKey].function]()
-              }, VariableClass.tasks[taskKey].scanRate))
-            })
-          }
-          this.global[variableKey].name = variableKey
-        } else {
-          log.warn(`the datatype for ${variableKey} is invalid`)
-        }
-      })
-      this.persistence.load()
-      for (const taskKey of Object.keys(this.config.tasks)) {
-        const { program } = await importFresh(path.resolve(
-          process.cwd(),
-          `runtime/programs/${this.config.tasks[taskKey].program}.js`
-        ))
-        this.metrics[taskKey] = {}
-        let intervalStart: [number, number] | undefined
-        this.intervals.push({
-          interval: setInterval(
-            ({
-              global,
-              persistence,
-              metrics,
-              taskKey,
-            }) => {
-              void (async ({
-                global,
-                persistence,
-                metrics,
-                taskKey,
-              }) => {
-                const variableChanges:VariableValue[] = []
-                const intervalStop = intervalStart !== undefined
-                  ? process.hrtime(intervalStart)
-                  : [0,0]
-                metrics[taskKey].intervalExecutionTime = intervalStop !== undefined
-                  ? (intervalStop[0] * 1e9 + intervalStop[1]) / 1e6
-                  : 0
-                const functionStart = process.hrtime()
-                try {
-                  await program({ global })
-                  const functionStop = process.hrtime(functionStart)
-                  const functionModbusStart = process.hrtime()
-                  for (const variableKey of Object.keys(this.variables)) {
-                    const variable = this.variables[variableKey]
-                    if (variable.source !== undefined) {
-                      if (variable.source.type === 'modbus') {
-                        if (variable.source.bidirectional) {
-                          await this.modbus[variable.source.name].write({
-                            value: [this.global[variableKey]],
-                            ...variable.source.params,
-                          })
-                        }
-                        if (this.modbus[variable.source.name].connected) {
-                          void this.modbus[variable.source.name]
-                            .read(variable.source.params)
-                            .then((result) => {
-                              return this.global[variableKey] = result
-                            })
-                        }
-                      }
-                    }
-                  }
-                  const functionModbusStop = process.hrtime(functionModbusStart)
-                  const functionOpcuaStart = process.hrtime()
-                  for (const opcuaKey of Object.keys(this.opcua)) {
-                    const opcuaNodeVariables = Object.keys(this.variables)
-                      .filter((variableKey) => {
-                        return this.variables[variableKey].source?.name === opcuaKey
-                      })
-                      .filter((variableKey) => {
-                        return this.variables[variableKey].source?.type === 'opcua'
-                      })
-                    const opcuaNodeWriteVariables = opcuaNodeVariables.filter((variableKey) => {
-                      return this.variables[variableKey].source?.bidirectional
-                    })
-                    const opcuaNodeIds = opcuaNodeVariables.map((variableKey) => {
-                      return this.variables[variableKey].source.params.nodeId
-                    })
-                    const opcuaWriteNodes = opcuaNodeWriteVariables.map((variableKey) => {
-                      return {
-                        nodeId: this.variables[variableKey].source.params.nodeId,
-                        attributeId: this.variables[variableKey].source.params.attributeId,
-                        registerType: this.variables[variableKey].source.params.registerType,
-                        inputValue: this.global[variableKey],
-                      }
-                    })
-                    if (opcuaWriteNodes.length > 0) {
-                      void await this.opcua[opcuaKey]
-                        .write(opcuaWriteNodes)
-                    }
-                    void this.opcua[opcuaKey]
-                      .readMany({ nodeIds: opcuaNodeIds })
-                      .then((result) => {
-                        if (result != null) {
-                          for (let i = 0; i < result.length; i++) {
-                            this.global[opcuaNodeVariables[i]] = result[i]
-                          }
-                        }
-                      })
-                  }
-                  
-                  const functionOpcuaStop = process.hrtime(functionOpcuaStart)
-                  const functionMqttStart = process.hrtime()
-                  Promise.resolve().then(() => {
-                    for (const key of Object.keys(this.variables)) {
-                      const now = new Date()
-                      const variable = this.variables[key]
-                      const isNumeric = variable.datatype === 'number'
-                      const lastPublished = variable.lastPublished
-                      const lastValue = variable.lastValue
-                      const deadbandMaxTime = variable.deadband?.maxTime
-                      let outsideDeadband = false
-                      if (isNumeric) {
-                        const deadband = (variable.deadband?.value !== undefined ? variable.deadband.value : 0)
-                        outsideDeadband = variable.lastValue === undefined || Math.abs(this.global[key] - variable.lastValue) > deadband
-                      } else {
-                        outsideDeadband = variable.lastValue !== this.global[key]
-                      }
-                      const outsideDeadbandMaxTime = lastValue === undefined || lastPublished === undefined || differenceInMilliseconds(now, lastPublished) > deadbandMaxTime
-                      if ((outsideDeadband || outsideDeadbandMaxTime) && variable.mqttDisabled !== true) {
-                        this.variables[key].changeEvents.recordEvent()
-                        variableChanges.push({
-                          name: key,
-                          value: JSON.stringify(this.global[key]),
-                          type: getDatatype(this.global[key], key),
-                          timestamp: getUnixTime(new Date()),
-                        })
-                        for (const mqttKey of Object.keys(this.mqtt)){
-                          this.mqtt[mqttKey].queue.push({
-                            name: key,
-                            value: this.global[key],
-                            type: getDatatype(this.global[key], key),
-                            timestamp: getUnixTime(new Date()),
-                          })
-                        }
-                        variable.lastValue = this.global[key]
-                        variable.lastPublished = now
-                      }
-                    }
-                    if (this.config.publishPerformanceMetrics === true) {
-                      const memoryUsage:MemoryUsage = process.memoryUsage()
-                      for (const mqttKey of Object.keys(this.mqtt)){
-                        Object.keys(memoryUsage).forEach((key) => {
-                          this.mqtt[mqttKey].queue.push({
-                            name: `memoryUsage.${key}`,
-                            value: memoryUsage[key as keyof MemoryUsage],
-                            type: getDatatype(memoryUsage[key as keyof MemoryUsage], key),
-                            timestamp: getUnixTime(new Date()),
-                          })
-                        })
-                      }
-                    }
-                  })
-                  const functionMqttStop = process.hrtime(functionMqttStart)
-                  metrics[taskKey].modbusExecutionTime = (functionModbusStop[0] * 1e9 + functionModbusStop[1]) / 1e6
-                  metrics[taskKey].opcuaExecutionTime = (functionOpcuaStop[0] * 1e9 + functionOpcuaStop[1]) / 1e6
-                  metrics[taskKey].mqttExecutionTime = (functionMqttStop[0] * 1e9 + functionMqttStop[1]) / 1e6
-                  
-                  const persistenceStart = process.hrtime()
-                  Promise.resolve().then(() => {
-                    persistence.persist()
-                  })
-                  const persistenceStop = process.hrtime(persistenceStart)
+	async start(): Promise<void> {
+		if (!this.running) {
+			await this.getConfig()
+			Object.keys(this.variables).forEach((variableKey) => {
+				const variable = this.variables[variableKey]
+				if (
+					variable.datatype === 'number' ||
+					variable.datatype === 'boolean' ||
+					variable.datatype === 'string'
+				) {
+					this.global[variableKey] = variable.initialValue
+				} else if (
+					![null, undefined].includes(
+						this.classes
+							.map((item: { name: string }) => item.name)
+							.includes(variable.datatype)
+					)
+				) {
+					const VariableClass = this.classes.find(
+						(item: { name: string }) => item.name === variable.datatype
+					)
+					this.global[variableKey] = new VariableClass({
+						global: this.global,
+						...variable.config
+					})
+					// check for class tasks and run intervals for them
+					if (VariableClass.tasks !== undefined) {
+						this.global[variableKey].intervals = []
+						Object.keys(VariableClass.tasks).forEach((taskKey) => {
+							this.global[variableKey].intervals.push(
+								setInterval(() => {
+									this.global[variableKey][
+										VariableClass.tasks[taskKey].function
+									]()
+								}, VariableClass.tasks[taskKey].scanRate)
+							)
+						})
+					}
+					this.global[variableKey].name = variableKey
+				} else {
+					log.warn(`the datatype for ${variableKey} is invalid`)
+				}
+			})
+			this.persistence.load()
+			for (const taskKey of Object.keys(this.config.tasks)) {
+				const { program } = await importFresh(
+					path.resolve(
+						process.cwd(),
+						`runtime/programs/${this.config.tasks[taskKey].program}.js`
+					)
+				)
+				this.metrics[taskKey] = {}
+				let intervalStart: [number, number] | undefined
+				this.intervals.push({
+					interval: setInterval(
+						({ global, persistence, metrics, taskKey }) => {
+							void (async ({ global, persistence, metrics, taskKey }) => {
+								const variableChanges: VariableValue[] = []
+								const intervalStop =
+									intervalStart !== undefined
+										? process.hrtime(intervalStart)
+										: [0, 0]
+								metrics[taskKey].intervalExecutionTime =
+									intervalStop !== undefined
+										? (intervalStop[0] * 1e9 + intervalStop[1]) / 1e6
+										: 0
+								const functionStart = process.hrtime()
+								try {
+									await program({ global })
+									const functionStop = process.hrtime(functionStart)
+									const functionModbusStart = process.hrtime()
+									for (const variableKey of Object.keys(this.variables)) {
+										const variable = this.variables[variableKey]
+										if (variable.source !== undefined) {
+											if (variable.source.type === 'modbus') {
+												if (variable.source.bidirectional) {
+													await this.modbus[variable.source.name].write({
+														value: [this.global[variableKey]],
+														...variable.source.params
+													})
+												}
+												if (this.modbus[variable.source.name].connected) {
+													void this.modbus[variable.source.name]
+														.read(variable.source.params)
+														.then((result) => {
+															return (this.global[variableKey] = result)
+														})
+												}
+											}
+										}
+									}
+									const functionModbusStop = process.hrtime(functionModbusStart)
+									const functionOpcuaStart = process.hrtime()
+									for (const opcuaKey of Object.keys(this.opcua)) {
+										const opcuaNodeVariables = Object.keys(this.variables)
+											.filter((variableKey) => {
+												return (
+													this.variables[variableKey].source?.name === opcuaKey
+												)
+											})
+											.filter((variableKey) => {
+												return (
+													this.variables[variableKey].source?.type === 'opcua'
+												)
+											})
+										const opcuaNodeWriteVariables = opcuaNodeVariables.filter(
+											(variableKey) => {
+												return this.variables[variableKey].source?.bidirectional
+											}
+										)
+										const opcuaNodeIds = opcuaNodeVariables.map(
+											(variableKey) => {
+												return this.variables[variableKey].source.params.nodeId
+											}
+										)
+										const opcuaWriteNodes = opcuaNodeWriteVariables.map(
+											(variableKey) => {
+												return {
+													nodeId:
+														this.variables[variableKey].source.params.nodeId,
+													attributeId:
+														this.variables[variableKey].source.params
+															.attributeId,
+													registerType:
+														this.variables[variableKey].source.params
+															.registerType,
+													inputValue: this.global[variableKey]
+												}
+											}
+										)
+										if (opcuaWriteNodes.length > 0) {
+											void (await this.opcua[opcuaKey].write(opcuaWriteNodes))
+										}
+										void this.opcua[opcuaKey]
+											.readMany({ nodeIds: opcuaNodeIds })
+											.then((result) => {
+												if (result != null) {
+													for (let i = 0; i < result.length; i++) {
+														this.global[opcuaNodeVariables[i]] = result[i]
+													}
+												}
+											})
+									}
+
+									const functionOpcuaStop = process.hrtime(functionOpcuaStart)
+									// Process rest requests
+									const restVariables = Object.keys(this.variables).filter(
+										(variableKey) => {
+											return this.variables[variableKey].source?.type === 'rest'
+										}
+									)
+									for (const variableKey of restVariables) {
+										const variable = this.variables[variableKey]
+										get({
+											url: variable.source.url,
+											valuePath: variable.source.valuePath,
+											onResponse: variable.source.onResponse
+										})
+											.then((value) => {
+												this.global[variableKey] = value
+											})
+											.catch((error) => {
+												console.error(error)
+											})
+									}
+									const functionMqttStart = process.hrtime()
+									Promise.resolve().then(() => {
+										for (const key of Object.keys(this.variables)) {
+											const now = new Date()
+											const variable = this.variables[key]
+											const isNumeric = variable.datatype === 'number'
+											const lastPublished = variable.lastPublished
+											const lastValue = variable.lastValue
+											const deadbandMaxTime = variable.deadband?.maxTime
+											let outsideDeadband = false
+											if (isNumeric) {
+												const deadband =
+													variable.deadband?.value !== undefined
+														? variable.deadband.value
+														: 0
+												outsideDeadband =
+													variable.lastValue === undefined ||
+													Math.abs(this.global[key] - variable.lastValue) >
+														deadband
+											} else {
+												outsideDeadband =
+													variable.lastValue !== this.global[key]
+											}
+											const outsideDeadbandMaxTime =
+												lastValue === undefined ||
+												lastPublished === undefined ||
+												differenceInMilliseconds(now, lastPublished) >
+													deadbandMaxTime
+											if (
+												(outsideDeadband || outsideDeadbandMaxTime) &&
+												variable.mqttDisabled !== true
+											) {
+												this.variables[key].changeEvents.recordEvent()
+												variableChanges.push({
+													name: key,
+													value: JSON.stringify(this.global[key]),
+													type: getDatatype(this.global[key], key),
+													timestamp: getUnixTime(new Date())
+												})
+												for (const mqttKey of Object.keys(this.mqtt)) {
+													this.mqtt[mqttKey].queue.push({
+														name: key,
+														value: this.global[key],
+														type: getDatatype(this.global[key], key),
+														timestamp: getUnixTime(new Date())
+													})
+												}
+												variable.lastValue = this.global[key]
+												variable.lastPublished = now
+											}
+										}
+										if (this.config.publishPerformanceMetrics === true) {
+											const memoryUsage: MemoryUsage = process.memoryUsage()
+											for (const mqttKey of Object.keys(this.mqtt)) {
+												Object.keys(memoryUsage).forEach((key) => {
+													this.mqtt[mqttKey].queue.push({
+														name: `memoryUsage.${key}`,
+														value: memoryUsage[key as keyof MemoryUsage],
+														type: getDatatype(
+															memoryUsage[key as keyof MemoryUsage],
+															key
+														),
+														timestamp: getUnixTime(new Date())
+													})
+												})
+											}
+										}
+									})
+									const functionMqttStop = process.hrtime(functionMqttStart)
+									metrics[taskKey].modbusExecutionTime =
+										(functionModbusStop[0] * 1e9 + functionModbusStop[1]) / 1e6
+									metrics[taskKey].opcuaExecutionTime =
+										(functionOpcuaStop[0] * 1e9 + functionOpcuaStop[1]) / 1e6
+									metrics[taskKey].mqttExecutionTime =
+										(functionMqttStop[0] * 1e9 + functionMqttStop[1]) / 1e6
+
+									const persistenceStart = process.hrtime()
+									Promise.resolve().then(() => {
+										persistence.persist()
+									})
+									const persistenceStop = process.hrtime(persistenceStart)
 
 									metrics[taskKey].persistenceExecutionTime =
 										(persistenceStop[0] * 1e9 + persistenceStop[1]) / 1e6
