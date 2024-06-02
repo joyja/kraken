@@ -14,7 +14,7 @@ FROM base AS dependencies
 
 # Get the workspace files
 WORKDIR /app
-COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./
+COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./eslint.config.js ./.prettierrc ./
 
 # Build the coral dependency
 COPY ./packages/coral ./packages/coral/
@@ -43,11 +43,9 @@ RUN pnpm prune --prod
 FROM structure AS deploy
 
 WORKDIR /app
-COPY ./packages/tentacle/back/package.json ./
+COPY ./packages/tentacle/back/package.json ./.prettierrc ./eslint.config.js ./
 COPY --from=build /app/node_modules/ ./node_modules
 COPY --from=build /app/packages/coral ./packages/coral/
-COPY --from=build /app/packages/.prettierrc ./packages/.prettierrc
-COPY --from=build /app/packages/eslint.config.js ./packages/eslint.config.js
 COPY --from=build /app/packages/tentacle/back/build ./packages/tentacle/back/build/
 COPY --from=build /app/packages/tentacle/back/src/schema.graphql ./packages/tentacle/back/src/
 COPY --from=build /app/packages/tentacle/back/node_modules ./packages/tentacle/back/node_modules/
