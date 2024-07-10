@@ -1,8 +1,8 @@
 enum LogLevel {
-  debug = "DEBUG",
-  info = "INFO",
-  warn = "WARN",
-  error = "ERROR",
+  debug = 'DEBUG',
+  info = 'INFO',
+  warn = 'WARN',
+  error = 'ERROR'
 }
 
 type ErrorWithMessage = {
@@ -31,30 +31,38 @@ function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
 }
 
 export class Log {
-  public level:LogLevel
-  public context?:string
-  constructor(context?:string) {
-    this.level = process.env.SQUID_LOGLEVEL ? process.env.SQUID_LOGLEVEL as LogLevel : process.env.NODE_ENV === 'development' ? LogLevel.warn : LogLevel.warn
+  public level: LogLevel
+  public context?: string
+  constructor(context?: string) {
+    this.level = process.env.SQUID_LOGLEVEL
+      ? (process.env.SQUID_LOGLEVEL as LogLevel)
+      : process.env.NODE_ENV === 'development'
+        ? LogLevel.warn
+        : LogLevel.warn
     this.context = context
   }
-  debug(message:string) {
+  debug(message: string) {
     if (this.level === LogLevel.debug) {
-      console.debug(`${this.context ? `${this.context}: `:``}${message}`)
+      console.debug(`${this.context ? `${this.context}: ` : ``}${message}`)
     }
   }
-  info(message:string) {
+  info(message: string) {
     if ([LogLevel.info, LogLevel.debug].includes(this.level)) {
-      console.info(`${this.context ? `${this.context}: `:``}${message}`)
-    } 
-  }
-  warn(message:string) {
-    if ([LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
-      console.warn(`${this.context ? `${this.context}: `:``}${message}`)
+      console.info(`${this.context ? `${this.context}: ` : ``}${message}`)
     }
   }
-  error(message:string) {
-    if ([LogLevel.error, LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
-      console.error(`${this.context ? `${this.context}: `:``}${message}`)
+  warn(message: string) {
+    if ([LogLevel.warn, LogLevel.info, LogLevel.debug].includes(this.level)) {
+      console.warn(`${this.context ? `${this.context}: ` : ``}${message}`)
+    }
+  }
+  error(message: string) {
+    if (
+      [LogLevel.error, LogLevel.warn, LogLevel.info, LogLevel.debug].includes(
+        this.level
+      )
+    ) {
+      console.error(`${this.context ? `${this.context}: ` : ``}${message}`)
     }
   }
   getErrorMessage(error: unknown) {

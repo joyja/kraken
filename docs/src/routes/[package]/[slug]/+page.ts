@@ -11,7 +11,7 @@ export const load = async ({ params }) => {
       packageFromPath(path),
       params.package,
       slugFromPath(path),
-      params.slug,
+      params.slug
     )
     if (
       packageFromPath(path) === params.package &&
@@ -30,6 +30,6 @@ export const load = async ({ params }) => {
 
   return {
     component: post.default,
-    frontmatter: post.metadata,
+    frontmatter: post.metadata
   }
 }

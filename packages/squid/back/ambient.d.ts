@@ -1,5 +1,5 @@
 interface SystemMetric {
-  name: string,
-  getter: Function,
+  name: string
+  getter: Function
   type: 'Float' | 'String'
 }

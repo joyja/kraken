@@ -8,25 +8,25 @@ export const countdown = {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       yield { countdown: i }
     }
-  },
+  }
 }
 
 export const values = {
   subscribe: () => pubsub.subscribe('values'),
-  resolve: (payload: VariableValue) => payload,
+  resolve: (payload: VariableValue) => payload
 }
 
 export const taskMetrics = {
   subscribe: () => pubsub.subscribe('taskMetrics'),
-  resolve: (payload: TaskMetric) => payload,
+  resolve: (payload: TaskMetric) => payload
 }
 
 export const changes = {
   subscribe: () => pubsub.subscribe('fileChanges'),
-  resolve: (payload: TaskMetric) => payload,
+  resolve: (payload: TaskMetric) => payload
 }
 
 export const plc = {
   subscribe: () => pubsub.subscribe('plc'),
-  resolve: (payload: boolean) => payload,
+  resolve: (payload: boolean) => payload
 }

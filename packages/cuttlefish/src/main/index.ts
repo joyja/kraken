@@ -8,17 +8,17 @@ import path from 'path'
 import fs from 'fs'
 import { nanoid } from 'nanoid'
 
-const USER_DATA_PATH = path.join(app.getPath("userData"), 'user_data.json')
+const USER_DATA_PATH = path.join(app.getPath('userData'), 'user_data.json')
 
 function readUserData() {
   try {
-      const data = fs.readFileSync(USER_DATA_PATH, 'utf-8')
-      return JSON.parse(data)
-  } catch(error) {
+    const data = fs.readFileSync(USER_DATA_PATH, 'utf-8')
+    return JSON.parse(data)
+  } catch (error) {
     if (error instanceof Error) {
-      writeUserData({"connections":[]})
+      writeUserData({ connections: [] })
     } else {
-      console.log('Error retrieving user data', error)  
+      console.log('Error retrieving user data', error)
       // you may want to propagate the error, up to you
       return null
     }
@@ -57,8 +57,8 @@ function createWindow(): void {
   })
 
   ipcMain.handle('getConnections', getConnections)
-  
-  spdata.on('update',(groups:SparkplugGroup[]) => {
+
+  spdata.on('update', (groups: SparkplugGroup[]) => {
     mainWindow.webContents.send('update-groups', groups)
   })
 
@@ -70,7 +70,7 @@ function createWindow(): void {
 
   ipcMain.on('selectConnection', (_event, id) => {
     const connections = getConnections()
-    const connection = connections.find(c => c.id === id)
+    const connection = connections.find((c) => c.id === id)
     if (connection) {
       spdata.initialize(connection)
     }
@@ -78,8 +78,8 @@ function createWindow(): void {
 
   ipcMain.on('deleteConnection', (_event, id) => {
     const connections = getConnections()
-    writeUserData({ 
-      connections: connections.filter(connection => connection.id !== id)
+    writeUserData({
+      connections: connections.filter((connection) => connection.id !== id)
     })
   })
 
@@ -155,14 +155,17 @@ import { Log } from './log'
 const log = new Log()
 type Unpacked<T> = T extends (infer U)[] ? U : T
 
-interface SparkplugBasicInit { id:string, timestamp?:Unpacked<UPayload>['timestamp'] }
+interface SparkplugBasicInit {
+  id: string
+  timestamp?: Unpacked<UPayload>['timestamp']
+}
 
 //Contains data that all sparkplug classes should have
 class SparkplugBasic {
-  id:string
-  updatedOn:Date
-  timestamp?:number | Long.Long | null
-  constructor({ id, timestamp }:SparkplugBasicInit) {
+  id: string
+  updatedOn: Date
+  timestamp?: number | Long.Long | null
+  constructor({ id, timestamp }: SparkplugBasicInit) {
     this.id = id
     this.timestamp = timestamp
     if (timestamp && typeof timestamp !== 'number') {
@@ -174,55 +177,61 @@ class SparkplugBasic {
 }
 
 //For any sparkplug classes that have metrics
-class SparkplugBasicMetrics extends SparkplugBasic{
-  metrics:SparkplugMetric[]
-  constructor(init:SparkplugBasicInit) {
+class SparkplugBasicMetrics extends SparkplugBasic {
+  metrics: SparkplugMetric[]
+  constructor(init: SparkplugBasicInit) {
     super(init)
     this.metrics = []
   }
-  updateMetrics(payload:UPayload | UTemplate) {
+  updateMetrics(payload: UPayload | UTemplate) {
     if (payload.metrics) {
-      for(const payloadMetric of payload.metrics) {
+      for (const payloadMetric of payload.metrics) {
         if (payloadMetric.name) {
           let metric = this.getMetric(payloadMetric.name)
           if (metric) {
             metric.update(payloadMetric)
           } else {
-            metric = new SparkplugMetric({ id: payloadMetric.name, timestamp: payloadMetric.timestamp, ...payloadMetric } )
+            metric = new SparkplugMetric({
+              id: payloadMetric.name,
+              timestamp: payloadMetric.timestamp,
+              ...payloadMetric
+            })
             this.metrics.push(metric)
           }
-          log.info(`Metric ${metric.id} updated to value ${JSON.stringify(payloadMetric.value, null, 4)}`)
+          log.info(
+            `Metric ${metric.id} updated to value ${JSON.stringify(payloadMetric.value, null, 4)}`
+          )
         }
       }
     }
   }
-  getMetric(id:string) {
-    return this.metrics.find((metrics) => id === metrics.id )
+  getMetric(id: string) {
+    return this.metrics.find((metrics) => id === metrics.id)
   }
 }
 
 interface SparkplugMetric extends NonNullable<Unpacked<UPayload['metrics']>> {
-  updateCount:number
+  updateCount: number
 }
 interface SparkplugMetricInit extends NonNullable<Unpacked<UPayload['metrics']>> {
-  id:string,
-  timestamp?:Unpacked<UPayload>['timestamp']
+  id: string
+  timestamp?: Unpacked<UPayload>['timestamp']
 }
 
 class SparkplugMetric extends SparkplugBasicMetrics {
   public updateCount = 0
-  constructor(init:SparkplugMetricInit) {
+  constructor(init: SparkplugMetricInit) {
     super(init)
-    Object.assign(this, { ...init, timestamp:this.timestamp })
+    Object.assign(this, { ...init, timestamp: this.timestamp })
   }
-  update(update:NonNullable<Unpacked<UPayload['metrics']>>) {
-    Object.assign(this, { ...update, })
+  update(update: NonNullable<Unpacked<UPayload['metrics']>>) {
+    Object.assign(this, { ...update })
     this.updateCount += 1
   }
 }
 
 class SparkplugDevice extends SparkplugBasicMetrics {
-  constructor(init:SparkplugBasicInit) {
+  constructor(init: SparkplugBasicInit) {
     super(init)
   }
   get children() {
@@ -233,23 +242,23 @@ class SparkplugDevice extends SparkplugBasicMetrics {
 class SparkplugNode extends SparkplugBasicMetrics {
   devices: SparkplugDevice[]
   unbornDevices: SparkplugDevice[]
-  constructor(init:SparkplugBasicInit) {
+  constructor(init: SparkplugBasicInit) {
     super(init)
     this.devices = []
     this.unbornDevices = []
   }
-  getDevice(id:string) {
-    return this.devices.find((device) =>  id === device.id )
+  getDevice(id: string) {
+    return this.devices.find((device) => id === device.id)
   }
-  getUnbornDevice(id:string) {
-    return this.unbornDevices.find((device) =>  id === device.id )
+  getUnbornDevice(id: string) {
+    return this.unbornDevices.find((device) => id === device.id)
   }
-  dropDevice(id:string) {
+  dropDevice(id: string) {
     this.devices = this.devices.filter((device) => {
       return device.id !== id
     })
   }
-  dropUnbornDevice(id:string) {
+  dropUnbornDevice(id: string) {
     this.unbornDevices = this.unbornDevices.filter((device) => {
       return device.id !== id
     })
@@ -262,23 +271,23 @@ class SparkplugNode extends SparkplugBasicMetrics {
 class SparkplugGroup extends SparkplugBasic {
   nodes: SparkplugNode[]
   unbornNodes: SparkplugNode[]
-  constructor(init:SparkplugBasicInit) {
+  constructor(init: SparkplugBasicInit) {
     super(init)
     this.nodes = []
     this.unbornNodes = []
   }
-  getNode(id:string) {
+  getNode(id: string) {
     return this.nodes.find((node) => id === node.id)
   }
-  getUnbornNode(id:string) {
+  getUnbornNode(id: string) {
     return this.unbornNodes.find((node) => id === node.id)
   }
-  dropNode(id:string) {
+  dropNode(id: string) {
     this.nodes = this.nodes.filter((node) => {
       return node.id !== id
     })
   }
-  dropUnbornNode(id:string) {
+  dropUnbornNode(id: string) {
     this.unbornNodes = this.unbornNodes.filter((node) => {
       return node.id !== id
     })
@@ -289,17 +298,13 @@ class SparkplugGroup extends SparkplugBasic {
 }
 
 class SparkplugData extends events.EventEmitter {
-  private client?:ReturnType<typeof newHost>
-  groups:SparkplugGroup[]
+  private client?: ReturnType<typeof newHost>
+  groups: SparkplugGroup[]
   constructor() {
     super()
     this.groups = []
   }
-  initialize({
-    serverUrl,
-    username,
-    password,
-  }) {
+  initialize({ serverUrl, username, password }) {
     this.groups = []
     if (this.client) {
       this.client.stop()
@@ -310,37 +315,37 @@ class SparkplugData extends events.EventEmitter {
       username,
       password,
       clientId: `cuttlefish-${nanoid(7)}`,
-      primaryHostId: `cuttlefish-${nanoid(7)}`,
+      primaryHostId: `cuttlefish-${nanoid(7)}`
     })
     this.createEvents()
-    this.emit('update',this.groups)
+    this.emit('update', this.groups)
   }
   createEvents() {
-    this.client!.on('nbirth',(_topic, groupId, nodeId, payload) => {
+    this.client!.on('nbirth', (_topic, groupId, nodeId, payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         // Clear matching unborn nodes first
         group.dropUnbornNode(nodeId)
         let node = group.getNode(nodeId)
         if (node) {
-          node = new SparkplugNode({ id:nodeId, timestamp:payload.timestamp })
+          node = new SparkplugNode({ id: nodeId, timestamp: payload.timestamp })
         } else {
-          node = new SparkplugNode({ id:nodeId, timestamp:payload.timestamp })
+          node = new SparkplugNode({ id: nodeId, timestamp: payload.timestamp })
           group.nodes.push(node)
         }
         node.updateMetrics(payload)
         log.info(`Node ${node.id} is born in group ${group.id}.`)
       } else {
-        group = new SparkplugGroup({ id:groupId, timestamp:payload.timestamp })
+        group = new SparkplugGroup({ id: groupId, timestamp: payload.timestamp })
         this.groups.push(group)
-        const node = new SparkplugNode({ id:nodeId, timestamp:payload.timestamp })
+        const node = new SparkplugNode({ id: nodeId, timestamp: payload.timestamp })
         group.nodes.push(node)
         node.updateMetrics(payload)
         log.info(`Node ${node.id} is born as part of new group ${group.id}.`)
       }
-      this.emit('update',this.groups)
+      this.emit('update', this.groups)
     })
-    this.client!.on('dbirth',(_topic, groupId, nodeId, deviceId, payload) => {
+    this.client!.on('dbirth', (_topic, groupId, nodeId, deviceId, payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         let node = group.getNode(nodeId)
@@ -351,9 +356,9 @@ class SparkplugData extends events.EventEmitter {
           }
           let device = node.getDevice(deviceId)
           if (device) {
-            device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+            device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
           } else {
-            device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+            device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
             node.devices.push(device)
           }
           device.updateMetrics(payload)
@@ -367,33 +372,33 @@ class SparkplugData extends events.EventEmitter {
             }
             let device = node.getDevice(deviceId)
             if (device) {
-              device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+              device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
             } else {
-              device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+              device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
               node.devices.push(device)
             }
           } else {
-            node = new SparkplugNode({ id:nodeId, timestamp:payload.timestamp })
+            node = new SparkplugNode({ id: nodeId, timestamp: payload.timestamp })
             group.unbornNodes.push(node)
-            let device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+            let device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
             node.devices.push(device)
             device.updateMetrics(payload)
             log.info(`Device ${device.id} is born to unborn Node ${node.id} in group ${group.id}.`)
           }
         }
       } else {
-        group = new SparkplugGroup({ id:groupId, timestamp:payload.timestamp })
+        group = new SparkplugGroup({ id: groupId, timestamp: payload.timestamp })
         this.groups.push(group)
-        const node = new SparkplugNode({ id:nodeId, timestamp:payload.timestamp })
+        const node = new SparkplugNode({ id: nodeId, timestamp: payload.timestamp })
         group.unbornNodes.push(node)
-        let device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+        let device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
         node.devices.push(device)
         device.updateMetrics(payload)
         log.info(`Device ${device.id} is born to unborn Node ${node.id} in new group ${group.id}.`)
       }
-      this.emit('update',this.groups)
+      this.emit('update', this.groups)
     })
-    this.client!.on('ddata',(_topic, groupId, nodeId, deviceId, payload) => {
+    this.client!.on('ddata', (_topic, groupId, nodeId, deviceId, payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         let node = group.getNode(nodeId)
@@ -406,10 +411,12 @@ class SparkplugData extends events.EventEmitter {
             log.info(`Received data for ${device.id} in Node ${node.id} in Group ${group.id}:`)
             device.updateMetrics(payload)
           } else {
-            device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+            device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
             node.unbornDevices.push(device)
             device.updateMetrics(payload)
-            log.info(`Received data for unborn device ${device.id} in Node ${node.id} in ${group.id}`)
+            log.info(
+              `Received data for unborn device ${device.id} in Node ${node.id} in ${group.id}`
+            )
           }
         } else {
           node = group.getUnbornNode(nodeId)
@@ -423,43 +430,49 @@ class SparkplugData extends events.EventEmitter {
               if (device) {
                 device.updateMetrics(payload)
               } else {
-                device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+                device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
                 node.unbornDevices.push(device)
                 device.updateMetrics(payload)
               }
-              log.info(`Received data for unborn device ${device.id} in Node ${node.id} in ${group.id}`)
+              log.info(
+                `Received data for unborn device ${device.id} in Node ${node.id} in ${group.id}`
+              )
             }
           } else {
-            node = new SparkplugNode({ id:nodeId, timestamp:payload.timestamp })
+            node = new SparkplugNode({ id: nodeId, timestamp: payload.timestamp })
             group.unbornNodes.push(node)
-            let device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+            let device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
             node.unbornDevices.push(device)
             device.updateMetrics(payload)
-            log.info(`Received data for unborn device ${device.id} in unborn Node ${node.id} in group ${group.id}.`)
+            log.info(
+              `Received data for unborn device ${device.id} in unborn Node ${node.id} in group ${group.id}.`
+            )
           }
         }
       } else {
-        group = new SparkplugGroup({ id:groupId, timestamp:payload.timestamp })
+        group = new SparkplugGroup({ id: groupId, timestamp: payload.timestamp })
         this.groups.push(group)
-        const node = new SparkplugNode({ id:nodeId, timestamp:payload.timestamp })
+        const node = new SparkplugNode({ id: nodeId, timestamp: payload.timestamp })
         group.unbornNodes.push(node)
-        let device = new SparkplugDevice({ id:deviceId, timestamp:payload.timestamp })
+        let device = new SparkplugDevice({ id: deviceId, timestamp: payload.timestamp })
         node.unbornDevices.push(device)
         device.updateMetrics(payload)
-        log.info(`Received data for unborn device ${device.id} in unborn Node ${node.id} in new group ${group.id}.`)
+        log.info(
+          `Received data for unborn device ${device.id} in unborn Node ${node.id} in new group ${group.id}.`
+        )
       }
-      this.emit('update',this.groups)
+      this.emit('update', this.groups)
     })
-    this.client!.on('ndeath',(_topic, groupId, nodeId, _payload) => {
+    this.client!.on('ndeath', (_topic, groupId, nodeId, _payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         group.dropNode(nodeId)
         group.dropUnbornNode(nodeId)
       }
       log.info(`Node ${nodeId} is dead on group ${groupId}`)
-      this.emit('update',this.groups)
+      this.emit('update', this.groups)
     })
-    this.client!.on('ddeath',(_topic, groupId, nodeId, deviceId, _payload) => {
+    this.client!.on('ddeath', (_topic, groupId, nodeId, deviceId, _payload) => {
       let group = this.getGroup(groupId)
       if (group) {
         let node = group.getNode(nodeId)
@@ -469,74 +482,103 @@ class SparkplugData extends events.EventEmitter {
         }
       }
       log.info(`Device ${deviceId} is dead on node ${nodeId} in group ${groupId}`)
-      this.emit('update',this.groups)
+      this.emit('update', this.groups)
     })
-    this.client!.on('connect',() => {
+    this.client!.on('connect', () => {
       console.log('connecting')
     })
-    this.client!.on('reconnect',() => {
+    this.client!.on('reconnect', () => {
       console.log('reconnecting')
     })
-    this.client!.on('error',(error) => {
+    this.client!.on('error', (error) => {
       console.log(error.message)
     })
-    this.client!.on('ncmd',(payload) => {
+    this.client!.on('ncmd', (payload) => {
       console.log(payload)
     })
-    this.client!.on('message',(topic, payload) => {
-      console.log(`received message on topic "${topic}" with payload "${JSON.stringify(payload,null,4)}"`)
+    this.client!.on('message', (topic, payload) => {
+      console.log(
+        `received message on topic "${topic}" with payload "${JSON.stringify(payload, null, 4)}"`
+      )
     })
   }
-  getGroup(id:string) {
+  getGroup(id: string) {
     return this.groups.find((group) => id === group.id)
   }
-  requestRebirth({ groupId, nodeId }:{ groupId:string, nodeId:string }) {
-    const payload:UPayload = {
+  requestRebirth({ groupId, nodeId }: { groupId: string; nodeId: string }) {
+    const payload: UPayload = {
       timestamp: new Date().getTime(),
-      metrics: [{
-        name: "Node Control/Rebirth",
-        value: true,
-        type: "Boolean",
-        timestamp: new Date().getTime(),
-        properties: {}
-      }]
+      metrics: [
+        {
+          name: 'Node Control/Rebirth',
+          value: true,
+          type: 'Boolean',
+          timestamp: new Date().getTime(),
+          properties: {}
+        }
+      ]
     }
     this.client?.publishNodeCommand(groupId, nodeId, payload)
   }
-  sendNodeCommand({ groupId, nodeId, metricId, value }:{ groupId:string, nodeId:string, metricId:string, value:any }) {
+  sendNodeCommand({
+    groupId,
+    nodeId,
+    metricId,
+    value
+  }: {
+    groupId: string
+    nodeId: string
+    metricId: string
+    value: any
+  }) {
     const metric = this.getGroup(groupId)?.getNode(nodeId)?.getMetric(metricId)
     if (metric) {
-      const payload:UPayload = {
+      const payload: UPayload = {
         timestamp: new Date().getTime(),
-        metrics: [{
-          ...metric,
-          value
-        }]
+        metrics: [
+          {
+            ...metric,
+            value
+          }
+        ]
       }
       this.client?.publishNodeCommand(groupId, nodeId, payload)
     }
   }
-  sendDeviceCommand({ groupId, nodeId, deviceId, metricId, value }:{ groupId:string, nodeId:string, deviceId:string, metricId:string, value:any }) {
+  sendDeviceCommand({
+    groupId,
+    nodeId,
+    deviceId,
+    metricId,
+    value
+  }: {
+    groupId: string
+    nodeId: string
+    deviceId: string
+    metricId: string
+    value: any
+  }) {
     const metric = this.getGroup(groupId)?.getNode(nodeId)?.getDevice(deviceId)?.getMetric(metricId)
     console.log(value)
     if (metric) {
-      const payload:UPayload = {
+      const payload: UPayload = {
         timestamp: new Date().getTime(),
-        metrics: [{
-          ...metric,
-          value: JSON.stringify(value)
-        }]
+        metrics: [
+          {
+            ...metric,
+            value: JSON.stringify(value)
+          }
+        ]
       }
       this.client?.publishDeviceCommand(groupId, nodeId, deviceId, payload)
     }
   }
 }
 
-let spdata:SparkplugData = new SparkplugData()
+let spdata: SparkplugData = new SparkplugData()
 async function startMqtt() {
   const connections = await getConnections()
   if (connections && connections.length > 0) {
     spdata.initialize(connections[0])
   }
 }
-

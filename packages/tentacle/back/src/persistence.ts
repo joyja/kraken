@@ -22,7 +22,7 @@ export class Persistence {
     filepath = path.resolve(process.cwd(), 'runtime/persistence.json'),
     variables,
     global,
-    classes,
+    classes
   }: ConstructorOptions) {
     this.global = global
     this.variables = variables
@@ -120,7 +120,7 @@ export class Persistence {
           } else {
             resolve()
           }
-        },
+        }
       )
     })
   }

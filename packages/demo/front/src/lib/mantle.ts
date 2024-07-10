@@ -1,12 +1,12 @@
-export async function getNodes():Promise<EdgeNode[]> {
-  return await fetch('https://mantle2.jarautomation.io/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      query: `
+export async function getNodes(): Promise<EdgeNode[]> {
+	return await fetch('https://mantle2.jarautomation.io/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+			// Authorization: `Bearer ${token}`,
+		},
+		body: JSON.stringify({
+			query: `
         query EdgeNodes {
           edgeNodes {
             group
@@ -32,9 +32,9 @@ export async function getNodes():Promise<EdgeNode[]> {
             }
           }
         }
-      `,
-    }),
-  })
-    .then((res) => res.json())
-    .then((res) => res.data.edgeNodes)
+      `
+		})
+	})
+		.then((res) => res.json())
+		.then((res) => res.data.edgeNodes);
 }

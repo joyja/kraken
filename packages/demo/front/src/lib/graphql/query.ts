@@ -1,4 +1,4 @@
-import fragment from './fragment'
+import fragment from './fragment';
 
 const edgeNodes = `
   query EdgeNodes {
@@ -15,8 +15,8 @@ const edgeNodes = `
   ${fragment.edgeNode}
   ${fragment.edgeDevice}
   ${fragment.edgeDeviceMetric}
-`
+`;
 
 export default {
-  edgeNodes,
-}
+	edgeNodes
+};

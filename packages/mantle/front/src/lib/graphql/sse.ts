@@ -12,7 +12,7 @@ interface subscription {
 }
 
 export function generateSources({
-  subscriptions,
+  subscriptions
 }: {
   subscriptions: subscription[]
 }) {

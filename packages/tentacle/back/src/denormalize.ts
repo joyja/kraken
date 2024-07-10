@@ -20,7 +20,7 @@ function createPropertyName(
       tokens.push('[' + arg + ']')
     } else {
       throw new Error(
-        'Invalid argument type at index ' + i + ' (must be string or number).',
+        'Invalid argument type at index ' + i + ' (must be string or number).'
       )
     }
   }
@@ -43,7 +43,7 @@ export function denormalize(
   data: Record<string, any>,
   keys: Array<string | number> = [],
   map: Record<string, any> = {},
-  layer = 0,
+  layer = 0
 ): Record<string, any> {
   if (_isArray(data)) {
     data.forEach(function (d, i) {
@@ -53,7 +53,7 @@ export function denormalize(
     // if it's a timeout ignore it (it won't denormalize properly)
   } else if (_isObject(data)) {
     const classData = Object.getOwnPropertyDescriptors(
-      Object.getPrototypeOf(data),
+      Object.getPrototypeOf(data)
     )
     Object.keys(classData).forEach((propertyKey) => {
       if (classData[propertyKey].get !== undefined) {

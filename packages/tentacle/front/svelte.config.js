@@ -1,5 +1,5 @@
-import adapter from '@sveltejs/adapter-node';
-import { vitePreprocess } from '@sveltejs/kit/vite';
+import adapter from '@sveltejs/adapter-node'
+import { vitePreprocess } from '@sveltejs/kit/vite'
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -16,6 +16,6 @@ const config = {
 			checkOrigin: process.env.TENTACLE_CHECK_ORIGIN === '1'
 		}
 	}
-};
+}
 
-export default config;
+export default config

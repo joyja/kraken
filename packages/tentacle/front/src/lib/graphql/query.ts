@@ -60,7 +60,7 @@ export const variables = `
   }
 `
 
-export const config  = `
+export const config = `
   query Configuration {
     configuration {
       tasks {

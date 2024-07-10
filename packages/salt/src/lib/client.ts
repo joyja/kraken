@@ -1,5 +1,5 @@
 export function setTheme<ActionData extends { [x: string]: string }>(
-  form?: ActionData | null,
+  form?: ActionData | null
 ) {
   if (form?.context === 'setTheme') {
     if (form?.theme === 'themeDark') {

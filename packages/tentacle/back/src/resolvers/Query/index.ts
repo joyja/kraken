@@ -2,7 +2,7 @@ import { denormalize } from '../../denormalize.js'
 import {
   type MemoryUsage,
   type Config,
-  type TaskMetric,
+  type TaskMetric
 } from '../../generated/graphql.js'
 import { type PLC, plc } from '../../plc.js'
 import _ from 'lodash'
@@ -18,7 +18,7 @@ export function metrics(): TaskMetric[] {
   return Object.keys(plc.metrics).map((key) => {
     return {
       task: key,
-      ...plc.metrics[key],
+      ...plc.metrics[key]
     }
   })
 }
@@ -33,7 +33,7 @@ export function configuration(): Config {
           plc?.config?.tasks[key]?.description !== undefined
             ? plc.config.tasks[key].description
             : '',
-        ...plc.config.tasks[key],
+        ...plc.config.tasks[key]
       }
     }),
     mqtt: Object.keys(plc.config.mqtt).map((key) => {
@@ -44,7 +44,7 @@ export function configuration(): Config {
           plc?.config?.mqtt[key]?.description !== undefined
             ? plc.config.mqtt[key].description
             : '',
-        ...plc.config.mqtt[key],
+        ...plc.config.mqtt[key]
       }
     }),
     modbus: Object.keys(plc.config.modbus).map((key) => {
@@ -55,7 +55,7 @@ export function configuration(): Config {
           plc?.config?.modbus[key]?.description !== undefined
             ? plc.config.modbus[key].description
             : '',
-        ...plc.config.modbus[key],
+        ...plc.config.modbus[key]
       }
     }),
     opcua: Object.keys(plc.config.opcua).map((key) => {
@@ -66,22 +66,22 @@ export function configuration(): Config {
           plc?.config?.opcua[key]?.description !== undefined
             ? plc.config.opcua[key].description
             : '',
-        ...plc.config.opcua[key],
+        ...plc.config.opcua[key]
       }
-    }),
+    })
   }
 }
 
 export function value(
   root: unknown,
-  args: { variablePath: string },
+  args: { variablePath: string }
 ): { path: string; value: string; datatype: string } {
   const variable = _.get(plc.global, args.variablePath)
   if (variable !== undefined) {
     return {
       path: args.variablePath,
       value: variable,
-      datatype: typeof variable,
+      datatype: typeof variable
     }
   } else {
     throw Error(`${args.variablePath} does not exits.`)
@@ -98,7 +98,7 @@ export function values(): Array<{
     return {
       path: key,
       value: JSON.stringify(values[key]),
-      datatype: typeof values[key],
+      datatype: typeof values[key]
     }
   })
 }
@@ -114,12 +114,12 @@ export function variables(): Array<{
     let children = []
     if (!atomicDatatypes.includes(plc.variables[key].datatype)) {
       const variableClass = plc.classes.find(
-        (item: { name: string }) => item.name === plc.variables[key].datatype,
+        (item: { name: string }) => item.name === plc.variables[key].datatype
       )
       children = Object.keys(variableClass.variables).map((childKey) => {
         return {
           name: childKey,
-          ...variableClass.variables[childKey],
+          ...variableClass.variables[childKey]
         }
       })
     }
@@ -131,7 +131,7 @@ export function variables(): Array<{
           ? plc.variables[key].description
           : '',
       ...plc.variables[key],
-      children,
+      children
     }
   })
 }
@@ -139,19 +139,19 @@ export function variables(): Array<{
 export function program(_root: unknown, args: { name: string }): string {
   return fs.readFileSync(
     path.resolve(process.cwd(), 'development/programs', args.name),
-    { encoding: 'utf8', flag: 'r' },
+    { encoding: 'utf8', flag: 'r' }
   )
 }
 export function programs(): string[] {
   const result = getAllFiles(
-    path.resolve(process.cwd(), 'development/programs'),
+    path.resolve(process.cwd(), 'development/programs')
   ).map((file) => file.replace(`${process.cwd()}/development/programs/`, ''))
   return result
 }
 export function tClass(args: { name: string }): string {
   return fs.readFileSync(
     path.resolve(process.cwd(), 'development/classes', args.name),
-    { encoding: 'utf8', flag: 'r' },
+    { encoding: 'utf8', flag: 'r' }
   )
 }
 export function tClasses(): string[] {

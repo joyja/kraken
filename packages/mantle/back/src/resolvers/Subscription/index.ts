@@ -25,11 +25,11 @@ export const metricUpdate = {
               return getPath(metric) === path
             })
           })
-        }),
+        })
       )
     } else {
       return pubsub.subscribe('metricUpdate')
     }
   },
-  resolve: (payload: SparkplugMetricUpdate[]) => payload,
+  resolve: (payload: SparkplugMetricUpdate[]) => payload
 }

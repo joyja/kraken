@@ -3,5 +3,5 @@ import * as Mutation from './Mutation/index.js'
 
 export default {
   Mutation,
-  Query,
+  Query
 }
