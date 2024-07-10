@@ -5,7 +5,7 @@ const edgeNode = `
     description
     createdOn
   }
-`
+`;
 
 const edgeDevice = `
   fragment EdgeDeviceBasic on EdgeDevice {
@@ -13,7 +13,7 @@ const edgeDevice = `
     description
     createdOn
   }
-`
+`;
 
 const edgeDeviceMetric = `
   fragment EdgeDeviceMetricBasic on EdgeDeviceMetric {
@@ -28,10 +28,10 @@ const edgeDeviceMetric = `
       value
     }
   }
-`
+`;
 
 export default {
-  edgeNode,
-  edgeDevice,
-  edgeDeviceMetric,
-}
+	edgeNode,
+	edgeDevice,
+	edgeDeviceMetric
+};

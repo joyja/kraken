@@ -6,7 +6,7 @@ import { rosterHandler } from './roster.js'
 export async function voiceCall({
   message,
   to,
-  rosterId,
+  rosterId
 }: {
   message: string
   to: string
@@ -16,14 +16,14 @@ export async function voiceCall({
   const res = await fetch(`${seagullUrl}/make-call`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       to,
       message,
       mantleId: process.env.MANTLE_ID ?? 'dev',
-      rosterId,
-    }),
+      rosterId
+    })
   })
   if (!res.ok) {
     const errorText = await res.text()
@@ -35,7 +35,7 @@ export async function voiceCall({
 export async function sendSMS({
   message,
   to,
-  rosterId,
+  rosterId
 }: {
   message: string
   to: string
@@ -45,14 +45,14 @@ export async function sendSMS({
   const res = await fetch(`${seagullUrl}/send-sms`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       to,
       message,
       mantleId: process.env.MANTLE_ID !== null ?? 'dev',
-      rosterId,
-    }),
+      rosterId
+    })
   })
   if (!res.ok) {
     const errorText = await res.text()
@@ -79,10 +79,10 @@ class Notifier {
       include: {
         users: {
           include: {
-            user: true,
-          },
-        },
-      },
+            user: true
+          }
+        }
+      }
     })
     if (roster !== null && roster !== undefined) {
       this.roster = roster
@@ -110,14 +110,14 @@ class Notifier {
           await sendSMS({
             message,
             to: user.phone,
-            rosterId: this.rosterId,
+            rosterId: this.rosterId
           })
         }
         if (entry.phone !== undefined && user.phone !== null) {
           await voiceCall({
             message,
             to: user.phone,
-            rosterId: this.rosterId,
+            rosterId: this.rosterId
           })
         }
         if (
@@ -137,7 +137,7 @@ class Notifier {
       },
       this.roster?.timeBetweenRetries != null
         ? this.roster.timeBetweenRetries
-        : 10000,
+        : 10000
     )
   }
 
@@ -165,7 +165,7 @@ export class NotificationHandler {
         const active = await rosterHandler.getActiveRosters()
         active.forEach((roster) => {
           const notifier = this.notifiers.find(
-            (notifier) => notifier.rosterId === roster?.id,
+            (notifier) => notifier.rosterId === roster?.id
           )
           if (notifier == null && roster?.id != null) {
             this.notifiers.push(new Notifier(roster.id))
@@ -173,7 +173,7 @@ export class NotificationHandler {
         })
         this.notifiers.forEach((notifier) => {
           const roster = active.find(
-            (roster) => roster?.id === notifier.rosterId,
+            (roster) => roster?.id === notifier.rosterId
           )
           if (roster == null) {
             notifier.terminate()
@@ -181,7 +181,7 @@ export class NotificationHandler {
         })
         this.notifiers = this.notifiers.filter((notifier) => {
           const roster = active.find(
-            (roster) => roster?.id === notifier.rosterId,
+            (roster) => roster?.id === notifier.rosterId
           )
           return roster !== undefined
         })

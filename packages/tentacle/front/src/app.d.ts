@@ -4,14 +4,19 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			variables: void | { name: string, value:string }[]
-			metrics: { task:string, functionExecutionTime:number, intervalExecutionTime:number, totalScanTime:number }[]
-			changes: { timestamp:string, event:string, path:string } []
-			tentacleStatus: { connected:boolean }
+			variables: void | { name: string; value: string }[]
+			metrics: {
+				task: string
+				functionExecutionTime: number
+				intervalExecutionTime: number
+				totalScanTime: number
+			}[]
+			changes: { timestamp: string; event: string; path: string }[]
+			tentacleStatus: { connected: boolean }
 		}
 		// interface PageData {}
 		// interface Platform {}
 	}
 }
 
-export {};
+export {}

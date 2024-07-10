@@ -1,7 +1,7 @@
-import { nebula } from "../../nebula/index.js" 
+import { nebula } from '../../nebula/index.js'
 
 export const nebulaStatus = () => {
   return {
-    state: nebula.getState(),
+    state: nebula.getState()
   }
 }

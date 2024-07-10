@@ -5,7 +5,7 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		interface PageData {
-			nodes: { devices:{ metrics: { name:string, value: number | string }[] }[] }[]
+			nodes: { devices: { metrics: { name: string; value: number | string }[] }[] }[];
 		}
 		// interface Platform {}
 	}

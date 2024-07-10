@@ -3,7 +3,7 @@ import { env } from '$env/dynamic/private'
 export const sendRequest = ({
   query,
   variables,
-  token,
+  token
 }: {
   query: string
   variables?: { [key: string]: unknown }
@@ -14,7 +14,7 @@ export const sendRequest = ({
   const port = env.MANTLE_PORT || '4001'
   const url = env.MANTLE_URL || '/graphql'
   const headers: { [key: string]: string } = {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   }
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
@@ -24,8 +24,8 @@ export const sendRequest = ({
     headers,
     body: JSON.stringify({
       query,
-      variables,
-    }),
+      variables
+    })
   })
     .then((res) => {
       if (!res.ok) {

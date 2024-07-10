@@ -1,5 +1,5 @@
 export async function GET() {
-  return {
-    body: 'Hello World'
-  }
+	return {
+		body: 'Hello World'
+	}
 }

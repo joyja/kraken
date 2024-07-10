@@ -5,7 +5,7 @@ import { Log } from 'coral'
 
 const log = new Log('MQTT')
 
-type Unpacked<T> = T extends (infer U)[] ? U : T;
+type Unpacked<T> = T extends (infer U)[] ? U : T
 
 interface PrimaryHost {
   name: string
@@ -15,11 +15,11 @@ interface PrimaryHost {
 }
 
 interface Metric extends UMetric {
-  published?:boolean
-  action?:Function
+  published?: boolean
+  action?: Function
 }
 
-const getDatatype = function (value:boolean | string | number) {
+const getDatatype = function (value: boolean | string | number) {
   if (typeof value === 'boolean') {
     return 'BOOLEAN'
   } else if (typeof value === 'string') {
@@ -38,56 +38,69 @@ const getDatatype = function (value:boolean | string | number) {
 export type MqttDataMetricDatatype = 'Float' | 'String' | 'Boolean'
 
 export interface MqttDataMetric {
-  name: string,
-  getter: Function,
-  type:MqttDataMetricDatatype
+  name: string
+  getter: Function
+  type: MqttDataMetricDatatype
 }
 
 export interface MqttDataDeviceControl {
-  name: string,
-  action: Function,
+  name: string
+  action: Function
   args: {
-    name: string,
+    name: string
     type: MqttDataMetricDatatype
   }[]
 }
 
 export class MQTTData {
-  private interval?:ReturnType<typeof setInterval>
-  private metrics:MqttDataMetric[]
-  private deviceControl?:MqttDataDeviceControl[]
-  constructor(metrics:MqttDataMetric[], deviceControl?:MqttDataDeviceControl[]) {
+  private interval?: ReturnType<typeof setInterval>
+  private metrics: MqttDataMetric[]
+  private deviceControl?: MqttDataDeviceControl[]
+  constructor(
+    metrics: MqttDataMetric[],
+    deviceControl?: MqttDataDeviceControl[]
+  ) {
     this.metrics = metrics
     this.deviceControl = deviceControl
   }
   async initializeMetrics() {
-    await Promise.all(this.metrics.map(async (metric) => {
-      mqtt.addMetric({
-        name: metric.name,
-        value: await metric.getter(),
-        type: metric.type
-      })
-    }))
-    if(this.deviceControl) {
-      await Promise.all(this.deviceControl?.map(async (control) => {
+    await Promise.all(
+      this.metrics.map(async (metric) => {
         mqtt.addMetric({
-          name: `Device Control/${control.name}`,
-          value: control.args && control.args.length > 0 ? JSON.stringify(control.args) : false,
-          type: control.args && control.args.length > 0 ? 'String' : 'Boolean',
-          action: control.action
+          name: metric.name,
+          value: await metric.getter(),
+          type: metric.type
         })
-      }))
+      })
+    )
+    if (this.deviceControl) {
+      await Promise.all(
+        this.deviceControl?.map(async (control) => {
+          mqtt.addMetric({
+            name: `Device Control/${control.name}`,
+            value:
+              control.args && control.args.length > 0
+                ? JSON.stringify(control.args)
+                : false,
+            type:
+              control.args && control.args.length > 0 ? 'String' : 'Boolean',
+            action: control.action
+          })
+        })
+      )
     }
   }
   async updateMetrics() {
-    await Promise.all(this.metrics.map(async (metric) => {
-      mqtt.updateMetric({
-        name: metric.name,
-        value: await metric.getter(),
+    await Promise.all(
+      this.metrics.map(async (metric) => {
+        mqtt.updateMetric({
+          name: metric.name,
+          value: await metric.getter()
+        })
       })
-    }))
+    )
   }
-  async startPolling(rate?:number) {
+  async startPolling(rate?: number) {
     this.interval = setInterval(() => {
       this.updateMetrics()
     }, rate)
@@ -98,25 +111,25 @@ export class MQTTData {
 }
 
 export class MQTT {
-  public client?:ReturnType<typeof newClient>
-  public connecting:boolean
-  public connected:boolean
-  public primaryHosts:PrimaryHost[]
-  public metrics:Metric[]
-  public groupId?:string
-  public nodeId?:string
-  public deviceId?:string
-  private interval?:ReturnType<typeof setInterval>
-  private rate:number
-  private config:{
-    serverUrl?:string,
-    username?:string,
-    password?:string,
-    groupId?:string,
-    edgeNode?:string,
-    clientId?:string,
-    version:string,
-    publishDeath:boolean
+  public client?: ReturnType<typeof newClient>
+  public connecting: boolean
+  public connected: boolean
+  public primaryHosts: PrimaryHost[]
+  public metrics: Metric[]
+  public groupId?: string
+  public nodeId?: string
+  public deviceId?: string
+  private interval?: ReturnType<typeof setInterval>
+  private rate: number
+  private config: {
+    serverUrl?: string
+    username?: string
+    password?: string
+    groupId?: string
+    edgeNode?: string
+    clientId?: string
+    version: string
+    publishDeath: boolean
   }
   constructor() {
     const serverUrl = process.env.SQUID_MQTT_URL
@@ -129,11 +142,16 @@ export class MQTT {
     this.deviceId = process.env.SQUID_MQTT_DEVICEID
     const clientId = process.env.SQUID_MQTT_CLIENTID
     // TODO: Need to figure out how I'm going to populate primary hosts (event variable, config file, etc.)
-    const primaryHosts:string[] = []
+    const primaryHosts: string[] = []
     this.rate = 2500
     this.config = {
-      serverUrl, username, password, groupId, edgeNode, clientId,
-      version : 'spBv1.0',
+      serverUrl,
+      username,
+      password,
+      groupId,
+      edgeNode,
+      clientId,
+      version: 'spBv1.0',
       publishDeath: true
     }
     this.metrics = []
@@ -147,18 +165,20 @@ export class MQTT {
     })
     for (const [key, value] of Object.entries(this.config)) {
       if (!value) {
-        throw Error(`${key} is not set, please make sure you set the SQUID_${key.toUpperCase()} environment variable.`)
+        throw Error(
+          `${key} is not set, please make sure you set the SQUID_${key.toUpperCase()} environment variable.`
+        )
       }
     }
-    this.connecting = false;
-    this.connected = false;
+    this.connecting = false
+    this.connected = false
   }
   async publish() {
-    const metrics = this.metrics.filter(metric => !metric.published)
+    const metrics = this.metrics.filter((metric) => !metric.published)
     if (metrics!.length > 0) {
-      const record:UPayload = {
+      const record: UPayload = {
         timestamp: getUnixTime(new Date()),
-        metrics,
+        metrics
       }
       await this.client!.publishDeviceData(this.deviceId!, record)
     }
@@ -166,13 +186,41 @@ export class MQTT {
       metric.published = true
     })
   }
-  async sendDeviceCommand({ groupId, nodeId, deviceId, payload, options }:{ groupId:string, nodeId:string, deviceId:string, payload:UPayload, options?:PayloadOptions }) {
-    return this.client!.publishDeviceCommand(groupId, nodeId, deviceId, payload, options)
+  async sendDeviceCommand({
+    groupId,
+    nodeId,
+    deviceId,
+    payload,
+    options
+  }: {
+    groupId: string
+    nodeId: string
+    deviceId: string
+    payload: UPayload
+    options?: PayloadOptions
+  }) {
+    return this.client!.publishDeviceCommand(
+      groupId,
+      nodeId,
+      deviceId,
+      payload,
+      options
+    )
   }
-  async sendNodeCommand({ groupId, nodeId, payload, options }:{ groupId:string, nodeId:string, payload:UPayload, options?:PayloadOptions}) {
+  async sendNodeCommand({
+    groupId,
+    nodeId,
+    payload,
+    options
+  }: {
+    groupId: string
+    nodeId: string
+    payload: UPayload
+    options?: PayloadOptions
+  }) {
     return this.client!.publishNodeCommand(groupId, nodeId, payload, options)
   }
-  addMetric({ name, type, value, action }:Metric) {
+  addMetric({ name, type, value, action }: Metric) {
     this.metrics?.push({
       name,
       type,
@@ -182,7 +230,13 @@ export class MQTT {
       action
     })
   }
-  updateMetric({ name, value }:{ name:string, value:NonNullable<Unpacked<UPayload['metrics']>>['value'] }) {
+  updateMetric({
+    name,
+    value
+  }: {
+    name: string
+    value: NonNullable<Unpacked<UPayload['metrics']>>['value']
+  }) {
     const metric = this.metrics?.find((metric) => {
       return name === metric.name
     })
@@ -196,7 +250,7 @@ export class MQTT {
       throw Error(`metric with name ${name} does not exist.`)
     }
   }
-  startPublishing(rate?:number) {
+  startPublishing(rate?: number) {
     if (rate) {
       this.rate = rate
     }
@@ -205,7 +259,7 @@ export class MQTT {
     }
     this.interval = setInterval(() => {
       this.publish()
-    },this.rate)
+    }, this.rate)
   }
   stopPublishing() {
     clearInterval(this.interval)
@@ -222,8 +276,10 @@ export class MQTT {
         this.onBirth()
       })
       this.client.on('dcmd', (deviceId, payload) => {
-        log.info(`Mqtt service received a dcmd for ${deviceId}. My device id is ${this.deviceId}, so ${this.deviceId === deviceId? 'This is for me.' : 'This is not for me.'}`)
-        log.debug(`dcmd payload: ${JSON.stringify(payload,null,2)}`)
+        log.info(
+          `Mqtt service received a dcmd for ${deviceId}. My device id is ${this.deviceId}, so ${this.deviceId === deviceId ? 'This is for me.' : 'This is not for me.'}`
+        )
+        log.debug(`dcmd payload: ${JSON.stringify(payload, null, 2)}`)
         try {
           if (this.deviceId === deviceId) {
             if (payload.metrics) {
@@ -231,15 +287,21 @@ export class MQTT {
                 const deviceCommand = this.metrics.find((metric) => {
                   return metric.name === payloadMetric.name
                 })
-                log.debug(`${deviceCommand ? 'Found' : 'Did not find'} device command for ${payloadMetric.name}`)
+                log.debug(
+                  `${deviceCommand ? 'Found' : 'Did not find'} device command for ${payloadMetric.name}`
+                )
                 if (!deviceCommand) {
-                  log.debug(`Available metrics are ${JSON.stringify(this.metrics,null,2)}`)
+                  log.debug(
+                    `Available metrics are ${JSON.stringify(this.metrics, null, 2)}`
+                  )
                 }
                 if (deviceCommand?.action) {
                   if (deviceCommand.type === 'Boolean') {
                     deviceCommand.action()
                   } else {
-                    deviceCommand.action(JSON.parse(payloadMetric.value as string))
+                    deviceCommand.action(
+                      JSON.parse(payloadMetric.value as string)
+                    )
                   }
                 }
               })
@@ -249,7 +311,7 @@ export class MQTT {
           log.error(log.getErrorMessage(error))
         }
       })
-      this.client.on('ncmd', async (payload:UPayload) => {
+      this.client.on('ncmd', async (payload: UPayload) => {
         if (payload.metrics) {
           const rebirth = payload.metrics.find(
             (metric) => metric.name === `Node Control/Rebirth`
@@ -272,7 +334,7 @@ export class MQTT {
       log.info(`Mqtt service is disconnecting.`)
       this.stopPublishing()
       const payload = {
-        timestamp: getUnixTime(new Date()),
+        timestamp: getUnixTime(new Date())
       }
       await this.client.publishDeviceDeath(`${this.deviceId}`, payload)
       this.client.stop()
@@ -280,22 +342,22 @@ export class MQTT {
     }
   }
   async onBirth() {
-    const payload:UPayload = {
+    const payload: UPayload = {
       timestamp: getUnixTime(new Date()),
       metrics: [
-        { 
+        {
           name: 'Node Control/Rebirth',
           timestamp: getUnixTime(new Date()),
-          type: "Boolean",
-          value: false,
+          type: 'Boolean',
+          value: false
         }
-      ],
+      ]
     }
     await this.client!.publishNodeBirth(payload)
     const metrics = this.metrics
     await this.client!.publishDeviceBirth(`${this.deviceId}`, {
       timestamp: getUnixTime(new Date()),
-      metrics,
+      metrics
     })
     this.primaryHosts.forEach((host) => {
       if (host.status === `ONLINE` || host.status === `UNKOWN`) {
@@ -307,7 +369,9 @@ export class MQTT {
         const primaryHost = this.primaryHosts
           .filter((host) => host.name === primaryHostId)
           .forEach((host) => {
-            log.info(`Received state: ${state} for primary host: ${primaryHostId}`)
+            log.info(
+              `Received state: ${state} for primary host: ${primaryHostId}`
+            )
             if (host) {
               host.status = `${state}`
               if (`${state}` === `OFFLINE`) {

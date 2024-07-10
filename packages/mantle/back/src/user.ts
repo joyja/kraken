@@ -2,7 +2,7 @@ import { prisma } from './prisma.js'
 import {
   type User as ResolverUser,
   type CreateUser as ResolverCreateUser,
-  type UpdateUser as ResolverUpdateUser,
+  type UpdateUser as ResolverUpdateUser
 } from './resolvers/types.js'
 import { type User as PrismaUser } from '@prisma/client'
 // import { Log } from './log';
@@ -15,7 +15,7 @@ function prismaToResolver(prismaUser: PrismaUser): ResolverUser {
 
 class UserHandler {
   async create({
-    input,
+    input
   }: {
     input: ResolverCreateUser
   }): Promise<ResolverUser> {
@@ -26,7 +26,7 @@ class UserHandler {
   }
 
   async update({
-    input,
+    input
   }: {
     input: ResolverUpdateUser
   }): Promise<ResolverUser> {

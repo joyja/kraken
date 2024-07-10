@@ -22,12 +22,12 @@ export function addNotification(notification: NotificationInput) {
     ...notifications,
     {
       id,
-      ...notification,
-    },
+      ...notification
+    }
   ])
   setTimeout(() => {
     notifications.update((notifications) =>
-      notifications.filter((n) => n.id !== id),
+      notifications.filter((n) => n.id !== id)
     )
   }, 5000)
 }

@@ -5,8 +5,10 @@ import { electronAPI } from '@electron-toolkit/preload'
 const api = {
   handleGroups: (callback) => ipcRenderer.on('update-groups', callback),
   requestRebirth: (groupId, nodeId) => ipcRenderer.send('requestRebirth', { groupId, nodeId }),
-  sendNodeCommand: (groupId, nodeId, metricId, value) => ipcRenderer.send('sendNodeCommand', { groupId, nodeId, metricId, value }),
-  sendDeviceCommand: (groupId, nodeId, deviceId, metricId, value) => ipcRenderer.send('sendDeviceCommand', { groupId, nodeId, deviceId, metricId, value }),
+  sendNodeCommand: (groupId, nodeId, metricId, value) =>
+    ipcRenderer.send('sendNodeCommand', { groupId, nodeId, metricId, value }),
+  sendDeviceCommand: (groupId, nodeId, deviceId, metricId, value) =>
+    ipcRenderer.send('sendDeviceCommand', { groupId, nodeId, deviceId, metricId, value }),
   getConnections: () => ipcRenderer.invoke('getConnections'),
   addConnection: (connection) => ipcRenderer.send('addConnection', connection),
   selectConnection: (id) => ipcRenderer.send('selectConnection', id),

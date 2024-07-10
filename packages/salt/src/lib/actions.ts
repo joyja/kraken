@@ -5,13 +5,13 @@ export const setTheme: Action = async ({ request, cookies }) => {
   const theme = data.get('theme') as string
   cookies.set(`theme`, theme, {
     path: '/',
-    secure: false,
+    secure: false
   })
   const themeName = theme === 'themeDark' ? 'dark mode' : 'light mode'
   return {
     context: 'setTheme',
     type: 'success',
     message: `You are now in ${themeName}.`,
-    theme,
+    theme
   }
 }

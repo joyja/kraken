@@ -1,6 +1,4 @@
 {
-	"/": [],
-	"/[package]/[slug]": [
-		"src/routes/[package]/[slug]/+page.ts"
-	]
+  "/": [],
+  "/[package]/[slug]": ["src/routes/[package]/[slug]/+page.ts"]
 }

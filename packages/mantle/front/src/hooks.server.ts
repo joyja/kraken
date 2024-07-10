@@ -6,7 +6,7 @@ import type { SparkplugGroup, SparkplugMetricUpdate } from '$lib/types'
 
 async function getGroups(): Promise<SparkplugGroup[]> {
   return await sendRequest({
-    query: query.groups,
+    query: query.groups
   }).then((res: { groups: SparkplugGroup[] }) => {
     console.log(res)
     return res.groups
@@ -37,19 +37,19 @@ const subscriptions = [
         if (metricUpdates != null) {
           metricUpdates.forEach((metricUpdate) => {
             const group = groups.find(
-              (group) => group.id === metricUpdate.groupId,
+              (group) => group.id === metricUpdate.groupId
             )
             if (group) {
               const node = group.nodes.find(
-                (node) => node.id === metricUpdate.nodeId,
+                (node) => node.id === metricUpdate.nodeId
               )
               if (node) {
                 const device = node.devices.find(
-                  (device) => device.id === metricUpdate.deviceId,
+                  (device) => device.id === metricUpdate.deviceId
                 )
                 if (device) {
                   const metric = device.metrics.find(
-                    (metric) => metric.id === metricUpdate.metricId,
+                    (metric) => metric.id === metricUpdate.metricId
                   )
                   if (metric) {
                     metric.value = metricUpdate.value
@@ -61,8 +61,8 @@ const subscriptions = [
           })
         }
       }
-    },
-  },
+    }
+  }
 ]
 
 generateSources({ subscriptions })
@@ -71,6 +71,6 @@ export const handle: Handle = async ({ event, resolve }) => {
   const theme = event.cookies.get('theme') ?? 'themeLight'
   event.locals.groups = groups
   return resolve(event, {
-    transformPageChunk: ({ html }) => html.replace('%theme%', theme),
+    transformPageChunk: ({ html }) => html.replace('%theme%', theme)
   })
 }
