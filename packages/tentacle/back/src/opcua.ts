@@ -1,5 +1,4 @@
 import * as R from 'ramda'
-/* eslint-disable @typescript-eslint/strict-boolean-exressions */
 import {
   DataType,
   OPCUAClient,

@@ -6,9 +6,8 @@ interface RestConfig {
   onResponse?: (value: any) => number | boolean | string
 }
 
-const getValueOrPath = R.curry((value, obj) => {
-  const valuePath = R.prop('valuePath', obj)
-  return R.isNil(valuePath) ? value : R.path(valuePath, obj)
+const getValueOrPath = R.curry((valuePath, obj) => {
+  return R.isNil(valuePath) ? obj : R.path(valuePath, obj)
 })
 
 export const get = (config: RestConfig) => {
@@ -16,4 +15,7 @@ export const get = (config: RestConfig) => {
     .then((res) => res.json())
     .then(getValueOrPath(config.valuePath))
     .then(config.onResponse)
+    .catch((error) => {
+      console.error(`error on ${config.url}`, error)
+    })
 }
