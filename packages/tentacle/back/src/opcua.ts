@@ -1,13 +1,12 @@
-import * as R from 'ramda';
-/* eslint-disable @typescript-eslint/strict-boolean-exressions */
+import * as R from 'ramda'
 import {
-	DataType,
-	OPCUAClient,
-	MessageSecurityMode,
-	SecurityPolicy,
-	AttributeIds,
-	type ClientSession,
-	DataValue
+  DataType,
+  OPCUAClient,
+  MessageSecurityMode,
+  SecurityPolicy,
+  AttributeIds,
+  type ClientSession,
+  DataValue
 } from 'node-opcua'
 
 import { NodeCrawler } from 'node-opcua-client-crawler'
@@ -58,7 +57,7 @@ export class Opcua {
     applicationName = 'tentacle-plc',
     host,
     port,
-    retryRate,
+    retryRate
   }: ConstructorOptions) {
     this.host = host
     this.port = port
@@ -71,11 +70,11 @@ export class Opcua {
       applicationName,
       connectionStrategy: {
         initialDelay,
-        maxRetry,
+        maxRetry
       },
       securityMode: MessageSecurityMode.None,
       securityPolicy: SecurityPolicy.None,
-      endpointMustExist: false,
+      endpointMustExist: false
     }
     this.client = OPCUAClient.create(options)
 
@@ -96,44 +95,53 @@ export class Opcua {
     })
   }
 
-	async connect(): Promise<void> {
-		if (!this.connected) {
-			this.error = null
-			log.info(`Connecting to opcua device, host: ${this.host}, port: ${this.port}.`)
-			await this.client.connect(`opc.tcp://${this.host}:${this.port}`).catch((error) => {
-				this.error = error.message
-				this.connected = false
-				if (!this.retryInterval) {
-					this.retryInterval = setInterval(() => {
-						log.info(`Retrying connection to opcua device, retry attempts: ${this.retryCount}.`)
-						this.retryCount += 1
-						void this.connect()
-					}, this.retryRate)
-				}
-			})
-			if (!this.error !== null) {
-				this.session = await this.client.createSession()
-					.then((session) => {
-						this.retryCount = 0
-						log.info(`Connected to opcua device, host: ${this.host}, port: ${this.port}.`)
-						clearInterval(this.retryInterval)
-						this.connected = true
-						return session
-					})
-					.catch((error) => {
-						this.error = error.message
-						log.error(error.message)
-						this.connected = false
-						return undefined
-					})
-			} else {
-				this.connected = false
-				log.info(
-					`Connection failed to opcua device, host: ${this.host}, port: ${this.port}, with error: ${this.error}.`
-				)
-			}
-		}
-	}
+  async connect(): Promise<void> {
+    if (!this.connected) {
+      this.error = null
+      log.info(
+        `Connecting to opcua device, host: ${this.host}, port: ${this.port}.`
+      )
+      await this.client
+        .connect(`opc.tcp://${this.host}:${this.port}`)
+        .catch((error) => {
+          this.error = error.message
+          this.connected = false
+          if (!this.retryInterval) {
+            this.retryInterval = setInterval(() => {
+              log.info(
+                `Retrying connection to opcua device, retry attempts: ${this.retryCount}.`
+              )
+              this.retryCount += 1
+              void this.connect()
+            }, this.retryRate)
+          }
+        })
+      if (!this.error !== null) {
+        this.session = await this.client
+          .createSession()
+          .then((session) => {
+            this.retryCount = 0
+            log.info(
+              `Connected to opcua device, host: ${this.host}, port: ${this.port}.`
+            )
+            clearInterval(this.retryInterval)
+            this.connected = true
+            return session
+          })
+          .catch((error) => {
+            this.error = error.message
+            log.error(error.message)
+            this.connected = false
+            return undefined
+          })
+      } else {
+        this.connected = false
+        log.info(
+          `Connection failed to opcua device, host: ${this.host}, port: ${this.port}, with error: ${this.error}.`
+        )
+      }
+    }
+  }
 
   async disconnect(): Promise<void> {
     this.retryCount = 0
@@ -163,7 +171,7 @@ export class Opcua {
             if (element.dataValue) {
               flatResult.push({
                 nodeId: element.nodeId.toString(),
-                browseName: `${element.nodeId.toString()},${element.browseName.name}`,
+                browseName: `${element.nodeId.toString()},${element.browseName.name}`
               })
             }
           })
@@ -185,79 +193,93 @@ export class Opcua {
     }
   }
 
-
-	async readMany({ nodeIds }: ReadManyOptions): Promise<any[] | undefined>{
+  async readMany({ nodeIds }: ReadManyOptions): Promise<any[] | undefined> {
     if (this.connected) {
       try {
         // Function to split array into chunks
-        const chunkArray = (arr:string[], chunkSize:number) => {
-          const chunks = [];
+        const chunkArray = (arr: string[], chunkSize: number) => {
+          const chunks = []
           for (let i = 0; i < arr.length; i += chunkSize) {
-            chunks.push(arr.slice(i, i + chunkSize));
+            chunks.push(arr.slice(i, i + chunkSize))
           }
-          return chunks;
-        };
-  
+          return chunks
+        }
+
         // Splitting nodeIds into chunks of 50
-        const nodeIdChunks = chunkArray(nodeIds, 50);
-				let allResults:DataValue[] = [];
-				
+        const nodeIdChunks = chunkArray(nodeIds, 50)
+        let allResults: DataValue[] = []
+
         // Processing each chunk
         for (const chunk of nodeIdChunks) {
           const results = await this.session
-            ?.read(chunk.map((nodeId) => {
-              return {
-                nodeId,
-                attributeId: AttributeIds.Value
-              };
-            }))
-            .catch((error) => console.error(error));
-  
+            ?.read(
+              chunk.map((nodeId) => {
+                return {
+                  nodeId,
+                  attributeId: AttributeIds.Value
+                }
+              })
+            )
+            .catch((error) => console.error(error))
+
           if (results) {
-						allResults = allResults.concat(results.map((result) => result.value.value));
+            allResults = allResults.concat(
+              results.map((result) => result.value.value)
+            )
           }
         }
-				const index = nodeIds.findIndex((nodeId) => nodeId.includes('Tentacle_Watchdog'))
-        return allResults;
+        const index = nodeIds.findIndex((nodeId) =>
+          nodeId.includes('Tentacle_Watchdog')
+        )
+        return allResults
       } catch (error) {
-        log.error(JSON.stringify(error));
+        log.error(JSON.stringify(error))
       }
     }
   }
 
-	async write(nodes: WriteOptions[]): Promise<any | undefined> {
-		if (this.connected) {
-			const nodesToWrite = nodes.map((node) => {
-				const { nodeId, registerType, inputValue } = node
-					let dataType
-					let value
-					if (registerType === 'Boolean') {
-						dataType = DataType.Boolean
-						value = inputValue + '' === 'true'
-					} else if (R.includes(registerType, R.keys(DataType))) {
-						dataType = DataType[registerType as keyof typeof DataType]
-						value = inputValue
-					} else {	
-						throw Error(`Register type ${registerType} not supported. Must be one of ${R.keys(DataType).join(', ')}`)
-					}
-					return {
-						nodeId,
-						attributeId: AttributeIds.Value,
-						value: {
-							value: {
-								dataType,
-								value
-							}
-						}
-					}
-			})
-			const results = await this.session?.write(nodesToWrite).then((result) => {
-				if (result.some((r) => r.name !== 'Good')) {
-					log.error(`Write failed: ${JSON.stringify(result.filter((r) => r.name !== 'Good'))}`)
-				}
-				return result
-			}).catch((error) => { console.error(error); })
-			return results;
-		}
-	}
+  async write(nodes: WriteOptions[]): Promise<any | undefined> {
+    if (this.connected) {
+      const nodesToWrite = nodes.map((node) => {
+        const { nodeId, registerType, inputValue } = node
+        let dataType
+        let value
+        if (registerType === 'Boolean') {
+          dataType = DataType.Boolean
+          value = inputValue + '' === 'true'
+        } else if (R.includes(registerType, R.keys(DataType))) {
+          dataType = DataType[registerType as keyof typeof DataType]
+          value = inputValue
+        } else {
+          throw Error(
+            `Register type ${registerType} not supported. Must be one of ${R.keys(DataType).join(', ')}`
+          )
+        }
+        return {
+          nodeId,
+          attributeId: AttributeIds.Value,
+          value: {
+            value: {
+              dataType,
+              value
+            }
+          }
+        }
+      })
+      const results = await this.session
+        ?.write(nodesToWrite)
+        .then((result) => {
+          if (result.some((r) => r.name !== 'Good')) {
+            log.error(
+              `Write failed: ${JSON.stringify(result.filter((r) => r.name !== 'Good'))}`
+            )
+          }
+          return result
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+      return results
+    }
+  }
 }

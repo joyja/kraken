@@ -80,7 +80,7 @@ export class Mqtt {
     version = 'spBv1.0',
     global,
     primaryHosts = [],
-    maxHistoryToPublish = 10,
+    maxHistoryToPublish = 10
   }: MqttConstructorInput) {
     this.queue = []
     this.rate = rate
@@ -95,13 +95,13 @@ export class Mqtt {
       edgeNode,
       clientId,
       version,
-      publishDeath: true,
+      publishDeath: true
     }
     this.primaryHosts = primaryHosts.map((name) => ({
       name,
       readyForData: false,
       status: 'OFFLINE',
-      history: [],
+      history: []
     }))
     this.maxHistoryToPublish = maxHistoryToPublish
   }
@@ -114,7 +114,7 @@ export class Mqtt {
     if (this.queue.length > 0) {
       const record = {
         timestamp: getUnixTime(new Date()),
-        metrics: [...this.queue],
+        metrics: [...this.queue]
       }
       await this.client.publishDeviceData(this.deviceName, record)
       for (const host of this.primaryHosts) {
@@ -123,7 +123,7 @@ export class Mqtt {
         } else {
           const historyToPublish = host.history.splice(
             0,
-            this.maxHistoryToPublish - 1,
+            this.maxHistoryToPublish - 1
           )
           for (const storedRecord of historyToPublish) {
             await this.client.publishDeviceData(this.deviceName, storedRecord)
@@ -153,7 +153,7 @@ export class Mqtt {
         log.info('client reconnected')
         void this.onReconnect()
       })
-      this.client.on('error', (message:string) => {
+      this.client.on('error', (message: string) => {
         log.error(message)
       })
       this.client.on('offline', () => {
@@ -177,7 +177,7 @@ export class Mqtt {
       this.client.on('ncmd', async (payload: UPayload) => {
         if (payload.metrics !== null && payload.metrics !== undefined) {
           const rebirth = payload.metrics.find(
-            (metric) => metric.name === `Node Control/Rebirth`,
+            (metric) => metric.name === `Node Control/Rebirth`
           )
           if (rebirth?.value !== null && rebirth?.value !== undefined) {
             log.info(`Rebirth request detected. Reinitializing...`)
@@ -194,7 +194,7 @@ export class Mqtt {
       log.info(`Mqtt service is disconnecting.`)
       this.stopPublishing()
       const payload = {
-        timestamp: getUnixTime(new Date()),
+        timestamp: getUnixTime(new Date())
       }
       await this.client.publishDeviceDeath(`${this.deviceName}`, payload)
       this.client.stop()
@@ -217,7 +217,7 @@ export class Mqtt {
                 this.global,
                 variablePath,
                 (typeof metric.value === 'string' && metric.value === 'true') ||
-                  (typeof metric.value === 'boolean' && metric.value),
+                  (typeof metric.value === 'boolean' && metric.value)
               )
             } else if (typeof variable === 'function') {
               // * Need to call the function from the parent to preserve 'this' in classes.
@@ -257,9 +257,9 @@ export class Mqtt {
           name: 'Node Control/Rebirth',
           timestamp: getUnixTime(new Date()),
           type: 'Boolean',
-          value: false,
-        },
-      ],
+          value: false
+        }
+      ]
     }
     await this.client.publishNodeBirth(payload)
     const global = this.denormalizedGlobal
@@ -278,19 +278,19 @@ export class Mqtt {
               ? false
               : `[${','.repeat(parseInt(global[key].replace('function', '')) - 1)}]`,
           type: global[key] === 'function0' ? 'BOOLEAN' : 'STRING',
-          timestamp: getUnixTime(new Date()),
+          timestamp: getUnixTime(new Date())
         }
       }
       return {
         name: key,
         value: global[key],
         type: getDatatype(global[key]),
-        timestamp: getUnixTime(new Date()),
+        timestamp: getUnixTime(new Date())
       }
     })
     await this.client.publishDeviceBirth(`${this.deviceName}`, {
       timestamp: getUnixTime(new Date()),
-      metrics,
+      metrics
     })
     this.primaryHosts.forEach((host) => {
       if (host.status === `ONLINE` || host.status === `UNKOWN`) {
@@ -303,7 +303,7 @@ export class Mqtt {
           .filter((host) => host.name === primaryHostId)
           .forEach((host) => {
             console.log(
-              `Received state: ${state} for primary host: ${primaryHostId}`,
+              `Received state: ${state} for primary host: ${primaryHostId}`
             )
             if (host !== null && host !== undefined) {
               host.status = `${state}`
