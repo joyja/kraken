@@ -387,26 +387,39 @@ export class PLC {
                   await program({ global })
                   const functionStop = process.hrtime(functionStart)
                   const functionModbusStart = process.hrtime()
-                  for (const variableKey of Object.keys(this.variables)) {
-                    const variable = this.variables[variableKey]
-                    if (variable.source !== undefined) {
-                      if (variable.source.type === 'modbus') {
-                        if (variable.source.bidirectional) {
-                          await this.modbus[variable.source.name].write({
-                            value: [this.global[variableKey]],
-                            ...variable.source.params
-                          })
-                        }
-                        if (this.modbus[variable.source.name].connected) {
-                          void this.modbus[variable.source.name]
-                            .read(variable.source.params)
-                            .then((result) => {
-                              return (this.global[variableKey] = result)
+                  setTimeout(async () => {
+                    for (const variableKey of Object.keys(this.variables)) {
+                      const variable = this.variables[variableKey]
+                      if (variable.source !== undefined) {
+                        if (variable.source.type === 'modbus') {
+                          if (variable.source.bidirectional) {
+                            const value = variable.source.onSend
+                              ? variable.source.onSend(this.global[variableKey])
+                              : this.global[variableKey]
+                            await this.modbus[variable.source.name].write({
+                              value,
+                              ...variable.source.params
                             })
+                          }
+                          if (this.modbus[variable.source.name].connected) {
+                            void this.modbus[variable.source.name]
+                              .read(variable.source.params)
+                              .then((result) => {
+                                if (variable.source.onResponse) {
+                                  return (this.global[variableKey] =
+                                    variable.source.onResponse(result))
+                                } else {
+                                  return (this.global[variableKey] = result)
+                                }
+                              })
+                              .catch((error) => {
+                                console.log(error)
+                              })
+                          }
                         }
                       }
                     }
-                  }
+                  }, 0)
                   const functionModbusStop = process.hrtime(functionModbusStart)
                   const functionOpcuaStart = process.hrtime()
                   for (const opcuaKey of Object.keys(this.opcua)) {
@@ -462,25 +475,30 @@ export class PLC {
 
                   const functionOpcuaStop = process.hrtime(functionOpcuaStart)
                   // Process rest requests
-                  const restVariables = Object.keys(this.variables).filter(
-                    (variableKey) => {
-                      return this.variables[variableKey].source?.type === 'rest'
+                  setTimeout(async () => {
+                    const restVariables = Object.keys(this.variables).filter(
+                      (variableKey) => {
+                        return (
+                          this.variables[variableKey].source?.type === 'rest'
+                        )
+                      }
+                    )
+                    for (const variableKey of restVariables) {
+                      const variable = this.variables[variableKey]
+                      await new Promise((resolve) => setTimeout(resolve, 50))
+                      get({
+                        url: variable.source.url,
+                        valuePath: variable.source.valuePath,
+                        onResponse: variable.source.onResponse
+                      })
+                        .then((value) => {
+                          this.global[variableKey] = value
+                        })
+                        .catch((error) => {
+                          console.error(error)
+                        })
                     }
-                  )
-                  for (const variableKey of restVariables) {
-                    const variable = this.variables[variableKey]
-                    get({
-                      url: variable.source.url,
-                      valuePath: variable.source.valuePath,
-                      onResponse: variable.source.onResponse
-                    })
-                      .then((value) => {
-                        this.global[variableKey] = value
-                      })
-                      .catch((error) => {
-                        console.error(error)
-                      })
-                  }
+                  }, 0)
                   const functionMqttStart = process.hrtime()
                   Promise.resolve().then(() => {
                     for (const key of Object.keys(this.variables)) {

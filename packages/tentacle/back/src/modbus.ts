@@ -28,6 +28,7 @@ interface WriteOptions {
 
 export class Modbus {
   host: string
+  port: number
   reverseBits: boolean
   reverseWords: boolean
   zeroBased: boolean
@@ -39,7 +40,7 @@ export class Modbus {
   client: ModbusRTU.default
   constructor({
     host,
-    port,
+    port = 502,
     reverseBits = false,
     reverseWords = false,
     zeroBased = false,
@@ -156,10 +157,7 @@ export class Modbus {
       if (registerType === 'INPUT_REGISTER') {
         const quantity = format === 'INT16' ? 1 : 2
         await this.client
-          .readInputRegisters(
-            !this.zeroBased ? register - 1 : register,
-            quantity
-          )
+          .readInputRegisters(register, quantity)
           .then((data) => this.formatValue(data.data, format))
           .catch(async (error) => {
             if (
@@ -179,7 +177,10 @@ export class Modbus {
           .readHoldingRegisters(register, quantity)
           .then((data) => this.formatValue(data.data, format))
           .catch(async (error) => {
-            if (error.name === 'TransactionTimedOutError') {
+            if (
+              error.name === 'TransactionTimedOutError' ||
+              error.name === 'PortNotOpenError'
+            ) {
               await this.disconnect()
               await this.connect()
             } else {
@@ -192,7 +193,10 @@ export class Modbus {
           .readDiscreteInputs(register, quantity)
           .then((data) => data.data[0])
           .catch(async (error) => {
-            if (error.name === 'TransactionTimedOutError') {
+            if (
+              error.name === 'TransactionTimedOutError' ||
+              error.name === 'PortNotOpenError'
+            ) {
               await this.disconnect()
               await this.connect()
             } else {
@@ -205,14 +209,21 @@ export class Modbus {
           .readCoils(register, quantity)
           .then((data) => data.data[0])
           .catch(async (error) => {
-            if (error.name === 'TransactionTimedOutError') {
+            if (
+              error.name === 'TransactionTimedOutError' ||
+              error.name === 'PortNotOpenError'
+            ) {
               await this.disconnect()
               await this.connect()
             } else {
               log.error(error)
             }
           })
+      } else {
+        console.log('Unknown register type', registerType)
       }
+    } else {
+      console.log('Not connected to modbus device', this.host, this.port)
     }
   }
 
@@ -227,11 +238,14 @@ export class Modbus {
         this.client
           .writeRegisters(register, this.formatOutput(value, format))
           .catch(async (error) => {
-            if (error.name === 'TransactionTimedOutError') {
+            if (
+              error.name === 'TransactionTimedOutError' ||
+              error.name === 'PortNotOpenError'
+            ) {
               await this.disconnect()
               await this.connect()
             } else {
-              throw error
+              log.error(error)
             }
           })
       } else if (registerType === 'COIL') {
@@ -242,22 +256,28 @@ export class Modbus {
               value.map((item: boolean | string) => `${item}` === 'true')
             )
             .catch(async (error) => {
-              if (error.name === 'TransactionTimedOutError') {
+              if (
+                error.name === 'TransactionTimedOutError' ||
+                error.name === 'PortNotOpenError'
+              ) {
                 await this.disconnect()
                 await this.connect()
               } else {
-                throw error
+                log.error(error)
               }
             })
         } else {
           this.client
             .writeCoil(register, `${value}` === 'true')
             .catch(async (error) => {
-              if (error.name === 'TransactionTimedOutError') {
+              if (
+                error.name === 'TransactionTimedOutError' ||
+                error.name === 'PortNotOpenError'
+              ) {
                 await this.disconnect()
                 await this.connect()
               } else {
-                throw error
+                log.error(error)
               }
             })
         }
