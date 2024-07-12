@@ -27,7 +27,7 @@ const yoga = createYoga<ServerContext>({
 })
 
 const server = createServer(yoga)
-const PORT = process.env.TENTACLE_PORT ?? 4000
+const PORT = process.env.TENTACLE_PORT ?? 4010
 
 server.listen(PORT, () => {
   plc.transpile()

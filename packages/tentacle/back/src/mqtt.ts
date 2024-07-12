@@ -57,6 +57,8 @@ export class Mqtt {
 
   maxHistoryToPublish: number
 
+  store: { [topic: string]: Buffer } = {}
+
   public config: {
     serverUrl: string
     username: string

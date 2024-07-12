@@ -168,7 +168,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              log.error(error)
+              console.log(`${this.host} INPUT_REGISTER:`, error)
             }
           })
       } else if (registerType === 'HOLDING_REGISTER') {
@@ -184,7 +184,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              log.error(error)
+              console.log(`${this.host} HOLDING_REGISTER:`, error)
             }
           })
       } else if (registerType === 'INPUT') {
@@ -200,7 +200,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              log.error(error)
+              console.log(`${this.host} INPUT:`, error)
             }
           })
       } else if (registerType === 'COIL') {
@@ -216,7 +216,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              log.error(error)
+              console.log(`${this.host} COIL:`, error)
             }
           })
       } else {
@@ -245,7 +245,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              log.error(error)
+              console.log(`${this.host} HOLDING_REGISTER write:`, error)
             }
           })
       } else if (registerType === 'COIL') {
@@ -263,7 +263,7 @@ export class Modbus {
                 await this.disconnect()
                 await this.connect()
               } else {
-                log.error(error)
+                console.log(`${this.host} COIL write:`, error)
               }
             })
         } else {
@@ -277,7 +277,7 @@ export class Modbus {
                 await this.disconnect()
                 await this.connect()
               } else {
-                log.error(error)
+                console.log(`${this.host} COIL write:`, error)
               }
             })
         }

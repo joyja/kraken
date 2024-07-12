@@ -13,6 +13,9 @@ import { type MemoryUsage, type VariableValue } from './generated/graphql.js'
 import { pubsub } from './pubsub.js'
 import { Log } from 'coral'
 import { VariableHistorian } from 'node-opcua'
+import mqtt from 'mqtt'
+import * as R from 'ramda'
+import { subscribeAndStore } from './mqttSource.js'
 
 const log = new Log('plc')
 
@@ -265,11 +268,26 @@ export class PLC {
         if (this.mqtt[mqttKey] !== undefined) {
           void this.mqtt[mqttKey].disconnect()
         }
+        //Setup Mqtt Source variables
+        console.log(R.values(this.variables))
+        const mqttVariables = R.values(this.variables).filter(
+          (variable: any) => variable.source.type === 'mqtt'
+        )
+        const topics: string[] = R.pipe(
+          R.values,
+          R.map(R.path(['source', 'topic'])),
+          R.uniq
+        )(mqttVariables) as string[]
         this.mqtt[mqttKey] = new Mqtt({
           ...this.config.mqtt[mqttKey].config,
           global: this.global
         })
         this.mqtt[mqttKey].connect()
+        subscribeAndStore(
+          topics,
+          this.mqtt[mqttKey].store,
+          this.mqtt[mqttKey].client
+        )
       })
     }
   }
@@ -278,7 +296,7 @@ export class PLC {
     const sourceDir = path.resolve(process.cwd(), 'development')
     const outDir = path.resolve(process.cwd(), 'runtime')
     const options = {
-      noEmitOnError: true,
+      noEmitOnError: false,
       noImplicitAny: true,
       target: ts.ScriptTarget.ESNext,
       module: ts.ModuleKind.NodeNext,
@@ -402,7 +420,7 @@ export class PLC {
                             })
                           }
                           if (this.modbus[variable.source.name].connected) {
-                            void this.modbus[variable.source.name]
+                            void (await this.modbus[variable.source.name]
                               .read(variable.source.params)
                               .then((result) => {
                                 if (variable.source.onResponse) {
@@ -414,7 +432,7 @@ export class PLC {
                               })
                               .catch((error) => {
                                 console.log(error)
-                              })
+                              }))
                           }
                         }
                       }
@@ -486,8 +504,10 @@ export class PLC {
                     for (const variableKey of restVariables) {
                       const variable = this.variables[variableKey]
                       await new Promise((resolve) => setTimeout(resolve, 50))
-                      get({
+                      await get(this.global[variableKey], {
                         url: variable.source.url,
+                        method: variable.source.method,
+                        body: variable.source.body,
                         valuePath: variable.source.valuePath,
                         onResponse: variable.source.onResponse
                       })
@@ -500,6 +520,17 @@ export class PLC {
                     }
                   }, 0)
                   const functionMqttStart = process.hrtime()
+                  const mqttVariables = Object.keys(this.variables).filter(
+                    (variableKey) => {
+                      return this.variables[variableKey].source?.type === 'mqtt'
+                    }
+                  )
+                  for (const variableKey of mqttVariables) {
+                    const variable = this.variables[variableKey]
+                    const store = this.mqtt[variable.source.name].store
+                    const value = store[variable.source.topic]
+                    console.log(value)
+                  }
                   Promise.resolve().then(() => {
                     for (const key of Object.keys(this.variables)) {
                       const now = new Date()
