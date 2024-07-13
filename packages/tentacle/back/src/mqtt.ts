@@ -40,25 +40,15 @@ interface MqttConstructorInput {
 
 export class Mqtt {
   queue: any[]
-
   rate: number
-
   global: any
-
   prevGlobal: any
-
   deviceName: string
-
   client: any
-
   interval?: NodeJS.Timeout
-
   primaryHosts: any[]
-
   maxHistoryToPublish: number
-
   store: { [topic: string]: Buffer } = {}
-
   public config: {
     serverUrl: string
     username: string
@@ -156,7 +146,7 @@ export class Mqtt {
         void this.onReconnect()
       })
       this.client.on('error', (message: string) => {
-        log.error(message)
+        log.error(`${this.config.serverUrl} error: ${message}`)
       })
       this.client.on('offline', () => {
         log.info('client offline')

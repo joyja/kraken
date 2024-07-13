@@ -15,7 +15,7 @@ import { Log } from 'coral'
 import { VariableHistorian } from 'node-opcua'
 import mqtt from 'mqtt'
 import * as R from 'ramda'
-import { subscribeAndStore } from './mqttSource.js'
+import { readStore, subscribeAndStore } from './mqttSource.js'
 
 const log = new Log('plc')
 
@@ -269,7 +269,6 @@ export class PLC {
           void this.mqtt[mqttKey].disconnect()
         }
         //Setup Mqtt Source variables
-        console.log(R.values(this.variables))
         const mqttVariables = R.values(this.variables).filter(
           (variable: any) => variable.source.type === 'mqtt'
         )
@@ -283,11 +282,13 @@ export class PLC {
           global: this.global
         })
         this.mqtt[mqttKey].connect()
-        subscribeAndStore(
-          topics,
-          this.mqtt[mqttKey].store,
-          this.mqtt[mqttKey].client
-        )
+        this.mqtt[mqttKey].client.on('connect', () => {
+          subscribeAndStore(
+            topics,
+            this.mqtt[mqttKey].store,
+            this.mqtt[mqttKey].client.client
+          )
+        })
       })
     }
   }
@@ -503,7 +504,7 @@ export class PLC {
                     )
                     for (const variableKey of restVariables) {
                       const variable = this.variables[variableKey]
-                      await new Promise((resolve) => setTimeout(resolve, 50))
+                      await new Promise((resolve) => setTimeout(resolve, 100))
                       await get(this.global[variableKey], {
                         url: variable.source.url,
                         method: variable.source.method,
@@ -528,8 +529,14 @@ export class PLC {
                   for (const variableKey of mqttVariables) {
                     const variable = this.variables[variableKey]
                     const store = this.mqtt[variable.source.name].store
-                    const value = store[variable.source.topic]
-                    console.log(value)
+                    const { topic, valuePath, onResponse } = variable.source
+                    if (R.has(topic, store)) {
+                      const value = readStore(topic, store)
+                      this.global[variableKey] = R.pipe(
+                        R.path(valuePath),
+                        onResponse ? onResponse : (value) => value
+                      )(value)
+                    }
                   }
                   Promise.resolve().then(() => {
                     for (const key of Object.keys(this.variables)) {

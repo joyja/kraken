@@ -33,7 +33,7 @@ export const subscribeAndStore = R.curry(
         //TODO: investigate Ramda type error
         // @ts-expect-error see prev line
         subscribe(topic, (err) => {
-          if (err) console.log(err)
+          if (err) console.log('Subscription Error', err)
         }),
         addHandler((topic: string, message: Buffer) => {
           store[topic] = message
