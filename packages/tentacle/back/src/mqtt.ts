@@ -49,6 +49,7 @@ export class Mqtt {
   primaryHosts: any[]
   maxHistoryToPublish: number
   store: { [topic: string]: Buffer } = {}
+  connected: boolean
   public config: {
     serverUrl: string
     username: string
@@ -74,6 +75,7 @@ export class Mqtt {
     primaryHosts = [],
     maxHistoryToPublish = 10
   }: MqttConstructorInput) {
+    this.connected = false
     this.queue = []
     this.rate = rate
     this.global = global
@@ -152,7 +154,12 @@ export class Mqtt {
         log.info('client offline')
       })
       this.client.on('connect', () => {
+        this.connected = true
         log.info('client connected')
+      })
+      this.client.on('disconnect', () => {
+        this.connected = false
+        log.info('client disconnected')
       })
       this.client.on('birth', () => {
         log.info('client born')

@@ -16,6 +16,7 @@ import { VariableHistorian } from 'node-opcua'
 import mqtt from 'mqtt'
 import * as R from 'ramda'
 import { readStore, subscribeAndStore } from './mqttSource.js'
+import { taplog } from './variables.js'
 
 const log = new Log('plc')
 
@@ -270,7 +271,7 @@ export class PLC {
         }
         //Setup Mqtt Source variables
         const mqttVariables = R.values(this.variables).filter(
-          (variable: any) => variable.source.type === 'mqtt'
+          (variable: any) => variable.source?.type === 'mqtt'
         )
         const topics: string[] = R.pipe(
           R.values,
@@ -282,6 +283,7 @@ export class PLC {
           global: this.global
         })
         this.mqtt[mqttKey].connect()
+        this.mqtt[mqttKey].client.setMaxListeners(100)
         this.mqtt[mqttKey].client.on('connect', () => {
           subscribeAndStore(
             topics,
@@ -532,10 +534,17 @@ export class PLC {
                     const { topic, valuePath, onResponse } = variable.source
                     if (R.has(topic, store)) {
                       const value = readStore(topic, store)
-                      this.global[variableKey] = R.pipe(
-                        R.path(valuePath),
-                        onResponse ? onResponse : (value) => value
-                      )(value)
+                      try {
+                        this.global[variableKey] = R.pipe(
+                          R.path(valuePath),
+                          onResponse ? onResponse : (value) => value
+                        )(value)
+                      } catch (error) {
+                        console.log(
+                          `Error reading ${variableKey}, value: ${JSON.stringify(value, null, 2)}`,
+                          error
+                        )
+                      }
                     }
                   }
                   Promise.resolve().then(() => {

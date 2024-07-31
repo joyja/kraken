@@ -13,7 +13,6 @@ const getValueOrPath = R.curry((valuePath, obj) => {
 })
 
 export const get = (value: string | number | boolean, config: RestConfig) => {
-  console.log(config.onResponse)
   const options =
     config.method === 'POST'
       ? {

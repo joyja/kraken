@@ -5,6 +5,10 @@ import path from 'path'
 import * as resolvers from './resolvers/index.js'
 import { plc } from './plc.js'
 import { Log, LogLevel } from 'coral'
+import EventEmitter from 'events'
+
+EventEmitter.setMaxListeners(25)
+
 Log.defaultLogLevel = process.env.TENTACLE_LOGLEVEL
   ? (process.env.TENTACLE_LOGLEVEL as LogLevel)
   : process.env.NODE_ENV === 'development'

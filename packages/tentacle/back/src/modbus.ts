@@ -29,6 +29,7 @@ interface WriteOptions {
 export class Modbus {
   host: string
   port: number
+  unitId: number
   reverseBits: boolean
   reverseWords: boolean
   zeroBased: boolean
@@ -41,6 +42,7 @@ export class Modbus {
   constructor({
     host,
     port = 502,
+    unitId = 1,
     reverseBits = false,
     reverseWords = false,
     zeroBased = false,
@@ -48,6 +50,7 @@ export class Modbus {
   }: ConstructorOptions) {
     this.host = host
     this.port = port
+    this.unitId = unitId
     this.reverseBits = reverseBits
     this.reverseWords = reverseWords
     this.zeroBased = zeroBased
@@ -56,6 +59,7 @@ export class Modbus {
     this.error = null
     this.retryCount = 0
     this.client = new ModbusRTU.default()
+    this.client.setID(unitId)
   }
 
   formatValue(data: number[], format: string): any {
@@ -99,7 +103,7 @@ export class Modbus {
     if (!this.connected) {
       this.error = null
       log.info(
-        `Connecting to modbus device, host: ${this.host}, port: ${this.port}.`
+        `Connecting to modbus device, host: ${this.host}, port: ${this.port}, unitId: ${this.unitId}.`
       )
       await this.client
         .connectTCP(this.host, { port: this.port })
@@ -168,7 +172,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              console.log(`${this.host} INPUT_REGISTER:`, error)
+              console.log(`${this.host} ${registerType} ${register}`, error)
             }
           })
       } else if (registerType === 'HOLDING_REGISTER') {
@@ -184,7 +188,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              console.log(`${this.host} HOLDING_REGISTER:`, error)
+              console.log(`${this.host} ${registerType} ${register}`, error)
             }
           })
       } else if (registerType === 'INPUT') {
@@ -200,7 +204,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              console.log(`${this.host} INPUT:`, error)
+              console.log(`${this.host} ${registerType} ${register}`, error)
             }
           })
       } else if (registerType === 'COIL') {
@@ -216,7 +220,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              console.log(`${this.host} COIL:`, error)
+              console.log(`${this.host} ${registerType} ${register}`, error)
             }
           })
       } else {
@@ -245,7 +249,7 @@ export class Modbus {
               await this.disconnect()
               await this.connect()
             } else {
-              console.log(`${this.host} HOLDING_REGISTER write:`, error)
+              console.log(`${this.host} ${registerType} ${register}`, error)
             }
           })
       } else if (registerType === 'COIL') {
@@ -263,7 +267,7 @@ export class Modbus {
                 await this.disconnect()
                 await this.connect()
               } else {
-                console.log(`${this.host} COIL write:`, error)
+                console.log(`${this.host} ${registerType} ${register}`, error)
               }
             })
         } else {
@@ -277,7 +281,7 @@ export class Modbus {
                 await this.disconnect()
                 await this.connect()
               } else {
-                console.log(`${this.host} COIL write:`, error)
+                console.log(`${this.host} ${registerType} ${register}`, error)
               }
             })
         }

@@ -1,14 +1,13 @@
 import * as R from 'ramda'
+import { type newClient } from 'kraken-sparkplug-client'
 
-import mqtt from 'mqtt'
-
-export const createMqttSource = (endpoint: string) => mqtt.connect(endpoint)
+export type mqttClient = ReturnType<typeof newClient>
 
 export const subscribe = R.curry(
   (
     topic: string,
     handler: (...args: any[]) => void | undefined,
-    client: mqtt.MqttClient
+    client: ReturnType<typeof newClient>['client']
   ) => {
     client.subscribe(topic, handler)
     return client
@@ -16,7 +15,10 @@ export const subscribe = R.curry(
 )
 
 export const addHandler = R.curry(
-  (handler: (...args: any[]) => void, client: mqtt.MqttClient) => {
+  (
+    handler: (...args: any[]) => void,
+    client: ReturnType<typeof newClient>['client']
+  ) => {
     client.on('message', handler)
     return client
   }
@@ -26,12 +28,10 @@ export const subscribeAndStore = R.curry(
   (
     topics: string[],
     store: { [topic: string]: Buffer },
-    client: mqtt.MqttClient
+    client: ReturnType<typeof newClient>['client']
   ) =>
     R.map((topic: string) => {
       R.pipe(
-        //TODO: investigate Ramda type error
-        // @ts-expect-error see prev line
         subscribe(topic, (err) => {
           if (err) console.log('Subscription Error', err)
         }),

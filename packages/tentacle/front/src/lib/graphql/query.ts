@@ -60,7 +60,7 @@ export const variables = `
   }
 `
 
-export const config  = `
+export const config = `
   query Configuration {
     configuration {
       tasks {
@@ -75,6 +75,7 @@ export const config  = `
         config {
           serverUrl
         }
+        connected
       }
       modbus {
         name
@@ -82,7 +83,9 @@ export const config  = `
         config {
           host
           port
+          unitId
         }
+        connected
       }
       opcua {
         name
@@ -91,6 +94,7 @@ export const config  = `
           host
           port
         }
+        connected
       }
     }
   }
