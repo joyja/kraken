@@ -154,7 +154,10 @@ export class PLC {
     this.runtimeConfigFile = path.resolve(this.runtimeDir, 'config.js')
     // createFileIfNotExists(this.runtimeConfigFile, configInit)
     this.developmentConfigFile = path.resolve(this.developmentDir, 'config.ts')
-    createFileIfNotExists(this.developmentConfigFile, configInit)
+    createFileIfNotExists(
+      this.developmentConfigFile,
+      `export const config = ${configInit}`
+    )
 
     // Handle variables
     const variableInit = JSON.stringify({}, null, 2)
@@ -164,7 +167,10 @@ export class PLC {
       this.developmentDir,
       'variables.ts'
     )
-    createFileIfNotExists(this.developmentVariableFile, variableInit)
+    createFileIfNotExists(
+      this.developmentVariableFile,
+      `export const variables = ${variableInit}`
+    )
 
     // Handle classes dir
     this.runtimeClassesDir = path.resolve(this.runtimeDir, 'classes')
@@ -278,7 +284,7 @@ export class PLC {
     const sourceDir = path.resolve(process.cwd(), 'development')
     const outDir = path.resolve(process.cwd(), 'runtime')
     const options = {
-      noEmitOnError: true,
+      noEmitOnError: false,
       noImplicitAny: true,
       target: ts.ScriptTarget.ESNext,
       module: ts.ModuleKind.NodeNext,

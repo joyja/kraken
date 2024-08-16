@@ -40,6 +40,7 @@
 		"kraken-sparkplug-client": "^0.0.13",
 		"lodash": "^4.17.21",
 		"modbus-serial": "8.0.16",
+		"nanoid": "^5.0.7",
 		"node-opcua": "^2.124.0",
 		"node-opcua-client-crawler": "^2.124.0",
 		"prettier": "^3.2.5",
