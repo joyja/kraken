@@ -41,10 +41,12 @@
     "lodash": "^4.17.21",
     "modbus-serial": "8.0.16",
     "mqtt": "^4.2.8",
+    "node-drivers": "^2.0.2",
     "node-opcua": "^2.124.0",
     "node-opcua-client-crawler": "^2.124.0",
     "prettier": "^3.2.5",
     "ramda": "^0.30.0",
+    "st-ethernet-ip": "^2.7.3",
     "typescript": "^5.4.4"
   }
 }

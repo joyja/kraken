@@ -75,7 +75,7 @@ export class Modbus {
       view.setInt16(2, this.reverseWords ? data[0] : data[1], this.reverseBits)
       value = view.getInt32(0)
     } else if (format === `INT16`) {
-      view.setInt16(0, data[0], this.reverseBits)
+      view.setInt16(0, data[1], this.reverseBits)
       value = view.getInt16(0)
     } else {
       value = data
@@ -93,8 +93,11 @@ export class Modbus {
       data.push(view.getUint16(this.reverseWords ? 0 : 2, this.reverseBits))
     } else if (format === `INT32`) {
       view.setInt32(0, value)
-      data.push(view.getUint16(this.reverseWords ? 0 : 2, !this.reverseBits))
-      data.push(view.getUint16(this.reverseWords ? 2 : 0, !this.reverseBits))
+      data.push(view.getUint16(this.reverseWords ? 0 : 2, this.reverseBits))
+      data.push(view.getUint16(this.reverseWords ? 2 : 0, this.reverseBits))
+    } else if (format === `INT16`) {
+      view.setInt16(0, value)
+      data.push(view.getUint16(0, this.reverseBits))
     }
     return data
   }
