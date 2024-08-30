@@ -1,13 +1,13 @@
-// import { Controller } from 'ethernet-ip'
+import { Controller } from 'st-ethernet-ip'
 // import { Log } from './log'
 
 // const log = new Log('Ethernet/IP')
 
-// interface EthernetIPConstructorOptions {
-//   host: string;
-//   port?: number;
-//   interval?: number;  // Scan rate for tags (in ms)
-// }
+interface EthernetIPConstructorOptions {
+  host: string
+  port?: number
+  interval?: number // Scan rate for tags (in ms)
+}
 
 // export class EthernetIP {
 //   private readonly host: string;

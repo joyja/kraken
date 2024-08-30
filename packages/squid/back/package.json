@@ -13,7 +13,7 @@
   "author": "James A. Joy",
   "license": "GPL-3.0",
   "dependencies": {
-    "coral": "^0.0.1",
+    "coral": "workspace:^0.0.1",
     "date-fns": "^2.30.0",
     "effect": "^3.1.3",
     "graphql": "^16.7.1",

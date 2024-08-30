@@ -5,6 +5,10 @@ import path from 'path'
 import * as resolvers from './resolvers/index.js'
 import { plc } from './plc.js'
 import { Log, LogLevel } from 'coral'
+import EventEmitter from 'events'
+
+EventEmitter.setMaxListeners(25)
+
 Log.defaultLogLevel = process.env.TENTACLE_LOGLEVEL
   ? (process.env.TENTACLE_LOGLEVEL as LogLevel)
   : process.env.NODE_ENV === 'development'
@@ -27,7 +31,7 @@ const yoga = createYoga<ServerContext>({
 })
 
 const server = createServer(yoga)
-const PORT = process.env.TENTACLE_PORT ?? 4000
+const PORT = process.env.TENTACLE_PORT ?? 4010
 
 server.listen(PORT, () => {
   plc.transpile()

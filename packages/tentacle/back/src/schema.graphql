@@ -4,278 +4,281 @@ scalar Date
 PLC status and diagnostics information
 """
 type Plc {
-	running: Boolean!
+  running: Boolean!
 }
 
 """
 File change type to use for change log (since last runtime update)
 """
 type change {
-	timestamp: Date!
-	event: String!
-	path: String!
+  timestamp: Date!
+  event: String!
+  path: String!
 }
 
 """
 Atomic Variable type used for String, Numbers, and Booleans
 """
 type atomicVariable {
-	path: String!
-	value: String
-	datatype: String!
+  path: String!
+  value: String
+  datatype: String!
 }
 
 """
 Variable exertnal source parameters, used to configure the source specific to the protocol used
 """
 type VariableSourceParams {
-	register: Int
-	registerType: String
-	format: String
+  register: Int
+  registerType: String
+  format: String
 }
 
 """
 Variable external source basic configuration
 """
 type VariableSource {
-	type: String!
-	name: String!
-	rate: Int!
-	params: VariableSourceParams
+  type: String!
+  name: String!
+  rate: Int
+  params: VariableSourceParams
 }
 
 """
 Variable configuration
 """
 type Variable {
-	name: String!
-	description: String
-	datatype: String!
-	initialValue: String
-	decimals: Int
-	persistent: Boolean
-	source: VariableSource
-	children: [Variable!]!
-	changeEvents: eventTracker
+  name: String!
+  description: String
+  datatype: String!
+  initialValue: String
+  decimals: Int
+  persistent: Boolean
+  source: VariableSource
+  children: [Variable!]!
+  changeEvents: eventTracker
 }
 
 """
 Variable value (for subscriptions)
 """
 type VariableValue {
-	name: String!
-	value: String!
-	type: String!
-	timestamp: Date!
+  name: String!
+  value: String
+  type: String!
+  timestamp: Date!
 }
 
 """
 Task configuration
 """
 type configTask {
-	name: String!
-	description: String!
-	scanRate: Int!
-	program: String!
+  name: String!
+  description: String!
+  scanRate: Int!
+  program: String!
 }
 
 """
 Mqtt client configuration
 """
 type configMqttConfig {
-	serverUrl: String
-	groupId: String
-	username: String
-	password: String
-	edgeNode: String
-	deviceName: String
-	clientId: String
-	version: String
+  serverUrl: String
+  groupId: String
+  username: String
+  password: String
+  edgeNode: String
+  deviceName: String
+  clientId: String
+  version: String
 }
 
 """
 Modbus client configuration
 """
 type configModbusConfig {
-	host: String
-	port: Int
-	unitId: Int
-	reverseBits: Boolean
-	reverseWords: Boolean
-	zeroBased: Boolean
-	retryRate: Int
+  host: String
+  port: Int
+  unitId: Int
+  reverseBits: Boolean
+  reverseWords: Boolean
+  zeroBased: Boolean
+  retryRate: Int
 }
 
 """
 Opcua client configuration
 """
 type configOpcuaConfig {
-	host: String
-	port: Int
-	retryRate: Int
+  host: String
+  port: Int
+  retryRate: Int
 }
 
 """
 MQTT Client basic configuration
 """
 type configMqtt {
-	name: String!
-	description: String!
-	config: configMqttConfig!
+  name: String!
+  description: String!
+  config: configMqttConfig!
+  connected: Boolean!
 }
 
 """
 Modbus client basic configuration
 """
 type configModbus {
-	name: String!
-	description: String!
-	config: configModbusConfig!
+  name: String!
+  description: String!
+  config: configModbusConfig!
+  connected: Boolean!
 }
 
 """
 OPCUA client basic configuration
 """
 type configOpcua {
-	name: String!
-	description: String!
-	config: configOpcuaConfig!
+  name: String!
+  description: String!
+  config: configOpcuaConfig!
+  connected: Boolean!
 }
 
 """
 Overall Tentacle PLC configration
 """
 type config {
-	tasks: [configTask!]!
-	mqtt: [configMqtt!]!
-	modbus: [configModbus!]!
-	opcua: [configOpcua!]!
+  tasks: [configTask!]!
+  mqtt: [configMqtt!]!
+  modbus: [configModbus!]!
+  opcua: [configOpcua!]!
 }
 
 """
 Task metrics for diagnostic data
 """
 type taskMetric {
-	task: String!
-	functionExecutionTime: Float!
-	modbusExecutionTime: Float!
-	mqttExecutionTime: Float!
-	opcuaExecutionTime: Float!
-	persistenceExecutionTime: Float!
-	overheadExecutionTime: Float!
-	intervalExecutionTime: Float!
-	totalScanTime: Float!
+  task: String!
+  functionExecutionTime: Float!
+  modbusExecutionTime: Float!
+  mqttExecutionTime: Float!
+  opcuaExecutionTime: Float!
+  persistenceExecutionTime: Float!
+  overheadExecutionTime: Float!
+  intervalExecutionTime: Float!
+  totalScanTime: Float!
 }
 
 """
 Event Tracker for counting events
 """
 type eventTracker {
-	inLastMinute: Int!
-	inLastHour: Int!
-	inLastDay: Int!
+  inLastMinute: Int!
+  inLastHour: Int!
+  inLastDay: Int!
 }
 
 """
 Memory Usage of Tentacle PLC Back
 """
 type memoryUsage {
-	rss: Int!
-	heapTotal: Int!
-	heapUsed: Int!
-	external: Int!
-	arrayBuffers: Int!
+  rss: Int!
+  heapTotal: Int!
+  heapUsed: Int!
+  external: Int!
+  arrayBuffers: Int!
 }
 
 """
 Read/Write queries
 """
 type Mutation {
-	"""
-	Sets the value of an atomic variable. Can only target a single atomic variable or the property of a class.
-	Example path for classes: motor1.running where motor1 is the class instance and running is a property of motor1's class.
-	"""
-	setValue(variablePath: String!, value: String!): atomicVariable
-	"""
-	Run the function of a class.Example path for classes: motor1.start where motor1 is the class instance and start is a property of motor1's class.
-	"""
-	runFunction(functionPath: String!, args: String): String
-	"""
-	Start the PLC runtime if stopped.
-	"""
-	startPlc: Plc
-	"""
-	Stop the PLC runtime.
-	"""
-	stopPlc: Plc
-	"""
-	Stop the PLC runtime, if running, and the start the PLC with the latest runtime configration.
-	"""
-	restartPlc: Plc
+  """
+  Sets the value of an atomic variable. Can only target a single atomic variable or the property of a class.
+  Example path for classes: motor1.running where motor1 is the class instance and running is a property of motor1's class.
+  """
+  setValue(variablePath: String!, value: String!): atomicVariable
+  """
+  Run the function of a class.Example path for classes: motor1.start where motor1 is the class instance and start is a property of motor1's class.
+  """
+  runFunction(functionPath: String!, args: String): String
+  """
+  Start the PLC runtime if stopped.
+  """
+  startPlc: Plc
+  """
+  Stop the PLC runtime.
+  """
+  stopPlc: Plc
+  """
+  Stop the PLC runtime, if running, and the start the PLC with the latest runtime configration.
+  """
+  restartPlc: Plc
 }
 
 """
 Read only queries
 """
 type Query {
-	"""
-	Information about the Tentacle PLC environment as a string.
-	"""
-	info: String!
-	"""
-	Task diagnostic data
-	"""
-	metrics: [taskMetric!]!
-	"""
-	Single value of an atomic variable or class property.Example path for classes: motor1.running where motor1 is the class instance and running is a property of motor1's class.
-	"""
-	value(variablePath: String!): atomicVariable
-	"""
-	Lists all variable and class property values
-	"""
-	values: [atomicVariable!]!
-	"""
-	Lists all variables
-	"""
-	variables: [Variable!]!
-	"""
-	Lists all programs
-	"""
-	programs: [String!]!
-	"""
-	Returns the code for a single program
-	"""
-	program(name: String!): String!
-	"""
-	Lists all classes
-	"""
-	tClasses: [String!]!
-	"""
-	Returns the code for a single class
-	"""
-	tClass(name: String!): String!
-	"""
-	The current configration
-	"""
-	configuration: config!
-	"""
-	Lists all file changes that have occurred since the last PLC restart
-	"""
-	changes: [change!]!
-	"""
-	The PLC status information
-	"""
-	tPlc: Plc!
-	"""
-	memory usage
-	"""
-	memoryUsage: memoryUsage!
+  """
+  Information about the Tentacle PLC environment as a string.
+  """
+  info: String!
+  """
+  Task diagnostic data
+  """
+  metrics: [taskMetric!]!
+  """
+  Single value of an atomic variable or class property.Example path for classes: motor1.running where motor1 is the class instance and running is a property of motor1's class.
+  """
+  value(variablePath: String!): atomicVariable
+  """
+  Lists all variable and class property values
+  """
+  values: [atomicVariable!]!
+  """
+  Lists all variables
+  """
+  variables: [Variable!]!
+  """
+  Lists all programs
+  """
+  programs: [String!]!
+  """
+  Returns the code for a single program
+  """
+  program(name: String!): String!
+  """
+  Lists all classes
+  """
+  tClasses: [String!]!
+  """
+  Returns the code for a single class
+  """
+  tClass(name: String!): String!
+  """
+  The current configration
+  """
+  configuration: config!
+  """
+  Lists all file changes that have occurred since the last PLC restart
+  """
+  changes: [change!]!
+  """
+  The PLC status information
+  """
+  tPlc: Plc!
+  """
+  memory usage
+  """
+  memoryUsage: memoryUsage!
 }
 
 type Subscription {
-	countdown(from: Int!): Int!
-	values: [VariableValue!]!
-	taskMetrics: [taskMetric!]!
-	changes: [change!]!
-	plc: Plc!
+  countdown(from: Int!): Int!
+  values: [VariableValue!]!
+  taskMetrics: [taskMetric!]!
+  changes: [change!]!
+  plc: Plc!
 }

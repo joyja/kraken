@@ -44,6 +44,7 @@ export function configuration(): Config {
           plc?.config?.mqtt[key]?.description !== undefined
             ? plc.config.mqtt[key].description
             : '',
+        connected: plc.mqtt[key].connected,
         ...plc.config.mqtt[key]
       }
     }),
@@ -55,6 +56,8 @@ export function configuration(): Config {
           plc?.config?.modbus[key]?.description !== undefined
             ? plc.config.modbus[key].description
             : '',
+        connected: plc.modbus[key].connected,
+        error: plc.modbus[key].error,
         ...plc.config.modbus[key]
       }
     }),
@@ -66,6 +69,8 @@ export function configuration(): Config {
           plc?.config?.opcua[key]?.description !== undefined
             ? plc.config.opcua[key].description
             : '',
+        connected: plc.opcua[key].connected,
+        error: plc.opcua[key].error,
         ...plc.config.opcua[key]
       }
     })
