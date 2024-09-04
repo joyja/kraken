@@ -353,6 +353,14 @@ input HistoryEntry {
   raw: Boolean
 }
 
+input DeleteHistoryEntry {
+  groupId: String!
+  nodeId: String!
+  deviceId: String!
+  metricIds: [String!]!
+  timestamp: Date!
+}
+
 type History {
   groupId: String!
   nodeId: String!
@@ -418,8 +426,10 @@ type Mutation {
   updatePen(input: UpdatePenEntry!): Pen!
   deletePen(input: DeletePenEntry!): Pen!
   acknowledgeRoster(id: String!): Roster!
+  deleteHistory(input: DeleteHistoryEntry!): HistoryEntry!
 }
 
 type Subscription {
   metricUpdate(paths: [String!]): [SparkplugMetricUpdate!]!
 }
+

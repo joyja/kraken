@@ -1,4 +1,3 @@
-import { prisma } from '../../prisma.js'
 import { type SparkplugGroup, spdata } from '../../mqtt.js'
 import { alarmHandler } from '../../alarm.js'
 import {
@@ -10,7 +9,7 @@ import {
 } from '../types.js'
 import { rosterHandler } from '../../roster.js'
 import { userHandler } from '../../user.js'
-import { History } from '../../history.js'
+import { history as historyInstance } from '../../history.js'
 import { AlarmHistory } from '@prisma/client'
 
 export function info(): string {
@@ -37,9 +36,8 @@ export async function history(
 	_root: unknown,
 	args: { input: HistoryEntry }
 ): Promise<MetricHistoryEntry[]> {
-	const history = new History(prisma)
 	const { metrics, start, end, interval, samples, raw } = args.input
-	return await history.getHistoryBucketed({
+	return await historyInstance.getHistoryBucketed({
 		metrics,
 		start,
 		end,

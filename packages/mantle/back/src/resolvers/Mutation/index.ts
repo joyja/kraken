@@ -19,9 +19,11 @@ import {
   type Roster,
   type RosterEntry,
 } from '../types.js'
+import { history } from '../../history.js'
 import { alarmHandler } from '../../alarm.js'
 import { userHandler } from '../../user.js'
 import { rosterHandler } from '../../roster.js'
+import { type MetricHistoryEntry } from '../types.js'
 // import { Log } from '../../log';
 export * from './chart.js'
 
@@ -181,4 +183,20 @@ export async function acknowledgeRoster(
   { id }: { id: string },
 ): Promise<Roster> {
   return await rosterHandler.acknowledge(id)
+}
+
+export async function deleteHistory(root: unknown, {
+  groupId,
+  nodeId,
+  deviceId,
+  metricIds,
+  timestamp,
+}: {
+  groupId: string,
+  nodeId: string,
+  deviceId: string,
+  metricIds: string[]
+  timestamp: Date
+}):Promise<MetricHistoryEntry[]> {
+  return await history.deleteHistory({ groupId, nodeId, deviceId, metricIds, timestamp})
 }

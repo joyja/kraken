@@ -152,4 +152,32 @@ export class History {
 		})
 		return result
 	}
+
+	async deleteHistory({
+		groupId,
+		nodeId,
+		deviceId,
+		metricIds,
+		timestamp,
+	}: {
+		groupId: string,
+		nodeId: string,
+		deviceId: string,
+		metricIds: string[]
+		timestamp: Date
+	}): Promise<MetricHistoryEntry[]> {
+		return await this.prisma.history.deleteMany({
+			where: {
+				groupId,
+				nodeId,
+				deviceId,
+				metricId: {
+					in: metricIds
+				},
+				timestamp,
+			},
+		})
+	}
 }
+
+export const history = new History(prisma)
