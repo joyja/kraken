@@ -50,7 +50,7 @@ export async function sendSMS({
     body: JSON.stringify({
       to,
       message,
-      mantleId: process.env.MANTLE_ID !== null ?? 'dev',
+      mantleId: process.env.MANTLE_ID ?? 'dev',
       rosterId,
     }),
   })
